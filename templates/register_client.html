@@ -4,150 +4,215 @@
 {% block title %}Register Client - New Life Mwangaza{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3>Register New Client</h3>
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0"><i class="fas fa-user-plus"></i> Register New Client</h3>
             </div>
             <div class="card-body">
-                <form method="POST">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="firstName" class="form-label">First Name *</label>
-                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                <form method="POST" id="clientForm">
+                    <!-- Basic Information -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">Basic Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="secondName" class="form-label">Second Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="secondName" name="secondName" required>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="secondName" class="form-label">Second Name *</label>
-                                <input type="text" class="form-control" id="secondName" name="secondName" required>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="dateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="age" class="form-label">Age <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="age" name="age" readonly style="background-color: #f8f9fa;">
+                                    <small class="text-muted">Automatically calculated from date of birth</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="nickname" class="form-label">Nickname</label>
+                            <input type="text" class="form-control" id="nickname" name="nickname">
+                        </div>
+                    </div>
+
+                    <!-- Admission Information -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">Admission Information</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="admissionType" class="form-label">Admission Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="admissionType" name="admissionType" required>
+                                        <option value="">Select admission type</option>
+                                        <option value="STREET">Street</option>
+                                        <option value="REFERRAL">Referral</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="intake" class="form-label">Intake Number</label>
+                                    <input type="number" class="form-control" id="intake" name="intake" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row" id="referralFields" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="referralInstitution" class="form-label">Referral Institution</label>
+                                    <input type="text" class="form-control" id="referralInstitution" name="referralInstitution">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="referralContact" class="form-label">Referral Contact</label>
+                                    <input type="text" class="form-control" id="referralContact" name="referralContact">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="streetField">
+                            <label for="streetName" class="form-label">Street Name</label>
+                            <input type="text" class="form-control" id="streetName" name="streetName">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="ACTIVE" selected>Active</option>
+                                <option value="DISCHARGED">Discharged</option>
+                                <option value="EARLY_REINTEGRATION">Early Reintegration</option>
+                                <option value="REFERRAL">Referral</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Education Information -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">Education Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="educationLevel" class="form-label">Education Level</label>
+                                    <select class="form-select" id="educationLevel" name="educationLevel">
+                                        <option value="">Select education level</option>
+                                        <option value="Primary">Primary</option>
+                                        <option value="Secondary">Secondary</option>
+                                        <option value="Tertiary">Tertiary</option>
+                                        <option value="None">None</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="gradeLevel" class="form-label">Grade/Form Level</label>
+                                    <select class="form-select" id="gradeLevel" name="gradeLevel">
+                                        <option value="">Select grade/form</option>
+                                        <option value="grade">Grade (Primary)</option>
+                                        <option value="form">Form (Secondary)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3" id="gradeInputContainer" style="display: none;">
+                                    <label for="gradeInput" class="form-label" id="gradeInputLabel">Enter Grade/Form</label>
+                                    <input type="text" class="form-control" id="gradeInput" name="grade" placeholder="e.g., Grade 5 or Form 2">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden fields for backward compatibility -->
+                        <input type="hidden" id="grade" name="grade" value="">
+                        <input type="hidden" id="secondaryForm" name="secondaryForm" value="">
+                    </div>
+
+                    <!-- Parent/Guardian Information -->
+                    <div class="mb-4">
+                        <h5 class="text-primary border-bottom pb-2">Parent/Guardian Information</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="parentGuardianName" class="form-label">Parent/Guardian Name</label>
+                                    <input type="text" class="form-control" id="parentGuardianName" name="parentGuardianName">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="parentGuardianLocation" class="form-label">Location</label>
+                                    <input type="text" class="form-control" id="parentGuardianLocation" name="parentGuardianLocation">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="parentGuardianContact" class="form-label">Contact</label>
+                                    <input type="text" class="form-control" id="parentGuardianContact" name="parentGuardianContact">
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="dateOfBirth" class="form-label">Date of Birth *</label>
-                                <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="age" class="form-label">Age *</label>
-                                <input type="number" class="form-control" id="age" name="age" required>
-                            </div>
-                        </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Register Client
+                        </button>
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Cancel
+                        </a>
                     </div>
-
-                    <div class="mb-3">
-                        <label for="nickname" class="form-label">Nickname</label>
-                        <input type="text" class="form-control" id="nickname" name="nickname">
-                    </div>
-
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="admissionType" class="form-label">Admission Type *</label>
-                                <select class="form-select" id="admissionType" name="admissionType" required>
-                                    <option value="STREET">Street</option>
-                                    <option value="REFERRAL">Referral</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="status" class="form-label">Status</label>
-                                <select class="form-select" id="status" name="status">
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="DISCHARGED">Discharged</option>
-                                    <option value="EARLY_REINTEGRATION">Early Reintegration</option>
-                                    <option value="REFERRAL">Referral</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row" id="referralFields" style="display: none;">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="referralInstitution" class="form-label">Referral Institution</label>
-                                <input type="text" class="form-control" id="referralInstitution" name="referralInstitution">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="referralContact" class="form-label">Referral Contact</label>
-                                <input type="text" class="form-control" id="referralContact" name="referralContact">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3" id="streetField">
-                        <label for="streetName" class="form-label">Street Name</label>
-                        <input type="text" class="form-control" id="streetName" name="streetName">
-                    </div>
-
-                    <h5>Parent/Guardian Information</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="parentGuardianName" class="form-label">Parent/Guardian Name</label>
-                                <input type="text" class="form-control" id="parentGuardianName" name="parentGuardianName">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="parentGuardianLocation" class="form-label">Location</label>
-                                <input type="text" class="form-control" id="parentGuardianLocation" name="parentGuardianLocation">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="parentGuardianContact" class="form-label">Contact</label>
-                                <input type="text" class="form-control" id="parentGuardianContact" name="parentGuardianContact">
-                            </div>
-                        </div>
-                    </div>
-
-                    <h5>Education Information</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="educationLevel" class="form-label">Education Level</label>
-                                <input type="text" class="form-control" id="educationLevel" name="educationLevel">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="grade" class="form-label">Grade</label>
-                                <input type="text" class="form-control" id="grade" name="grade">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="mb-3">
-                                <label for="secondaryForm" class="form-label">Secondary Form</label>
-                                <input type="text" class="form-control" id="secondaryForm" name="secondaryForm">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="intake" class="form-label">Intake Number</label>
-                        <input type="number" class="form-control" id="intake" name="intake" value="0">
-                    </div>
-
-                    <button type="submit" class="btn btn-success">Register Client</button>
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+.card {
+    border-radius: 15px;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+.text-primary {
+    color: #007bff !important;
+}
+</style>
+
 <script>
+// Auto-calculate age from date of birth
+document.getElementById('dateOfBirth').addEventListener('change', function() {
+    const dob = new Date(this.value);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+        age--;
+    }
+    
+    document.getElementById('age').value = age >= 0 ? age : '';
+});
+
+// Show/hide fields based on admission type
 document.getElementById('admissionType').addEventListener('change', function() {
     const referralFields = document.getElementById('referralFields');
     const streetField = document.getElementById('streetField');
@@ -155,9 +220,46 @@ document.getElementById('admissionType').addEventListener('change', function() {
     if (this.value === 'REFERRAL') {
         referralFields.style.display = 'block';
         streetField.style.display = 'none';
-    } else {
+    } else if (this.value === 'STREET') {
         referralFields.style.display = 'none';
         streetField.style.display = 'block';
+    } else {
+        referralFields.style.display = 'none';
+        streetField.style.display = 'none';
+    }
+});
+
+// Show/hide grade input based on selection
+document.getElementById('gradeLevel').addEventListener('change', function() {
+    const gradeInputContainer = document.getElementById('gradeInputContainer');
+    const gradeInputLabel = document.getElementById('gradeInputLabel');
+    const gradeInput = document.getElementById('gradeInput');
+    
+    if (this.value === 'grade') {
+        gradeInputContainer.style.display = 'block';
+        gradeInputLabel.textContent = 'Enter Grade';
+        gradeInput.placeholder = 'e.g., Grade 1, Grade 2, etc.';
+    } else if (this.value === 'form') {
+        gradeInputContainer.style.display = 'block';
+        gradeInputLabel.textContent = 'Enter Form';
+        gradeInput.placeholder = 'e.g., Form 1, Form 2, etc.';
+    } else {
+        gradeInputContainer.style.display = 'none';
+        gradeInput.value = '';
+    }
+});
+
+// Update hidden fields before form submission
+document.getElementById('clientForm').addEventListener('submit', function(e) {
+    const gradeLevel = document.getElementById('gradeLevel').value;
+    const gradeInput = document.getElementById('gradeInput').value;
+    
+    if (gradeLevel === 'grade') {
+        document.getElementById('grade').value = gradeInput;
+        document.getElementById('secondaryForm').value = '';
+    } else if (gradeLevel === 'form') {
+        document.getElementById('grade').value = '';
+        document.getElementById('secondaryForm').value = gradeInput;
     }
 });
 </script>
