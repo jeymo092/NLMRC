@@ -1,0 +1,75 @@
+
+{% extends "base.html" %}
+
+{% block title %}Edit Home Visit - {{ client.firstName }} {{ client.secondName }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Edit Home Visit Record</h4>
+                    <p class="mb-0 text-muted">Client: {{ client.firstName }} {{ client.secondName }}</p>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date" class="form-label">Visit Date *</label>
+                                    <input type="date" class="form-control" id="date" name="date" value="{{ visit.date.strftime('%Y-%m-%d') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="conductedBy" class="form-label">Conducted By *</label>
+                                    <input type="text" class="form-control" id="conductedBy" name="conductedBy" value="{{ visit.conductedBy }}" required placeholder="Name of person who conducted the visit">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Department *</label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="">Select Department</option>
+                                <option value="socialworkers" {% if visit.department == 'socialworkers' %}selected{% endif %}>Social Workers</option>
+                                <option value="counselling" {% if visit.department == 'counselling' %}selected{% endif %}>Counselling</option>
+                                <option value="education" {% if visit.department == 'education' %}selected{% endif %}>Education</option>
+                                <option value="empowerment" {% if visit.department == 'empowerment' %}selected{% endif %}>Empowerment</option>
+                                <option value="admin" {% if visit.department == 'admin' %}selected{% endif %}>Administration</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="report" class="form-label">Visit Report</label>
+                            <textarea class="form-control" id="report" name="report" rows="4" placeholder="Enter detailed report of the home visit...">{{ visit.report }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="recommendations" class="form-label">Recommendations</label>
+                            <textarea class="form-control" id="recommendations" name="recommendations" rows="3" placeholder="Enter any recommendations or follow-up actions...">{{ visit.recommendations }}</textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Home Visit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

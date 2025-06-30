@@ -521,6 +521,30 @@ def client_home_visits(client_id):
     visits = HomeVisit.query.filter_by(client_id=client_id).order_by(HomeVisit.date.desc()).all()
     return render_template('client_home_visits.html', client=client, visits=visits)
 
+@app.route('/edit_home_visit/<int:visit_id>', methods=['GET', 'POST'])
+@login_required
+def edit_home_visit(visit_id):
+    visit = HomeVisit.query.get_or_404(visit_id)
+    client = visit.client
+    
+    if request.method == 'POST':
+        try:
+            visit_date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
+            
+            visit.date = visit_date
+            visit.conductedBy = request.form['conductedBy']
+            visit.department = request.form['department']
+            visit.report = request.form.get('report', '')
+            visit.recommendations = request.form.get('recommendations', '')
+            
+            db.session.commit()
+            flash('Home visit record updated successfully!')
+            return redirect(url_for('client_home_visits', client_id=client.id))
+        except Exception as e:
+            flash(f'Error updating home visit record: {str(e)}')
+    
+    return render_template('edit_home_visit.html', visit=visit, client=client)
+
 @app.route('/api/clients')
 @login_required
 def api_clients():

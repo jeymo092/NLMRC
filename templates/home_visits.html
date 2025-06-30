@@ -95,9 +95,14 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{{ url_for('client_home_visits', client_id=visit.client.id) }}" class="btn btn-sm btn-outline-primary">
-                                            View All
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="{{ url_for('edit_home_visit', visit_id=visit.id) }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a>
+                                            <a href="{{ url_for('client_home_visits', client_id=visit.client.id) }}" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-list"></i> View All
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
