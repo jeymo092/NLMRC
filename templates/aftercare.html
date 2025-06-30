@@ -26,7 +26,8 @@
                         <th>Placement</th>
                         <th>Institution</th>
                         <th>Contact Person</th>
-                        <th>Visit Date</th>
+                        <th>Placement Date</th>
+                        <th>Completion Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -37,19 +38,24 @@
                             <strong>{{ record.client.firstName }} {{ record.client.secondName }}</strong>
                         </td>
                         <td>
-                            <span class="badge 
-                                {% if record.status == 'SUCCESSFUL' %}bg-success
-                                {% elif record.status == 'IN_PROGRESS' %}bg-primary
-                                {% elif record.status == 'RELAPSED' %}bg-warning
-                                {% elif record.status == 'ABSCONDED' %}bg-danger
-                                {% endif %}">
-                                {{ record.status }}
+                            <span class="badge bg-{{ 'success' if record.status == 'SUCCESSFUL' else 'warning' if record.status == 'IN_PROGRESS' else 'danger' if record.status == 'RELAPSED' else 'secondary' }}">
+                                {{ record.status.replace('_', ' ').title() }}
                             </span>
                         </td>
                         <td>{{ record.placement or 'N/A' }}</td>
                         <td>{{ record.institution or 'N/A' }}</td>
-                        <td>{{ record.contact_person or 'N/A' }}</td>
-                        <td>{{ record.visit_date or 'N/A' }}</td>
+                        <td>
+                            {% if record.contact_person %}
+                                {{ record.contact_person }}
+                                {% if record.contact_phone %}
+                                    <br><small class="text-muted">{{ record.contact_phone }}</small>
+                                {% endif %}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ record.placement_date.strftime('%Y-%m-%d') if record.placement_date else 'N/A' }}</td>
+                        <td>{{ record.placement_completion_date.strftime('%Y-%m-%d') if record.placement_completion_date else 'N/A' }}</td>
                         <td>
                             <a href="{{ url_for('view_client', client_id=record.client.id) }}" class="btn btn-sm btn-outline-primary">
                                 View Client

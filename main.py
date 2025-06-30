@@ -64,7 +64,8 @@ class AfterCare(db.Model):
     institution = db.Column(db.String(200))
     contact_person = db.Column(db.String(200))
     contact_phone = db.Column(db.String(50))
-    visit_date = db.Column(db.Date)
+    placement_date = db.Column(db.Date)
+    placement_completion_date = db.Column(db.Date)
     notes = db.Column(db.Text)
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -422,9 +423,13 @@ def add_aftercare(client_id):
     
     if request.method == 'POST':
         try:
-            visit_date = None
-            if request.form.get('visit_date'):
-                visit_date = datetime.strptime(request.form['visit_date'], '%Y-%m-%d').date()
+            placement_date = None
+            if request.form.get('placement_date'):
+                placement_date = datetime.strptime(request.form['placement_date'], '%Y-%m-%d').date()
+            
+            placement_completion_date = None
+            if request.form.get('placement_completion_date'):
+                placement_completion_date = datetime.strptime(request.form['placement_completion_date'], '%Y-%m-%d').date()
             
             aftercare = AfterCare(
                 client_id=client_id,
@@ -433,7 +438,8 @@ def add_aftercare(client_id):
                 institution=request.form.get('institution', ''),
                 contact_person=request.form.get('contact_person', ''),
                 contact_phone=request.form.get('contact_phone', ''),
-                visit_date=visit_date,
+                placement_date=placement_date,
+                placement_completion_date=placement_completion_date,
                 notes=request.form.get('notes', ''),
                 createdBy=current_user.id
             )
