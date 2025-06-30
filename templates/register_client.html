@@ -5,115 +5,117 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-10">
+    <div class="col-12">
         <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h3 class="mb-0"><i class="fas fa-user-plus"></i> Register New Client</h3>
+            <div class="card-header bg-primary text-white py-2">
+                <h4 class="mb-0"><i class="fas fa-user-plus"></i> Register New Client</h4>
             </div>
             <div class="card-body">
                 <form method="POST" id="clientForm">
                     <!-- Basic Information -->
-                    <div class="mb-4">
-                        <h5 class="text-primary border-bottom pb-2">Basic Information</h5>
+                    <div class="mb-3">
+                        <h6 class="text-primary border-bottom pb-1 mb-2">Basic Information</h6>
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
+                            <div class="col-md-4">
+                                <div class="mb-2">
                                     <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="firstName" name="firstName" required>
+                                    <input type="text" class="form-control form-control-sm" id="firstName" name="firstName" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
+                            <div class="col-md-4">
+                                <div class="mb-2">
                                     <label for="secondName" class="form-label">Second Name <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="secondName" name="secondName" required>
+                                    <input type="text" class="form-control form-control-sm" id="secondName" name="secondName" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-2">
+                                    <label for="nickname" class="form-label">Nickname</label>
+                                    <input type="text" class="form-control form-control-sm" id="nickname" name="nickname">
                                 </div>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="dateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                                    <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
+                                    <input type="date" class="form-control form-control-sm" id="dateOfBirth" name="dateOfBirth" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="age" class="form-label">Age <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="age" name="age" readonly style="background-color: #f8f9fa;">
-                                    <small class="text-muted">Automatically calculated from date of birth</small>
+                                    <input type="number" class="form-control form-control-sm" id="age" name="age" readonly style="background-color: #f8f9fa;">
+                                    <small class="text-muted">Auto-calculated</small>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="nickname" class="form-label">Nickname</label>
-                            <input type="text" class="form-control" id="nickname" name="nickname">
                         </div>
                     </div>
 
                     <!-- Admission Information -->
-                    <div class="mb-4">
-                        <h5 class="text-primary border-bottom pb-2">Admission Information</h5>
+                    <div class="mb-3">
+                        <h6 class="text-primary border-bottom pb-1 mb-2">Admission Information</h6>
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
+                            <div class="col-md-4">
+                                <div class="mb-2">
                                     <label for="admissionType" class="form-label">Admission Type <span class="text-danger">*</span></label>
-                                    <select class="form-select" id="admissionType" name="admissionType" required>
-                                        <option value="">Select admission type</option>
+                                    <select class="form-select form-select-sm" id="admissionType" name="admissionType" required>
+                                        <option value="">Select type</option>
                                         <option value="STREET">Street</option>
                                         <option value="REFERRAL">Referral</option>
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
+                            <div class="col-md-4">
+                                <div class="mb-2">
                                     <label for="intake" class="form-label">Intake Number</label>
-                                    <input type="number" class="form-control" id="intake" name="intake" value="0">
+                                    <input type="number" class="form-control form-control-sm" id="intake" name="intake" value="0">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-2">
+                                    <label for="status" class="form-label">Status</label>
+                                    <select class="form-select form-select-sm" id="status" name="status">
+                                        <option value="ACTIVE" selected>Active</option>
+                                        <option value="DISCHARGED">Discharged</option>
+                                        <option value="EARLY_REINTEGRATION">Early Reintegration</option>
+                                        <option value="REFERRAL">Referral</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
                         <div class="row" id="referralFields" style="display: none;">
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="referralInstitution" class="form-label">Referral Institution</label>
-                                    <input type="text" class="form-control" id="referralInstitution" name="referralInstitution">
+                                    <input type="text" class="form-control form-control-sm" id="referralInstitution" name="referralInstitution">
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="referralContact" class="form-label">Referral Contact</label>
-                                    <input type="text" class="form-control" id="referralContact" name="referralContact">
+                                    <input type="text" class="form-control form-control-sm" id="referralContact" name="referralContact">
                                 </div>
                             </div>
                         </div>
 
-                        <div class="mb-3" id="streetField">
+                        <div class="mb-2" id="streetField">
                             <label for="streetName" class="form-label">Street Name</label>
-                            <input type="text" class="form-control" id="streetName" name="streetName">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="status" class="form-label">Status</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="ACTIVE" selected>Active</option>
-                                <option value="DISCHARGED">Discharged</option>
-                                <option value="EARLY_REINTEGRATION">Early Reintegration</option>
-                                <option value="REFERRAL">Referral</option>
-                            </select>
+                            <input type="text" class="form-control form-control-sm" id="streetName" name="streetName">
                         </div>
                     </div>
 
                     <!-- Education Information -->
-                    <div class="mb-4">
-                        <h5 class="text-primary border-bottom pb-2">Education Information</h5>
+                    <div class="mb-3">
+                        <h6 class="text-primary border-bottom pb-1 mb-2">Education Information</h6>
                         <div class="row">
                             <div class="col-md-4">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="educationLevel" class="form-label">Education Level</label>
-                                    <select class="form-select" id="educationLevel" name="educationLevel">
-                                        <option value="">Select education level</option>
+                                    <select class="form-select form-select-sm" id="educationLevel" name="educationLevel">
+                                        <option value="">Select level</option>
                                         <option value="Primary">Primary</option>
                                         <option value="Secondary">Secondary</option>
                                         <option value="Tertiary">Tertiary</option>
@@ -123,19 +125,19 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="gradeLevel" class="form-label">Grade/Form Level</label>
-                                    <select class="form-select" id="gradeLevel" name="gradeLevel">
-                                        <option value="">Select grade/form</option>
+                                    <select class="form-select form-select-sm" id="gradeLevel" name="gradeLevel">
+                                        <option value="">Select type</option>
                                         <option value="grade">Grade (Primary)</option>
                                         <option value="form">Form (Secondary)</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="mb-3" id="gradeInputContainer" style="display: none;">
+                                <div class="mb-2" id="gradeInputContainer" style="display: none;">
                                     <label for="gradeInput" class="form-label" id="gradeInputLabel">Enter Grade/Form</label>
-                                    <input type="text" class="form-control" id="gradeInput" name="grade" placeholder="e.g., Grade 5 or Form 2">
+                                    <input type="text" class="form-control form-control-sm" id="gradeInput" name="grade" placeholder="e.g., Grade 5">
                                 </div>
                             </div>
                         </div>
@@ -146,35 +148,35 @@
                     </div>
 
                     <!-- Parent/Guardian Information -->
-                    <div class="mb-4">
-                        <h5 class="text-primary border-bottom pb-2">Parent/Guardian Information</h5>
+                    <div class="mb-3">
+                        <h6 class="text-primary border-bottom pb-1 mb-2">Parent/Guardian Information</h6>
                         <div class="row">
                             <div class="col-md-4">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="parentGuardianName" class="form-label">Parent/Guardian Name</label>
-                                    <input type="text" class="form-control" id="parentGuardianName" name="parentGuardianName">
+                                    <input type="text" class="form-control form-control-sm" id="parentGuardianName" name="parentGuardianName">
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="parentGuardianLocation" class="form-label">Location</label>
-                                    <input type="text" class="form-control" id="parentGuardianLocation" name="parentGuardianLocation">
+                                    <input type="text" class="form-control form-control-sm" id="parentGuardianLocation" name="parentGuardianLocation">
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="mb-3">
+                                <div class="mb-2">
                                     <label for="parentGuardianContact" class="form-label">Contact</label>
-                                    <input type="text" class="form-control" id="parentGuardianContact" name="parentGuardianContact">
+                                    <input type="text" class="form-control form-control-sm" id="parentGuardianContact" name="parentGuardianContact">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="submit" class="btn btn-success btn-sm">
                             <i class="fas fa-save"></i> Register Client
                         </button>
-                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left"></i> Cancel
                         </a>
                     </div>
@@ -186,14 +188,22 @@
 
 <style>
 .card {
-    border-radius: 15px;
+    border-radius: 10px;
+    margin-bottom: 0;
 }
 .form-control:focus, .form-select:focus {
     border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, 0.25);
 }
 .text-primary {
     color: #007bff !important;
+}
+.form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+.card-body {
+    padding: 1rem;
 }
 </style>
 
