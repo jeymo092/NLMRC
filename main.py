@@ -138,6 +138,216 @@ def view_client(client_id):
     client = Client.query.get_or_404(client_id)
     return render_template('client_detail.html', client=client)
 
+@app.route('/client/<int:client_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_client(client_id):
+    # Only Admin and Social Workers can edit clients
+    if current_user.department not in ['admin', 'socialworkers']:
+        flash('Access denied. Only Admin and Social Workers can edit client information.')
+        return redirect(url_for('view_client', client_id=client_id))
+    
+    client = Client.query.get_or_404(client_id)
+    
+    if request.method == 'POST':
+        try:
+            # Parse date of birth
+            dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
+            
+            # Update client information
+            client.firstName = request.form['firstName']
+            client.secondName = request.form['secondName']
+            client.dateOfBirth = dob
+            client.age = int(request.form['age'])
+            client.nickname = request.form.get('nickname', '')
+            client.admissionType = request.form['admissionType']
+            client.referralInstitution = request.form.get('referralInstitution', '')
+            client.referralContact = request.form.get('referralContact', '')
+            client.streetName = request.form.get('streetName', '')
+            client.parentGuardianName = request.form.get('parentGuardianName', '')
+            client.parentGuardianLocation = request.form.get('parentGuardianLocation', '')
+            client.parentGuardianContact = request.form.get('parentGuardianContact', '')
+            client.intake = int(request.form.get('intake', 0))
+            client.educationLevel = request.form.get('educationLevel', '')
+            client.grade = request.form.get('grade', '')
+            client.secondaryForm = request.form.get('secondaryForm', '')
+            client.status = request.form.get('status', 'ACTIVE')
+            
+            db.session.commit()
+            flash('Client information updated successfully!')
+            return redirect(url_for('view_client', client_id=client_id))
+        except Exception as e:
+            flash(f'Error updating client: {str(e)}')
+    
+    return render_template('edit_client.html', client=client)
+
+@app.route('/client/<int:client_id>/export_pdf')
+@login_required
+def export_client_pdf(client_id):
+    from reportlab.lib.pagesizes import letter, A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib import colors
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    from io import BytesIO
+    import os
+    
+    client = Client.query.get_or_404(client_id)
+    
+    # Create PDF buffer
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+    
+    # Container for the 'Flowable' objects
+    elements = []
+    
+    # Define styles
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        textColor=colors.darkblue
+    )
+    
+    heading_style = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=14,
+        spaceAfter=12,
+        textColor=colors.darkblue
+    )
+    
+    # Add logo and header
+    elements.append(Paragraph("NEW LIFE MWANGAZA", title_style))
+    elements.append(Paragraph("Client Information Report", styles['Heading2']))
+    elements.append(Spacer(1, 20))
+    
+    # Client basic information
+    elements.append(Paragraph("Personal Information", heading_style))
+    personal_data = [
+        ['Full Name:', f"{client.firstName} {client.secondName}"],
+        ['Nickname:', client.nickname or 'N/A'],
+        ['Date of Birth:', str(client.dateOfBirth)],
+        ['Age:', f"{client.age} years"],
+        ['Status:', client.status],
+        ['Registration Date:', client.createdAt.strftime('%Y-%m-%d %H:%M') if client.createdAt else 'N/A']
+    ]
+    
+    personal_table = Table(personal_data, colWidths=[2*inch, 3*inch])
+    personal_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(personal_table)
+    elements.append(Spacer(1, 20))
+    
+    # Admission information
+    elements.append(Paragraph("Admission Information", heading_style))
+    admission_data = [
+        ['Admission Type:', client.admissionType],
+        ['Intake Number:', str(client.intake)]
+    ]
+    
+    if client.admissionType == 'REFERRAL':
+        admission_data.extend([
+            ['Referral Institution:', client.referralInstitution or 'N/A'],
+            ['Referral Contact:', client.referralContact or 'N/A']
+        ])
+    else:
+        admission_data.append(['Street Name:', client.streetName or 'N/A'])
+    
+    admission_table = Table(admission_data, colWidths=[2*inch, 3*inch])
+    admission_table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 1, colors.black)
+    ]))
+    elements.append(admission_table)
+    elements.append(Spacer(1, 20))
+    
+    # Education information
+    if client.educationLevel or client.grade or client.secondaryForm:
+        elements.append(Paragraph("Education Information", heading_style))
+        education_data = []
+        if client.educationLevel:
+            education_data.append(['Education Level:', client.educationLevel])
+        if client.grade:
+            education_data.append(['Grade:', client.grade])
+        if client.secondaryForm:
+            education_data.append(['Secondary Form:', client.secondaryForm])
+        
+        education_table = Table(education_data, colWidths=[2*inch, 3*inch])
+        education_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(education_table)
+        elements.append(Spacer(1, 20))
+    
+    # Parent/Guardian information
+    if client.parentGuardianName or client.parentGuardianLocation or client.parentGuardianContact:
+        elements.append(Paragraph("Parent/Guardian Information", heading_style))
+        parent_data = []
+        if client.parentGuardianName:
+            parent_data.append(['Name:', client.parentGuardianName])
+        if client.parentGuardianLocation:
+            parent_data.append(['Location:', client.parentGuardianLocation])
+        if client.parentGuardianContact:
+            parent_data.append(['Contact:', client.parentGuardianContact])
+        
+        parent_table = Table(parent_data, colWidths=[2*inch, 3*inch])
+        parent_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
+            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(parent_table)
+    
+    # Add footer
+    elements.append(Spacer(1, 40))
+    footer_style = ParagraphStyle(
+        'Footer',
+        parent=styles['Normal'],
+        fontSize=8,
+        alignment=TA_CENTER,
+        textColor=colors.grey
+    )
+    elements.append(Paragraph(f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} by {current_user.username}", footer_style))
+    
+    # Build PDF
+    doc.build(elements)
+    
+    # Get PDF data
+    pdf = buffer.getvalue()
+    buffer.close()
+    
+    # Return PDF as response
+    from flask import Response
+    response = Response(pdf, content_type='application/pdf')
+    response.headers['Content-Disposition'] = f'attachment; filename=client_{client.firstName}_{client.secondName}_report.pdf'
+    return response
+
 @app.route('/api/clients')
 @login_required
 def api_clients():

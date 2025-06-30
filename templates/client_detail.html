@@ -75,7 +75,19 @@
                 </div>
 
                 <div class="mt-4">
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                        {% if current_user.department in ['admin', 'socialworkers'] %}
+                        <a href="{{ url_for('edit_client', client_id=client.id) }}" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Edit Client
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('export_client_pdf', client_id=client.id) }}" class="btn btn-success">
+                            <i class="fas fa-file-pdf"></i> Export PDF
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
