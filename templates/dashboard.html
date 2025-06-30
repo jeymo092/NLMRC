@@ -82,7 +82,9 @@
                         <td>
                             <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">View</a>
                             {% if client.status == 'ACTIVE' %}
-                            <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-sm btn-outline-info">Home Visit</a>
+                            <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-home"></i> Add Visit
+                            </a>
                             {% endif %}
                             {% if current_user.department in ['admin', 'socialworkers'] %}
                             <a href="{{ url_for('edit_client', client_id=client.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>

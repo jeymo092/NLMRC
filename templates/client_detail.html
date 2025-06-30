@@ -73,6 +73,27 @@
                     </div>
                 </div>
 
+                {% if client.status == 'ACTIVE' %}
+                <div class="mt-4">
+                    <div class="card border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="fas fa-home"></i> Home Visit Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">This client is active and eligible for home visits.</p>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Add New Home Visit
+                                </a>
+                                <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="btn btn-outline-primary">
+                                    <i class="fas fa-list"></i> View All Home Visits ({{ client.home_visits|length }})
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
                 <div class="mt-4">
                     <div class="d-flex gap-2">
                         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
@@ -83,8 +104,13 @@
                             <i class="fas fa-edit"></i> Edit Client
                         </a>
                         {% endif %}
+                        {% if client.status == 'ACTIVE' %}
+                        <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Add Home Visit
+                        </a>
+                        {% endif %}
                         <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="btn btn-info">
-                            <i class="fas fa-home"></i> Home Visits
+                            <i class="fas fa-home"></i> View Home Visits
                         </a>
                         <a href="{{ url_for('export_client_pdf', client_id=client.id) }}" class="btn btn-success">
                             <i class="fas fa-file-pdf"></i> Export PDF
