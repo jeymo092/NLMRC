@@ -93,6 +93,10 @@ def dashboard():
 @app.route('/register_client', methods=['GET', 'POST'])
 @login_required
 def register_client():
+    # Only Admin and Social Workers can register new clients
+    if current_user.department not in ['admin', 'socialworkers']:
+        flash('Access denied. Only Admin and Social Workers can register new clients.')
+        return redirect(url_for('dashboard'))
     if request.method == 'POST':
         try:
             # Parse date of birth

@@ -41,9 +41,11 @@
                     <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action">
                         Dashboard
                     </a>
+                    {% if current_user.department in ['admin', 'socialworkers'] %}
                     <a href="{{ url_for('register_client') }}" class="list-group-item list-group-item-action">
                         Register New Client
                     </a>
+                    {% endif %}
                 </div>
             </div>
             <div class="col-md-10 main-content">

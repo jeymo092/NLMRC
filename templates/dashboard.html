@@ -6,7 +6,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Client Management Dashboard</h2>
+    {% if current_user.department in ['admin', 'socialworkers'] %}
     <a href="{{ url_for('register_client') }}" class="btn btn-success">Register New Client</a>
+    {% endif %}
 </div>
 
 <div class="row mb-4">
