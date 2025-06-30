@@ -1,0 +1,93 @@
+
+{% extends "base.html" %}
+
+{% block title %}Home Visits{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Home Visits</h2>
+                <div>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Home Visit Records</h5>
+                    
+                    {% if home_visits %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Visit Date</th>
+                                    <th>Conducted By</th>
+                                    <th>Department</th>
+                                    <th>Report</th>
+                                    <th>Recommendations</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for visit in home_visits %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('view_client', client_id=visit.client.id) }}" class="text-decoration-none">
+                                            {{ visit.client.firstName }} {{ visit.client.secondName }}
+                                        </a>
+                                    </td>
+                                    <td>{{ visit.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ visit.conductedBy }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ visit.department.title() }}</span>
+                                    </td>
+                                    <td>
+                                        {% if visit.report %}
+                                            {{ visit.report[:50] }}{% if visit.report|length > 50 %}...{% endif %}
+                                        {% else %}
+                                            <em class="text-muted">No report</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if visit.recommendations %}
+                                            {{ visit.recommendations[:50] }}{% if visit.recommendations|length > 50 %}...{% endif %}
+                                        {% else %}
+                                            <em class="text-muted">No recommendations</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('client_home_visits', client_id=visit.client.id) }}" class="btn btn-sm btn-outline-primary">
+                                            View All
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-3">No home visit records found.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,106 @@
+
+{% extends "base.html" %}
+
+{% block title %}Home Visits - {{ client.firstName }} {{ client.secondName }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Home Visits - {{ client.firstName }} {{ client.secondName }}</h2>
+                <div>
+                    {% if client.status == 'ACTIVE' %}
+                    <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">Add Home Visit</a>
+                    {% endif %}
+                    <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-secondary">Back to Client</a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Visit History</h5>
+                    
+                    {% if visits %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Conducted By</th>
+                                    <th>Department</th>
+                                    <th>Report</th>
+                                    <th>Recommendations</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for visit in visits %}
+                                <tr>
+                                    <td>{{ visit.date.strftime('%Y-%m-%d') }}</td>
+                                    <td>{{ visit.conductedBy }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ visit.department.title() }}</span>
+                                    </td>
+                                    <td>
+                                        {% if visit.report %}
+                                            <div class="expandable-text">
+                                                <div class="text-preview">{{ visit.report[:100] }}{% if visit.report|length > 100 %}...{% endif %}</div>
+                                                {% if visit.report|length > 100 %}
+                                                <button class="btn btn-sm btn-link p-0 expand-btn" onclick="toggleText(this)">Show more</button>
+                                                <div class="text-full" style="display: none;">{{ visit.report }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <em class="text-muted">No report</em>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if visit.recommendations %}
+                                            <div class="expandable-text">
+                                                <div class="text-preview">{{ visit.recommendations[:100] }}{% if visit.recommendations|length > 100 %}...{% endif %}</div>
+                                                {% if visit.recommendations|length > 100 %}
+                                                <button class="btn btn-sm btn-link p-0 expand-btn" onclick="toggleText(this)">Show more</button>
+                                                <div class="text-full" style="display: none;">{{ visit.recommendations }}</div>
+                                                {% endif %}
+                                            </div>
+                                        {% else %}
+                                            <em class="text-muted">No recommendations</em>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <p class="text-muted mb-3">No home visit records found for this client.</p>
+                        {% if client.status == 'ACTIVE' %}
+                        <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">Add First Home Visit</a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleText(button) {
+    const container = button.parentElement;
+    const preview = container.querySelector('.text-preview');
+    const full = container.querySelector('.text-full');
+    
+    if (full.style.display === 'none') {
+        preview.style.display = 'none';
+        full.style.display = 'block';
+        button.textContent = 'Show less';
+    } else {
+        preview.style.display = 'block';
+        full.style.display = 'none';
+        button.textContent = 'Show more';
+    }
+}
+</script>
+{% endblock %}

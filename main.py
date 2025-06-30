@@ -54,6 +54,9 @@ class Client(db.Model):
     
     # Relationship to aftercare records
     aftercare_records = db.relationship('AfterCare', backref='client', lazy=True)
+    
+    # Relationship to home visits
+    home_visits = db.relationship('HomeVisit', backref='client', lazy=True)
 
 # AfterCare Model
 class AfterCare(db.Model):
@@ -67,6 +70,18 @@ class AfterCare(db.Model):
     placement_date = db.Column(db.Date)
     placement_completion_date = db.Column(db.Date)
     notes = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+# HomeVisit Model
+class HomeVisit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    conductedBy = db.Column(db.String(200), nullable=False)
+    department = db.Column(db.String(50), nullable=False)
+    report = db.Column(db.Text)
+    recommendations = db.Column(db.Text)
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -457,6 +472,53 @@ def add_aftercare(client_id):
             flash(f'Error adding aftercare record: {str(e)}')
     
     return render_template('add_aftercare.html', client=client)
+
+@app.route('/home_visits')
+@login_required
+def home_visits():
+    # All departments can access home visits
+    home_visits = HomeVisit.query.join(Client).filter(Client.status == 'ACTIVE').all()
+    return render_template('home_visits.html', home_visits=home_visits)
+
+@app.route('/add_home_visit/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_home_visit(client_id):
+    client = Client.query.get_or_404(client_id)
+    
+    # Only allow home visits for active clients
+    if client.status != 'ACTIVE':
+        flash('Home visits can only be added for active clients.')
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        try:
+            visit_date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
+            
+            home_visit = HomeVisit(
+                client_id=client_id,
+                date=visit_date,
+                conductedBy=request.form['conductedBy'],
+                department=request.form['department'],
+                report=request.form.get('report', ''),
+                recommendations=request.form.get('recommendations', ''),
+                createdBy=current_user.id
+            )
+            
+            db.session.add(home_visit)
+            db.session.commit()
+            flash('Home visit record added successfully!')
+            return redirect(url_for('home_visits'))
+        except Exception as e:
+            flash(f'Error adding home visit record: {str(e)}')
+    
+    return render_template('add_home_visit.html', client=client)
+
+@app.route('/client/<int:client_id>/home_visits')
+@login_required
+def client_home_visits(client_id):
+    client = Client.query.get_or_404(client_id)
+    visits = HomeVisit.query.filter_by(client_id=client_id).order_by(HomeVisit.date.desc()).all()
+    return render_template('client_home_visits.html', client=client, visits=visits)
 
 @app.route('/api/clients')
 @login_required
