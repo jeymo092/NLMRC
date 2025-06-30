@@ -51,6 +51,23 @@ class Client(db.Model):
     status = db.Column(db.String(30), nullable=False, default='ACTIVE')
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+    
+    # Relationship to aftercare records
+    aftercare_records = db.relationship('AfterCare', backref='client', lazy=True)
+
+# AfterCare Model
+class AfterCare(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='IN_PROGRESS')  # SUCCESSFUL, IN_PROGRESS, RELAPSED, ABSCONDED
+    placement = db.Column(db.String(200))
+    institution = db.Column(db.String(200))
+    contact_person = db.Column(db.String(200))
+    contact_phone = db.Column(db.String(50))
+    visit_date = db.Column(db.Date)
+    notes = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -347,6 +364,70 @@ def export_client_pdf(client_id):
     response = Response(pdf, content_type='application/pdf')
     response.headers['Content-Disposition'] = f'attachment; filename=client_{client.firstName}_{client.secondName}_report.pdf'
     return response
+
+@app.route('/aftercare')
+@login_required
+def aftercare():
+    # Only Social Workers can access aftercare
+    if current_user.department != 'socialworkers':
+        flash('Access denied. Only Social Workers can access aftercare records.')
+        return redirect(url_for('dashboard'))
+    
+    aftercare_records = AfterCare.query.join(Client).all()
+    return render_template('aftercare.html', aftercare_records=aftercare_records)
+
+@app.route('/alumni')
+@login_required
+def alumni():
+    # Only Social Workers can access alumni
+    if current_user.department != 'socialworkers':
+        flash('Access denied. Only Social Workers can access alumni records.')
+        return redirect(url_for('dashboard'))
+    
+    alumni_clients = Client.query.filter_by(status='COMPLETE').all()
+    return render_template('alumni.html', alumni_clients=alumni_clients)
+
+@app.route('/add_aftercare/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_aftercare(client_id):
+    # Only Social Workers can add aftercare records
+    if current_user.department != 'socialworkers':
+        flash('Access denied. Only Social Workers can add aftercare records.')
+        return redirect(url_for('dashboard'))
+    
+    client = Client.query.get_or_404(client_id)
+    
+    if request.method == 'POST':
+        try:
+            visit_date = None
+            if request.form.get('visit_date'):
+                visit_date = datetime.strptime(request.form['visit_date'], '%Y-%m-%d').date()
+            
+            aftercare = AfterCare(
+                client_id=client_id,
+                status=request.form['status'],
+                placement=request.form.get('placement', ''),
+                institution=request.form.get('institution', ''),
+                contact_person=request.form.get('contact_person', ''),
+                contact_phone=request.form.get('contact_phone', ''),
+                visit_date=visit_date,
+                notes=request.form.get('notes', ''),
+                createdBy=current_user.id
+            )
+            
+            db.session.add(aftercare)
+            
+            # If status is COMPLETE, update client status
+            if request.form['status'] == 'SUCCESSFUL':
+                client.status = 'COMPLETE'
+            
+            db.session.commit()
+            flash('Aftercare record added successfully!')
+            return redirect(url_for('aftercare'))
+        except Exception as e:
+            flash(f'Error adding aftercare record: {str(e)}')
+    
+    return render_template('add_aftercare.html', client=client)
 
 @app.route('/api/clients')
 @login_required

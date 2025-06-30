@@ -1,0 +1,55 @@
+
+{% extends "base.html" %}
+
+{% block title %}Alumni - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Alumni</h2>
+    <div>
+        <span class="badge bg-success">{{ alumni_clients|length }} alumni</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Successfully Completed Clients</h5>
+        <small class="text-muted">Clients with status "COMPLETE" who have successfully completed the program</small>
+    </div>
+    <div class="card-body">
+        {% if alumni_clients %}
+        <div class="row">
+            {% for client in alumni_clients %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ client.firstName }} {{ client.secondName }}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-birthday-cake"></i> {{ client.age }} years old<br>
+                                <i class="fas fa-calendar"></i> Registered: {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt }}
+                            </small>
+                        </p>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                            <a href="{{ url_for('add_aftercare', client_id=client.id) }}" class="btn btn-sm btn-success">
+                                Add Aftercare
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No alumni found.</p>
+            <p class="text-muted">Clients with status "COMPLETE" will appear here.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

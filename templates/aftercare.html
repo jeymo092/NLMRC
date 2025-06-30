@@ -1,0 +1,71 @@
+
+{% extends "base.html" %}
+
+{% block title %}Aftercare Records - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Aftercare Records</h2>
+    <div>
+        <span class="badge bg-info">{{ aftercare_records|length }} aftercare records</span>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Aftercare Management</h5>
+    </div>
+    <div class="card-body">
+        {% if aftercare_records %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Client</th>
+                        <th>Status</th>
+                        <th>Placement</th>
+                        <th>Institution</th>
+                        <th>Contact Person</th>
+                        <th>Visit Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in aftercare_records %}
+                    <tr>
+                        <td>
+                            <strong>{{ record.client.firstName }} {{ record.client.secondName }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if record.status == 'SUCCESSFUL' %}bg-success
+                                {% elif record.status == 'IN_PROGRESS' %}bg-primary
+                                {% elif record.status == 'RELAPSED' %}bg-warning
+                                {% elif record.status == 'ABSCONDED' %}bg-danger
+                                {% endif %}">
+                                {{ record.status }}
+                            </span>
+                        </td>
+                        <td>{{ record.placement or 'N/A' }}</td>
+                        <td>{{ record.institution or 'N/A' }}</td>
+                        <td>{{ record.contact_person or 'N/A' }}</td>
+                        <td>{{ record.visit_date or 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('view_client', client_id=record.client.id) }}" class="btn btn-sm btn-outline-primary">
+                                View Client
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <p class="text-muted">No aftercare records found.</p>
+            <a href="{{ url_for('alumni') }}" class="btn btn-primary">View Alumni for Aftercare</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
