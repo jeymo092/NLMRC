@@ -478,7 +478,8 @@ def add_aftercare(client_id):
 def home_visits():
     # All departments can access home visits
     home_visits = HomeVisit.query.join(Client).filter(Client.status == 'ACTIVE').all()
-    return render_template('home_visits.html', home_visits=home_visits)
+    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    return render_template('home_visits.html', home_visits=home_visits, active_clients=active_clients)
 
 @app.route('/add_home_visit/<int:client_id>', methods=['GET', 'POST'])
 @login_required
