@@ -387,6 +387,29 @@ def alumni():
     alumni_clients = Client.query.filter_by(status='COMPLETE').all()
     return render_template('alumni.html', alumni_clients=alumni_clients)
 
+@app.route('/client/<int:client_id>/complete', methods=['POST'])
+@login_required
+def complete_client(client_id):
+    # Only Admin and Social Workers can mark clients as completed
+    if current_user.department not in ['admin', 'socialworkers']:
+        flash('Access denied. Only Admin and Social Workers can mark clients as completed.')
+        return redirect(url_for('dashboard'))
+    
+    client = Client.query.get_or_404(client_id)
+    
+    if client.status == 'COMPLETE':
+        flash('Client is already marked as completed.')
+        return redirect(url_for('dashboard'))
+    
+    try:
+        client.status = 'COMPLETE'
+        db.session.commit()
+        flash(f'Client {client.firstName} {client.secondName} has been successfully marked as completed and moved to alumni list!')
+        return redirect(url_for('dashboard'))
+    except Exception as e:
+        flash(f'Error marking client as completed: {str(e)}')
+        return redirect(url_for('dashboard'))
+
 @app.route('/add_aftercare/<int:client_id>', methods=['GET', 'POST'])
 @login_required
 def add_aftercare(client_id):

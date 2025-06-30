@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Dashboard - New Life Mwangaza{% endblock %}
@@ -51,14 +50,15 @@
         <h4>All Clients</h4>
     </div>
     <div class="card-body">
+        {% if clients %}
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>Name</th>
                         <th>Age</th>
-                        <th>Admission Type</th>
                         <th>Status</th>
+                        <th>Admission Type</th>
                         <th>Registration Date</th>
                         <th>Actions</th>
                     </tr>
@@ -69,24 +69,67 @@
                         <td>{{ client.firstName }} {{ client.secondName }}</td>
                         <td>{{ client.age }}</td>
                         <td>
-                            <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'secondary' }}">
-                                {{ client.admissionType }}
+                            <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'COMPLETE' else 'secondary' }}">
+                                {{ client.status }}
                             </span>
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'DISCHARGED' else 'info' }}">
-                                {{ client.status }}
+                            <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'info' }}">
+                                {{ client.admissionType }}
                             </span>
                         </td>
                         <td>{{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else 'N/A' }}</td>
                         <td>
                             <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            {% if current_user.department in ['admin', 'socialworkers'] %}
+                            <a href="{{ url_for('edit_client', client_id=client.id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            {% if client.status != 'COMPLETE' %}
+                            <button type="button" class="btn btn-sm btn-success" onclick="markAsCompleted({{ client.id }}, '{{ client.firstName }} {{ client.secondName }}')">
+                                Complete
+                            </button>
+                            {% endif %}
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <p class="text-muted">No clients registered yet.</p>
+        {% endif %}
     </div>
 </div>
+
+<!-- Complete Client Modal -->
+<div class="modal fade" id="completeClientModal" tabindex="-1" aria-labelledby="completeClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="completeClientModalLabel">Mark Client as Completed</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to mark <strong id="clientNameToComplete"></strong> as completed?</p>
+                <p class="text-muted">This will move the client to the alumni list and they will be eligible for aftercare records.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="completeClientForm" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-success">Mark as Completed</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function markAsCompleted(clientId, clientName) {
+    document.getElementById('clientNameToComplete').textContent = clientName;
+    document.getElementById('completeClientForm').action = '/client/' + clientId + '/complete';
+
+    var modal = new bootstrap.Modal(document.getElementById('completeClientModal'));
+    modal.show();
+}
+</script>
 {% endblock %}
