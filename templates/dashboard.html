@@ -1,0 +1,90 @@
+
+{% extends "base.html" %}
+
+{% block title %}Dashboard - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Client Management Dashboard</h2>
+    <a href="{{ url_for('register_client') }}" class="btn btn-success">Register New Client</a>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5>Total Clients</h5>
+                <h3>{{ clients|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5>Active Clients</h5>
+                <h3>{{ clients|selectattr('status', 'equalto', 'ACTIVE')|list|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5>Discharged</h5>
+                <h3>{{ clients|selectattr('status', 'equalto', 'DISCHARGED')|list|length }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5>Street Admissions</h5>
+                <h3>{{ clients|selectattr('admissionType', 'equalto', 'STREET')|list|length }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h4>All Clients</h4>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Admission Type</th>
+                        <th>Status</th>
+                        <th>Registration Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td>{{ client.firstName }} {{ client.secondName }}</td>
+                        <td>{{ client.age }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'secondary' }}">
+                                {{ client.admissionType }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'DISCHARGED' else 'info' }}">
+                                {{ client.status }}
+                            </span>
+                        </td>
+                        <td>{{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

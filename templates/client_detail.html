@@ -1,0 +1,75 @@
+
+{% extends "base.html" %}
+
+{% block title %}Client Details - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Client Details: {{ client.firstName }} {{ client.secondName }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Personal Information</h5>
+                        <table class="table table-sm">
+                            <tr><td><strong>Full Name:</strong></td><td>{{ client.firstName }} {{ client.secondName }}</td></tr>
+                            <tr><td><strong>Nickname:</strong></td><td>{{ client.nickname or 'N/A' }}</td></tr>
+                            <tr><td><strong>Date of Birth:</strong></td><td>{{ client.dateOfBirth }}</td></tr>
+                            <tr><td><strong>Age:</strong></td><td>{{ client.age }} years</td></tr>
+                            <tr><td><strong>Status:</strong></td><td>
+                                <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'DISCHARGED' else 'info' }}">
+                                    {{ client.status }}
+                                </span>
+                            </td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Admission Information</h5>
+                        <table class="table table-sm">
+                            <tr><td><strong>Admission Type:</strong></td><td>
+                                <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'secondary' }}">
+                                    {{ client.admissionType }}
+                                </span>
+                            </td></tr>
+                            {% if client.admissionType == 'REFERRAL' %}
+                            <tr><td><strong>Referral Institution:</strong></td><td>{{ client.referralInstitution or 'N/A' }}</td></tr>
+                            <tr><td><strong>Referral Contact:</strong></td><td>{{ client.referralContact or 'N/A' }}</td></tr>
+                            {% else %}
+                            <tr><td><strong>Street Name:</strong></td><td>{{ client.streetName or 'N/A' }}</td></tr>
+                            {% endif %}
+                            <tr><td><strong>Intake Number:</strong></td><td>{{ client.intake }}</td></tr>
+                            <tr><td><strong>Registration Date:</strong></td><td>{{ client.createdAt.strftime('%Y-%m-%d %H:%M') if client.createdAt else 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h5>Parent/Guardian Information</h5>
+                        <table class="table table-sm">
+                            <tr><td><strong>Name:</strong></td><td>{{ client.parentGuardianName or 'N/A' }}</td></tr>
+                            <tr><td><strong>Location:</strong></td><td>{{ client.parentGuardianLocation or 'N/A' }}</td></tr>
+                            <tr><td><strong>Contact:</strong></td><td>{{ client.parentGuardianContact or 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Education Information</h5>
+                        <table class="table table-sm">
+                            <tr><td><strong>Education Level:</strong></td><td>{{ client.educationLevel or 'N/A' }}</td></tr>
+                            <tr><td><strong>Grade:</strong></td><td>{{ client.grade or 'N/A' }}</td></tr>
+                            <tr><td><strong>Secondary Form:</strong></td><td>{{ client.secondaryForm or 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

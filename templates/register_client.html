@@ -1,0 +1,164 @@
+
+{% extends "base.html" %}
+
+{% block title %}Register Client - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Register New Client</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="firstName" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="firstName" name="firstName" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="secondName" class="form-label">Second Name *</label>
+                                <input type="text" class="form-control" id="secondName" name="secondName" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+                                <input type="date" class="form-control" id="dateOfBirth" name="dateOfBirth" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="age" class="form-label">Age *</label>
+                                <input type="number" class="form-control" id="age" name="age" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="nickname" class="form-label">Nickname</label>
+                        <input type="text" class="form-control" id="nickname" name="nickname">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="admissionType" class="form-label">Admission Type *</label>
+                                <select class="form-select" id="admissionType" name="admissionType" required>
+                                    <option value="STREET">Street</option>
+                                    <option value="REFERRAL">Referral</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="DISCHARGED">Discharged</option>
+                                    <option value="EARLY_REINTEGRATION">Early Reintegration</option>
+                                    <option value="REFERRAL">Referral</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row" id="referralFields" style="display: none;">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="referralInstitution" class="form-label">Referral Institution</label>
+                                <input type="text" class="form-control" id="referralInstitution" name="referralInstitution">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="referralContact" class="form-label">Referral Contact</label>
+                                <input type="text" class="form-control" id="referralContact" name="referralContact">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3" id="streetField">
+                        <label for="streetName" class="form-label">Street Name</label>
+                        <input type="text" class="form-control" id="streetName" name="streetName">
+                    </div>
+
+                    <h5>Parent/Guardian Information</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="parentGuardianName" class="form-label">Parent/Guardian Name</label>
+                                <input type="text" class="form-control" id="parentGuardianName" name="parentGuardianName">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="parentGuardianLocation" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="parentGuardianLocation" name="parentGuardianLocation">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="parentGuardianContact" class="form-label">Contact</label>
+                                <input type="text" class="form-control" id="parentGuardianContact" name="parentGuardianContact">
+                            </div>
+                        </div>
+                    </div>
+
+                    <h5>Education Information</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="educationLevel" class="form-label">Education Level</label>
+                                <input type="text" class="form-control" id="educationLevel" name="educationLevel">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="grade" class="form-label">Grade</label>
+                                <input type="text" class="form-control" id="grade" name="grade">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="secondaryForm" class="form-label">Secondary Form</label>
+                                <input type="text" class="form-control" id="secondaryForm" name="secondaryForm">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="intake" class="form-label">Intake Number</label>
+                        <input type="number" class="form-control" id="intake" name="intake" value="0">
+                    </div>
+
+                    <button type="submit" class="btn btn-success">Register Client</button>
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('admissionType').addEventListener('change', function() {
+    const referralFields = document.getElementById('referralFields');
+    const streetField = document.getElementById('streetField');
+    
+    if (this.value === 'REFERRAL') {
+        referralFields.style.display = 'block';
+        streetField.style.display = 'none';
+    } else {
+        referralFields.style.display = 'none';
+        streetField.style.display = 'block';
+    }
+});
+</script>
+{% endblock %}
