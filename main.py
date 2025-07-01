@@ -216,13 +216,34 @@ def dashboard():
             Client.createdAt >= datetime.now() - timedelta(days=30)
         ).count()
         
+        # Current intake (active clients registered this year)
+        current_year = datetime.now().year
+        current_intake = Client.query.filter(
+            Client.status == 'ACTIVE',
+            db.extract('year', Client.createdAt) == current_year
+        ).count()
+        
+        # Active clients with recent home visits (last 30 days)
+        recent_visits_clients = db.session.query(HomeVisit.client_id).filter(
+            HomeVisit.createdAt >= datetime.now() - timedelta(days=30)
+        ).distinct().count()
+        
+        # Get recent home visits with client details for display
+        recent_home_visits_details = HomeVisit.query.join(Client).filter(
+            HomeVisit.createdAt >= datetime.now() - timedelta(days=7),
+            Client.status == 'ACTIVE'
+        ).order_by(HomeVisit.createdAt.desc()).limit(5).all()
+        
         department_stats.update({
             'clients_needing_aftercare': clients_needing_aftercare,
             'total_home_visits': total_home_visits,
             'recent_home_visits': recent_home_visits,
             'relapsed_clients': relapsed_clients,
             'absconded_clients': absconded_clients,
-            'recent_completions': recent_completions
+            'recent_completions': recent_completions,
+            'current_intake': current_intake,
+            'recent_visits_clients': recent_visits_clients,
+            'recent_home_visits_details': recent_home_visits_details
         })
     
     # Education department specific stats
