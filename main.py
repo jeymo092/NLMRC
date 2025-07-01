@@ -15,6 +15,16 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+# Add custom filter for strftime
+@app.template_filter('strftime')
+def strftime_filter(date, format='%Y-%m-%d'):
+    return date.strftime(format)
+
+# Add current year to template context
+@app.context_processor
+def inject_current_year():
+    return {'current_year': datetime.now().year}
+
 # User Model
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
