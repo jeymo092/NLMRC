@@ -982,6 +982,49 @@ def add_aftercare(client_id):
 
     return render_template('add_aftercare.html', client=client)
 
+@app.route('/edit_aftercare/<int:aftercare_id>', methods=['GET', 'POST'])
+@login_required
+def edit_aftercare(aftercare_id):
+    # Only Social Workers can edit aftercare records
+    if current_user.department != 'socialworkers':
+        flash('Access denied. Only Social Workers can edit aftercare records.')
+        return redirect(url_for('dashboard'))
+
+    aftercare = AfterCare.query.get_or_404(aftercare_id)
+    client = aftercare.client
+
+    if request.method == 'POST':
+        try:
+            placement_date = None
+            if request.form.get('placement_date'):
+                placement_date = datetime.strptime(request.form['placement_date'], '%Y-%m-%d').date()
+
+            placement_completion_date = None
+            if request.form.get('placement_completion_date'):
+                placement_completion_date = datetime.strptime(request.form['placement_completion_date'], '%Y-%m-%d').date()
+
+            # Update aftercare record
+            aftercare.status = request.form['status']
+            aftercare.placement = request.form.get('placement', '')
+            aftercare.institution = request.form.get('institution', '')
+            aftercare.contact_person = request.form.get('contact_person', '')
+            aftercare.contact_phone = request.form.get('contact_phone', '')
+            aftercare.placement_date = placement_date
+            aftercare.placement_completion_date = placement_completion_date
+            aftercare.notes = request.form.get('notes', '')
+
+            # Update client status if needed
+            if request.form['status'] == 'SUCCESSFUL':
+                client.status = 'COMPLETE'
+
+            db.session.commit()
+            flash('Aftercare record updated successfully!')
+            return redirect(url_for('aftercare'))
+        except Exception as e:
+            flash(f'Error updating aftercare record: {str(e)}')
+
+    return render_template('edit_aftercare.html', aftercare=aftercare, client=client)
+
 @app.route('/home_visits')
 @login_required
 def home_visits():

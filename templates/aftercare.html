@@ -40,7 +40,7 @@
                             <strong>{{ record.client.firstName }} {{ record.client.secondName }}</strong>
                         </td>
                         <td>
-                            <span class="badge bg-{{ 'success' if record.status == 'SUCCESSFUL' else 'warning' if record.status == 'IN_PROGRESS' else 'danger' if record.status == 'RELAPSED' else 'secondary' }}">
+                            <span class="badge bg-{{ 'success' if record.status == 'SUCCESSFUL' else 'primary' if record.status == 'EMPLOYED' else 'info' if record.status == 'ATTACHMENT' or record.status == 'INTERNSHIP' else 'warning' if record.status == 'IN_PROGRESS' else 'danger' if record.status == 'RELAPSED' else 'secondary' }}">
                                 {{ record.status.replace('_', ' ').title() }}
                             </span>
                         </td>
@@ -59,9 +59,14 @@
                         <td>{{ record.placement_date.strftime('%Y-%m-%d') if record.placement_date else 'N/A' }}</td>
                         <td>{{ record.placement_completion_date.strftime('%Y-%m-%d') if record.placement_completion_date else 'N/A' }}</td>
                         <td>
-                            <a href="{{ url_for('view_client', client_id=record.client.id) }}" class="btn btn-sm btn-outline-primary">
-                                View Client
-                            </a>
+                            <div class="d-flex gap-1">
+                                <a href="{{ url_for('view_client', client_id=record.client.id) }}" class="btn btn-sm btn-outline-primary">
+                                    View Client
+                                </a>
+                                <a href="{{ url_for('edit_aftercare', aftercare_id=record.id) }}" class="btn btn-sm btn-outline-secondary">
+                                    Edit
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}

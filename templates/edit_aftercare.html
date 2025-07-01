@@ -1,14 +1,14 @@
 
 {% extends "base.html" %}
 
-{% block title %}Add Aftercare Record - New Life Mwangaza{% endblock %}
+{% block title %}Edit Aftercare Record - New Life Mwangaza{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card">
-            <div class="card-header bg-success text-white">
-                <h4 class="mb-0"><i class="fas fa-heart"></i> Add Aftercare Record</h4>
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-edit"></i> Edit Aftercare Record</h4>
                 <small>Client: {{ client.firstName }} {{ client.secondName }}</small>
             </div>
             <div class="card-body">
@@ -17,13 +17,13 @@
                         <label for="status" class="form-label">Aftercare Status <span class="text-danger">*</span></label>
                         <select class="form-select" id="status" name="status" required>
                             <option value="">Select status</option>
-                            <option value="SUCCESSFUL">Successful</option>
-                            <option value="IN_PROGRESS">In Progress</option>
-                            <option value="EMPLOYED">Employed</option>
-                            <option value="ATTACHMENT">Attachment</option>
-                            <option value="INTERNSHIP">Internship</option>
-                            <option value="RELAPSED">Relapsed</option>
-                            <option value="ABSCONDED">Absconded</option>
+                            <option value="SUCCESSFUL" {{ 'selected' if aftercare.status == 'SUCCESSFUL' }}>Successful</option>
+                            <option value="IN_PROGRESS" {{ 'selected' if aftercare.status == 'IN_PROGRESS' }}>In Progress</option>
+                            <option value="EMPLOYED" {{ 'selected' if aftercare.status == 'EMPLOYED' }}>Employed</option>
+                            <option value="ATTACHMENT" {{ 'selected' if aftercare.status == 'ATTACHMENT' }}>Attachment</option>
+                            <option value="INTERNSHIP" {{ 'selected' if aftercare.status == 'INTERNSHIP' }}>Internship</option>
+                            <option value="RELAPSED" {{ 'selected' if aftercare.status == 'RELAPSED' }}>Relapsed</option>
+                            <option value="ABSCONDED" {{ 'selected' if aftercare.status == 'ABSCONDED' }}>Absconded</option>
                         </select>
                     </div>
 
@@ -31,13 +31,13 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="placement" class="form-label">Placement</label>
-                                <input type="text" class="form-control" id="placement" name="placement" placeholder="e.g., Family, Institution, Independent">
+                                <input type="text" class="form-control" id="placement" name="placement" value="{{ aftercare.placement or '' }}" placeholder="e.g., Family, Institution, Independent">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="institution" class="form-label">Institution</label>
-                                <input type="text" class="form-control" id="institution" name="institution" placeholder="Institution name if applicable">
+                                <input type="text" class="form-control" id="institution" name="institution" value="{{ aftercare.institution or '' }}" placeholder="Institution name if applicable">
                             </div>
                         </div>
                     </div>
@@ -46,13 +46,13 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="contact_person" class="form-label">Contact Person</label>
-                                <input type="text" class="form-control" id="contact_person" name="contact_person" placeholder="Primary contact person">
+                                <input type="text" class="form-control" id="contact_person" name="contact_person" value="{{ aftercare.contact_person or '' }}" placeholder="Primary contact person">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="contact_phone" class="form-label">Contact Phone</label>
-                                <input type="text" class="form-control" id="contact_phone" name="contact_phone" placeholder="Phone number">
+                                <input type="text" class="form-control" id="contact_phone" name="contact_phone" value="{{ aftercare.contact_phone or '' }}" placeholder="Phone number">
                             </div>
                         </div>
                     </div>
@@ -61,28 +61,28 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="placement_date" class="form-label">Placement Date</label>
-                                <input type="date" class="form-control" id="placement_date" name="placement_date">
+                                <input type="date" class="form-control" id="placement_date" name="placement_date" value="{{ aftercare.placement_date.strftime('%Y-%m-%d') if aftercare.placement_date }}">
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="placement_completion_date" class="form-label">Placement Completion Date</label>
-                                <input type="date" class="form-control" id="placement_completion_date" name="placement_completion_date">
+                                <input type="date" class="form-control" id="placement_completion_date" name="placement_completion_date" value="{{ aftercare.placement_completion_date.strftime('%Y-%m-%d') if aftercare.placement_completion_date }}">
                             </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="notes" class="form-label">Notes</label>
-                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Additional notes about the aftercare visit..."></textarea>
+                        <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Additional notes about the aftercare...">{{ aftercare.notes or '' }}</textarea>
                     </div>
 
                     <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save"></i> Save Aftercare Record
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Update Aftercare Record
                         </button>
-                        <a href="{{ url_for('alumni') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Alumni
+                        <a href="{{ url_for('aftercare') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Aftercare
                         </a>
                     </div>
                 </form>
