@@ -846,6 +846,31 @@ def api_clients():
         'admissionType': client.admissionType
     } for client in clients])
 
+@app.route('/api/next_intake')
+@login_required
+def api_next_intake():
+    # Get current year
+    current_year = datetime.now().year
+    
+    # Get the highest intake number for current year
+    # Intake format: YYYY### (e.g., 2025001, 2025002, etc.)
+    year_prefix = current_year * 1000  # e.g., 2025000
+    year_max = year_prefix + 999       # e.g., 2025999
+    
+    highest_intake = db.session.query(db.func.max(Client.intake)).filter(
+        Client.intake >= year_prefix,
+        Client.intake <= year_max
+    ).scalar()
+    
+    # Generate next intake number
+    if highest_intake:
+        next_intake = highest_intake + 1
+    else:
+        # First intake for this year
+        next_intake = year_prefix + 1  # e.g., 2025001
+    
+    return jsonify({'next_intake': next_intake})
+
 # Education Management Routes
 @app.route('/education')
 @login_required
