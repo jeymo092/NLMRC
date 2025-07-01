@@ -487,12 +487,13 @@ def edit_client(client_id):
 @app.route('/client/<int:client_id>/export_pdf')
 @login_required
 def export_client_pdf(client_id):
-    from reportlab.lib.pagesizes import letter, A4
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
+    from reportlab.lib.pagesizes import A4
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, KeepTogether
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.units import inch, cm
+    from reportlab.lib.units import cm, mm
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
+    from reportlab.pdfgen import canvas
     from io import BytesIO
     import textwrap
 
@@ -504,105 +505,136 @@ def export_client_pdf(client_id):
     doc = SimpleDocTemplate(
         buffer, 
         pagesize=A4, 
-        rightMargin=2*cm, 
-        leftMargin=2*cm, 
-        topMargin=2.5*cm, 
+        rightMargin=1.5*cm, 
+        leftMargin=1.5*cm, 
+        topMargin=2*cm, 
         bottomMargin=2*cm
     )
 
     # Container for the 'Flowable' objects
     elements = []
 
-    # Define custom styles
+    # Define professional color palette
+    PRIMARY_BLUE = colors.Color(0.2, 0.3, 0.6)  # Professional blue
+    SECONDARY_BLUE = colors.Color(0.4, 0.5, 0.8)  # Lighter blue
+    TEXT_GRAY = colors.Color(0.2, 0.2, 0.2)  # Dark gray for text
+    LIGHT_GRAY = colors.Color(0.95, 0.95, 0.95)  # Very light gray
+    ACCENT_GREEN = colors.Color(0.1, 0.6, 0.3)  # Professional green
+
+    # Define professional typography styles
     styles = getSampleStyleSheet()
     
-    # Organization Header Style
+    # Organization Header Style - Professional and bold
     org_title_style = ParagraphStyle(
         'OrgTitle',
         parent=styles['Title'],
-        fontSize=28,
-        spaceAfter=5,
+        fontSize=24,
+        spaceAfter=3,
         alignment=TA_CENTER,
-        textColor=colors.darkblue,
-        fontName='Helvetica-Bold'
+        textColor=PRIMARY_BLUE,
+        fontName='Times-Bold',
+        letterSpacing=1
     )
     
-    # Subtitle Style
-    subtitle_style = ParagraphStyle(
-        'Subtitle',
+    # Report Title Style
+    report_title_style = ParagraphStyle(
+        'ReportTitle',
         parent=styles['Normal'],
-        fontSize=16,
-        spaceAfter=20,
+        fontSize=14,
+        spaceAfter=15,
         alignment=TA_CENTER,
-        textColor=colors.darkslategray,
-        fontName='Helvetica'
+        textColor=TEXT_GRAY,
+        fontName='Times-Roman',
+        letterSpacing=0.5
     )
     
-    # Main Section Header Style
+    # Main Section Header - Clean and professional
     section_style = ParagraphStyle(
         'SectionHeader',
         parent=styles['Heading1'],
-        fontSize=16,
-        spaceAfter=10,
-        spaceBefore=15,
-        textColor=colors.darkblue,
-        fontName='Helvetica-Bold',
-        borderWidth=1,
-        borderColor=colors.darkblue,
-        borderPadding=5,
-        backColor=colors.lightgrey
+        fontSize=12,
+        spaceAfter=6,
+        spaceBefore=12,
+        textColor=colors.white,
+        fontName='Times-Bold',
+        backColor=PRIMARY_BLUE,
+        borderPadding=8,
+        leftIndent=0,
+        rightIndent=0
     )
     
     # Subsection Header Style
     subsection_style = ParagraphStyle(
         'SubsectionHeader',
         parent=styles['Heading2'],
-        fontSize=12,
-        spaceAfter=8,
-        spaceBefore=10,
-        textColor=colors.darkblue,
-        fontName='Helvetica-Bold'
+        fontSize=10,
+        spaceAfter=4,
+        spaceBefore=8,
+        textColor=PRIMARY_BLUE,
+        fontName='Times-Bold'
     )
     
-    # Body text style
+    # Body text style - Clean and readable
     body_style = ParagraphStyle(
         'BodyText',
         parent=styles['Normal'],
-        fontSize=10,
+        fontSize=9,
+        spaceAfter=4,
+        alignment=TA_LEFT,
+        fontName='Times-Roman',
+        textColor=TEXT_GRAY,
+        leading=11
+    )
+
+    # Report content style for longer text
+    content_style = ParagraphStyle(
+        'ContentText',
+        parent=styles['Normal'],
+        fontSize=9,
         spaceAfter=6,
         alignment=TA_JUSTIFY,
-        fontName='Helvetica'
+        fontName='Times-Roman',
+        textColor=TEXT_GRAY,
+        leading=12,
+        leftIndent=5,
+        rightIndent=5
     )
 
     # Header with organization info
     elements.append(Paragraph("NEW LIFE MWANGAZA", org_title_style))
-    elements.append(Paragraph("Comprehensive Client Report", subtitle_style))
-    elements.append(Spacer(1, 20))
+    elements.append(Paragraph("CLIENT COMPREHENSIVE REPORT", report_title_style))
+    elements.append(Spacer(1, 15))
 
-    # Report metadata
+    # Report metadata in a clean format
     metadata_data = [
         ['Report Generated:', datetime.now().strftime('%B %d, %Y at %I:%M %p')],
         ['Generated By:', current_user.username.title()],
-        ['Client ID:', str(client.id)],
-        ['Report Type:', 'Comprehensive Client Profile']
+        ['Client ID:', f"#{client.id:04d}"],
+        ['Report Classification:', 'Confidential']
     ]
     
-    metadata_table = Table(metadata_data, colWidths=[3*cm, 12*cm])
+    metadata_table = Table(metadata_data, colWidths=[3.5*cm, 10*cm])
     metadata_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.lightblue),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('BACKGROUND', (0, 0), (0, -1), SECONDARY_BLUE),
+        ('BACKGROUND', (1, 0), (1, -1), colors.white),
+        ('TEXTCOLOR', (0, 0), (0, -1), colors.white),
+        ('TEXTCOLOR', (1, 0), (1, -1), TEXT_GRAY),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 1, colors.darkblue)
+        ('FONTNAME', (0, 0), (0, -1), 'Times-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, PRIMARY_BLUE)
     ]))
     elements.append(metadata_table)
-    elements.append(Spacer(1, 30))
+    elements.append(Spacer(1, 20))
 
     # SECTION 1: Personal Information
-    elements.append(Paragraph("1. PERSONAL INFORMATION", section_style))
+    elements.append(Paragraph("PERSONAL INFORMATION", section_style))
+    elements.append(Spacer(1, 6))
     
     personal_data = [
         ['Full Name', f"{client.firstName} {client.secondName}"],
@@ -610,34 +642,35 @@ def export_client_pdf(client_id):
         ['Date of Birth', client.dateOfBirth.strftime('%B %d, %Y')],
         ['Current Age', f"{client.age} years old"],
         ['Client Status', client.status.replace('_', ' ').title()],
-        ['Registration Date', client.createdAt.strftime('%B %d, %Y at %I:%M %p') if client.createdAt else 'Not available']
+        ['Registration Date', client.createdAt.strftime('%B %d, %Y') if client.createdAt else 'Not available']
     ]
 
-    personal_table = Table(personal_data, colWidths=[4*cm, 11*cm])
+    personal_table = Table(personal_data, colWidths=[3.5*cm, 10*cm])
     personal_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.lightsteelblue),
-        ('BACKGROUND', (1, 0), (-1, -1), colors.white),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('BACKGROUND', (0, 0), (0, -1), LIGHT_GRAY),
+        ('BACKGROUND', (1, 0), (1, -1), colors.white),
+        ('TEXTCOLOR', (0, 0), (-1, -1), TEXT_GRAY),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 1, colors.darkblue),
-        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.lightgrey])
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (0, -1), 'Times-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
     ]))
     elements.append(personal_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 15))
 
     # SECTION 2: Admission Details
-    elements.append(Paragraph("2. ADMISSION DETAILS", section_style))
+    elements.append(Paragraph("ADMISSION DETAILS", section_style))
+    elements.append(Spacer(1, 6))
     
     admission_data = [
         ['Admission Type', client.admissionType.replace('_', ' ').title()],
-        ['Intake Number', str(client.intake) if client.intake > 0 else 'Not assigned']
+        ['Intake Number', f"#{client.intake}" if client.intake > 0 else 'Not assigned']
     ]
 
     if client.admissionType == 'REFERRAL':
@@ -648,28 +681,29 @@ def export_client_pdf(client_id):
     elif client.admissionType == 'STREET':
         admission_data.append(['Street/Location Found', client.streetName or 'Not specified'])
 
-    admission_table = Table(admission_data, colWidths=[4*cm, 11*cm])
+    admission_table = Table(admission_data, colWidths=[3.5*cm, 10*cm])
     admission_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (0, -1), colors.lightsteelblue),
-        ('BACKGROUND', (1, 0), (-1, -1), colors.white),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('BACKGROUND', (0, 0), (0, -1), LIGHT_GRAY),
+        ('BACKGROUND', (1, 0), (1, -1), colors.white),
+        ('TEXTCOLOR', (0, 0), (-1, -1), TEXT_GRAY),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('TOPPADDING', (0, 0), (-1, -1), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-        ('LEFTPADDING', (0, 0), (-1, -1), 10),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-        ('GRID', (0, 0), (-1, -1), 1, colors.darkblue),
-        ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.lightgrey])
+        ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ('FONTNAME', (0, 0), (0, -1), 'Times-Bold'),
+        ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('TOPPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('LEFTPADDING', (0, 0), (-1, -1), 8),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
     ]))
     elements.append(admission_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 15))
 
     # SECTION 3: Educational Background
     if client.educationLevel or client.grade or client.secondaryForm:
-        elements.append(Paragraph("3. EDUCATIONAL BACKGROUND", section_style))
+        elements.append(Paragraph("EDUCATIONAL BACKGROUND", section_style))
+        elements.append(Spacer(1, 6))
         
         education_data = []
         if client.educationLevel:
@@ -679,28 +713,29 @@ def export_client_pdf(client_id):
         if client.secondaryForm:
             education_data.append(['Secondary Form', client.secondaryForm])
 
-        education_table = Table(education_data, colWidths=[4*cm, 11*cm])
+        education_table = Table(education_data, colWidths=[3.5*cm, 10*cm])
         education_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.lightsteelblue),
-            ('BACKGROUND', (1, 0), (-1, -1), colors.white),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('BACKGROUND', (0, 0), (0, -1), LIGHT_GRAY),
+            ('BACKGROUND', (1, 0), (1, -1), colors.white),
+            ('TEXTCOLOR', (0, 0), (-1, -1), TEXT_GRAY),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-            ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-            ('GRID', (0, 0), (-1, -1), 1, colors.darkblue),
-            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.lightgrey])
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTNAME', (0, 0), (0, -1), 'Times-Bold'),
+            ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
         ]))
         elements.append(education_table)
-        elements.append(Spacer(1, 20))
+        elements.append(Spacer(1, 15))
 
     # SECTION 4: Family Information
     if client.parentGuardianName or client.parentGuardianLocation or client.parentGuardianContact:
-        elements.append(Paragraph("4. FAMILY/GUARDIAN INFORMATION", section_style))
+        elements.append(Paragraph("FAMILY/GUARDIAN INFORMATION", section_style))
+        elements.append(Spacer(1, 6))
         
         family_data = []
         if client.parentGuardianName:
@@ -710,140 +745,158 @@ def export_client_pdf(client_id):
         if client.parentGuardianContact:
             family_data.append(['Contact Information', client.parentGuardianContact])
 
-        family_table = Table(family_data, colWidths=[4*cm, 11*cm])
+        family_table = Table(family_data, colWidths=[3.5*cm, 10*cm])
         family_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (0, -1), colors.lightsteelblue),
-            ('BACKGROUND', (1, 0), (-1, -1), colors.white),
-            ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+            ('BACKGROUND', (0, 0), (0, -1), LIGHT_GRAY),
+            ('BACKGROUND', (1, 0), (1, -1), colors.white),
+            ('TEXTCOLOR', (0, 0), (-1, -1), TEXT_GRAY),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-            ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('TOPPADDING', (0, 0), (-1, -1), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
-            ('LEFTPADDING', (0, 0), (-1, -1), 10),
-            ('RIGHTPADDING', (0, 0), (-1, -1), 10),
-            ('GRID', (0, 0), (-1, -1), 1, colors.darkblue),
-            ('ROWBACKGROUNDS', (0, 0), (-1, -1), [colors.white, colors.lightgrey])
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('FONTNAME', (0, 0), (0, -1), 'Times-Bold'),
+            ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('LEFTPADDING', (0, 0), (-1, -1), 8),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
         ]))
         elements.append(family_table)
-        elements.append(Spacer(1, 20))
+        elements.append(Spacer(1, 15))
 
     # SECTION 5: Home Visit Records
     if home_visits:
-        elements.append(Paragraph("5. HOME VISIT RECORDS", section_style))
-        elements.append(Paragraph(f"Total Home Visits Conducted: {len(home_visits)}", body_style))
+        elements.append(Paragraph("HOME VISIT RECORDS", section_style))
+        elements.append(Spacer(1, 6))
+        
+        # Summary
+        summary_text = f"Total home visits conducted: <b>{len(home_visits)}</b> | Latest visit: <b>{home_visits[0].date.strftime('%B %d, %Y')}</b>"
+        elements.append(Paragraph(summary_text, body_style))
         elements.append(Spacer(1, 10))
         
         for i, visit in enumerate(home_visits, 1):
-            # Visit header
-            visit_header = f"Visit #{i} - {visit.date.strftime('%B %d, %Y')}"
-            elements.append(Paragraph(visit_header, subsection_style))
+            # Keep each visit together on the same page
+            visit_elements = []
             
-            # Visit details
+            # Visit header with number and date
+            visit_header = f"Visit #{i} • {visit.date.strftime('%B %d, %Y')}"
+            visit_elements.append(Paragraph(visit_header, subsection_style))
+            
+            # Visit details in compact table
             visit_info = [
-                ['Visit Date', visit.date.strftime('%B %d, %Y')],
-                ['Conducted By', visit.conductedBy],
-                ['Department', visit.department.replace('_', ' ').title()],
-                ['Created On', visit.createdAt.strftime('%B %d, %Y at %I:%M %p') if visit.createdAt else 'Not available']
+                ['Conducted By:', visit.conductedBy],
+                ['Department:', visit.department.replace('_', ' ').title()],
+                ['Recorded:', visit.createdAt.strftime('%B %d, %Y') if visit.createdAt else 'Not available']
             ]
             
-            visit_info_table = Table(visit_info, colWidths=[3*cm, 12*cm])
+            visit_info_table = Table(visit_info, colWidths=[2.5*cm, 11*cm])
             visit_info_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (0, -1), colors.lightcyan),
-                ('BACKGROUND', (1, 0), (-1, -1), colors.white),
-                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                ('BACKGROUND', (0, 0), (0, -1), colors.Color(0.9, 0.95, 1)),
+                ('BACKGROUND', (1, 0), (1, -1), colors.white),
+                ('TEXTCOLOR', (0, 0), (-1, -1), TEXT_GRAY),
                 ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-                ('FONTNAME', (1, 0), (-1, -1), 'Helvetica'),
-                ('FONTSIZE', (0, 0), (-1, -1), 9),
-                ('TOPPADDING', (0, 0), (-1, -1), 6),
-                ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-                ('LEFTPADDING', (0, 0), (-1, -1), 8),
-                ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-                ('GRID', (0, 0), (-1, -1), 1, colors.darkblue)
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('FONTNAME', (0, 0), (0, -1), 'Times-Bold'),
+                ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+                ('TOPPADDING', (0, 0), (-1, -1), 4),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('LEFTPADDING', (0, 0), (-1, -1), 6),
+                ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
             ]))
-            elements.append(visit_info_table)
-            elements.append(Spacer(1, 10))
+            visit_elements.append(visit_info_table)
+            visit_elements.append(Spacer(1, 6))
             
             # Visit Report
             if visit.report:
-                elements.append(Paragraph("Visit Report:", subsection_style))
-                # Wrap long text for better readability
-                wrapped_report = textwrap.fill(visit.report, width=80)
-                elements.append(Paragraph(wrapped_report, body_style))
-                elements.append(Spacer(1, 10))
+                visit_elements.append(Paragraph("<b>Visit Report:</b>", body_style))
+                # Better text wrapping for long content
+                report_text = visit.report.replace('\n', '<br/>')
+                if len(report_text) > 500:
+                    report_text = report_text[:500] + "..."
+                visit_elements.append(Paragraph(report_text, content_style))
+                visit_elements.append(Spacer(1, 6))
             
             # Recommendations
             if visit.recommendations:
-                elements.append(Paragraph("Recommendations:", subsection_style))
-                wrapped_recommendations = textwrap.fill(visit.recommendations, width=80)
-                elements.append(Paragraph(wrapped_recommendations, body_style))
-                elements.append(Spacer(1, 10))
+                visit_elements.append(Paragraph("<b>Recommendations:</b>", body_style))
+                recommendations_text = visit.recommendations.replace('\n', '<br/>')
+                if len(recommendations_text) > 500:
+                    recommendations_text = recommendations_text[:500] + "..."
+                visit_elements.append(Paragraph(recommendations_text, content_style))
+                visit_elements.append(Spacer(1, 6))
             
-            # Add separator between visits
+            # Add the visit as a KeepTogether group
+            elements.append(KeepTogether(visit_elements))
+            
+            # Add separator between visits (except for the last one)
             if i < len(home_visits):
-                elements.append(Spacer(1, 15))
-                # Add a subtle line separator
-                separator_table = Table([['', '']], colWidths=[15*cm, 0*cm])
-                separator_table.setStyle(TableStyle([
-                    ('LINEABOVE', (0, 0), (-1, -1), 1, colors.lightgrey)
+                elements.append(Spacer(1, 8))
+                separator_line = Table([['', '']], colWidths=[13.5*cm, 0*cm])
+                separator_line.setStyle(TableStyle([
+                    ('LINEABOVE', (0, 0), (-1, -1), 1, colors.lightgrey),
+                    ('TOPPADDING', (0, 0), (-1, -1), 0),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 0)
                 ]))
-                elements.append(separator_table)
-                elements.append(Spacer(1, 15))
+                elements.append(separator_line)
+                elements.append(Spacer(1, 8))
     else:
-        elements.append(Paragraph("5. HOME VISIT RECORDS", section_style))
+        elements.append(Paragraph("HOME VISIT RECORDS", section_style))
+        elements.append(Spacer(1, 6))
         elements.append(Paragraph("No home visit records found for this client.", body_style))
-        elements.append(Spacer(1, 20))
 
-    # Footer section
-    elements.append(Spacer(1, 30))
-    
-    # Footer info
-    footer_table_data = [
+    # Document Footer
+    elements.append(Spacer(1, 20))
+    footer_data = [
         ['Document Classification:', 'Confidential Client Information'],
-        ['Organization:', 'New Life Mwangaza'],
-        ['Report Version:', '2.0'],
-        ['Page Count:', 'Multi-page document']
+        ['Generated by:', 'New Life Mwangaza Client Management System'],
+        ['Version:', 'v2.1 Professional Report']
     ]
     
-    footer_table = Table(footer_table_data, colWidths=[4*cm, 11*cm])
+    footer_table = Table(footer_data, colWidths=[3.5*cm, 10*cm])
     footer_table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
-        ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+        ('BACKGROUND', (0, 0), (-1, -1), colors.Color(0.98, 0.98, 0.98)),
+        ('TEXTCOLOR', (0, 0), (-1, -1), colors.Color(0.5, 0.5, 0.5)),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 8),
-        ('TOPPADDING', (0, 0), (-1, -1), 4),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ('LEFTPADDING', (0, 0), (-1, -1), 8),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 8),
-        ('GRID', (0, 0), (-1, -1), 1, colors.darkgrey)
+        ('FONTNAME', (0, 0), (-1, -1), 'Times-Roman'),
+        ('FONTSIZE', (0, 0), (-1, -1), 7),
+        ('TOPPADDING', (0, 0), (-1, -1), 3),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ('LEFTPADDING', (0, 0), (-1, -1), 6),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        ('GRID', (0, 0), (-1, -1), 0.25, colors.lightgrey)
     ]))
     elements.append(footer_table)
 
-    # Custom page template function
-    def page_template(canvas, doc):
+    # Professional page template
+    def professional_page_template(canvas, doc):
         canvas.saveState()
-        # Header
-        canvas.setFont('Helvetica', 8)
-        canvas.drawString(2*cm, A4[1] - 1*cm, f"Client Report - {client.firstName} {client.secondName}")
-        canvas.drawRightString(A4[0] - 2*cm, A4[1] - 1*cm, f"Generated: {datetime.now().strftime('%Y-%m-%d')}")
         
-        # Footer
-        canvas.drawString(2*cm, 1*cm, "© New Life Mwangaza - Confidential Document")
-        canvas.drawRightString(A4[0] - 2*cm, 1*cm, f"Page {doc.page}")
+        # Header with logo area and title
+        canvas.setFillColor(PRIMARY_BLUE)
+        canvas.rect(1.5*cm, A4[1] - 1.5*cm, A4[0] - 3*cm, 8*mm, fill=1)
         
-        # Add a line under header
-        canvas.setStrokeColor(colors.darkblue)
-        canvas.line(2*cm, A4[1] - 1.5*cm, A4[0] - 2*cm, A4[1] - 1.5*cm)
+        canvas.setFillColor(colors.white)
+        canvas.setFont('Times-Bold', 10)
+        canvas.drawString(2*cm, A4[1] - 1.2*cm, f"NEW LIFE MWANGAZA")
         
-        # Add a line above footer
-        canvas.line(2*cm, 1.5*cm, A4[0] - 2*cm, 1.5*cm)
+        canvas.setFont('Times-Roman', 8)
+        canvas.drawRightString(A4[0] - 2*cm, A4[1] - 1.2*cm, f"Client: {client.firstName} {client.secondName}")
+        
+        # Footer with page number and confidentiality notice
+        canvas.setFillColor(colors.Color(0.95, 0.95, 0.95))
+        canvas.rect(1.5*cm, 0.5*cm, A4[0] - 3*cm, 8*mm, fill=1)
+        
+        canvas.setFillColor(TEXT_GRAY)
+        canvas.setFont('Times-Roman', 7)
+        canvas.drawString(2*cm, 0.8*cm, "© New Life Mwangaza - Confidential Document")
+        canvas.drawRightString(A4[0] - 2*cm, 0.8*cm, f"Page {doc.page}")
+        
         canvas.restoreState()
 
-    # Build PDF
-    doc.build(elements, onFirstPage=page_template, onLaterPages=page_template)
+    # Build PDF with professional styling
+    doc.build(elements, onFirstPage=professional_page_template, onLaterPages=professional_page_template)
 
     # Get PDF data
     pdf = buffer.getvalue()
@@ -852,7 +905,7 @@ def export_client_pdf(client_id):
     # Return PDF as response
     from flask import Response
     response = Response(pdf, content_type='application/pdf')
-    response.headers['Content-Disposition'] = f'attachment; filename=Client_Report_{client.firstName}_{client.secondName}_{datetime.now().strftime("%Y%m%d")}.pdf'
+    response.headers['Content-Disposition'] = f'attachment; filename=NLM_Client_Report_{client.firstName}_{client.secondName}_{datetime.now().strftime("%Y%m%d")}.pdf'
     return response
 
 @app.route('/aftercare')
