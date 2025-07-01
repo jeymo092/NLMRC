@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 
 app = Flask(__name__)
@@ -149,8 +149,70 @@ def logout():
 def dashboard():
     clients = Client.query.all()
     
-    # Add academic metrics for education department
-    academic_data = {}
+    # Calculate comprehensive statistics
+    total_clients = len(clients)
+    active_clients = Client.query.filter_by(status='ACTIVE').count()
+    completed_clients = Client.query.filter_by(status='COMPLETE').count()
+    street_clients = Client.query.filter_by(admissionType='STREET').count()
+    referral_clients = Client.query.filter_by(admissionType='REFERRAL').count()
+    
+    # Home visit statistics
+    total_home_visits = HomeVisit.query.count()
+    recent_home_visits = HomeVisit.query.filter(
+        HomeVisit.createdAt >= datetime.now() - timedelta(days=30)
+    ).count()
+    
+    # Aftercare statistics
+    total_aftercare_records = AfterCare.query.count()
+    successful_aftercare = AfterCare.query.filter_by(status='SUCCESSFUL').count()
+    in_progress_aftercare = AfterCare.query.filter_by(status='IN_PROGRESS').count()
+    
+    # Age demographics
+    age_groups = {
+        'under_15': Client.query.filter(Client.age < 15).count(),
+        '15_to_18': Client.query.filter(Client.age >= 15, Client.age <= 18).count(),
+        '19_to_25': Client.query.filter(Client.age >= 19, Client.age <= 25).count(),
+        'over_25': Client.query.filter(Client.age > 25).count()
+    }
+    
+    # Monthly registration trends (last 6 months)
+    monthly_registrations = []
+    for i in range(6):
+        month_start = datetime.now().replace(day=1) - timedelta(days=30*i)
+        if i == 0:
+            month_end = datetime.now()
+        else:
+            month_end = month_start + timedelta(days=31)
+            month_end = month_end.replace(day=1) - timedelta(days=1)
+        
+        count = Client.query.filter(
+            Client.createdAt >= month_start,
+            Client.createdAt <= month_end
+        ).count()
+        
+        monthly_registrations.append({
+            'month': month_start.strftime('%B %Y'),
+            'count': count
+        })
+    
+    monthly_registrations.reverse()  # Show oldest to newest
+    
+    # Department-specific statistics
+    department_stats = {}
+    
+    # Social Workers specific stats
+    if current_user.department == 'socialworkers':
+        clients_needing_aftercare = Client.query.filter_by(status='COMPLETE').filter(
+            ~Client.id.in_(db.session.query(AfterCare.client_id))
+        ).count()
+        
+        department_stats.update({
+            'clients_needing_aftercare': clients_needing_aftercare,
+            'total_home_visits': total_home_visits,
+            'recent_home_visits': recent_home_visits
+        })
+    
+    # Education department specific stats
     if current_user.department == 'education':
         subjects = Subject.query.all()
         total_assessments = StudentMark.query.count()
@@ -163,13 +225,58 @@ def dashboard():
         else:
             average_performance = 0
         
-        academic_data = {
+        # Performance by grade levels
+        grade_performance = {}
+        for client in Client.query.filter(Client.status == 'ACTIVE', Client.grade.isnot(None)).all():
+            if client.grade:
+                marks = StudentMark.query.filter_by(client_id=client.id).all()
+                if marks:
+                    avg = sum((mark.marks / mark.max_marks) * 100 for mark in marks) / len(marks)
+                    if client.grade not in grade_performance:
+                        grade_performance[client.grade] = []
+                    grade_performance[client.grade].append(avg)
+        
+        # Calculate average per grade
+        for grade in grade_performance:
+            grade_performance[grade] = round(sum(grade_performance[grade]) / len(grade_performance[grade]), 1)
+        
+        department_stats.update({
             'subjects': subjects,
             'total_assessments': total_assessments,
-            'average_performance': average_performance
-        }
+            'average_performance': average_performance,
+            'grade_performance': grade_performance
+        })
     
-    return render_template('dashboard.html', clients=clients, user=current_user, **academic_data)
+    # Admin gets all statistics
+    if current_user.department == 'admin':
+        department_stats.update({
+            'total_home_visits': total_home_visits,
+            'recent_home_visits': recent_home_visits,
+            'clients_needing_aftercare': Client.query.filter_by(status='COMPLETE').filter(
+                ~Client.id.in_(db.session.query(AfterCare.client_id))
+            ).count(),
+            'subjects': Subject.query.all(),
+            'total_assessments': StudentMark.query.count()
+        })
+    
+    statistics = {
+        'total_clients': total_clients,
+        'active_clients': active_clients,
+        'completed_clients': completed_clients,
+        'street_clients': street_clients,
+        'referral_clients': referral_clients,
+        'total_aftercare_records': total_aftercare_records,
+        'successful_aftercare': successful_aftercare,
+        'in_progress_aftercare': in_progress_aftercare,
+        'age_groups': age_groups,
+        'monthly_registrations': monthly_registrations
+    }
+    
+    return render_template('dashboard.html', 
+                         clients=clients, 
+                         user=current_user, 
+                         statistics=statistics,
+                         **department_stats)
 
 @app.route('/register_client', methods=['GET', 'POST'])
 @login_required
