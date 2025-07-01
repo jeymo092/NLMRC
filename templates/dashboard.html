@@ -11,39 +11,93 @@
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <h5>Total Clients</h5>
-                <h3>{{ clients|length }}</h3>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px; box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);">
+            <div class="card-body text-center p-4">
+                <div class="mb-2">
+                    <i class="fas fa-users fa-2x opacity-75"></i>
+                </div>
+                <h3 class="mb-1 fw-bold">{{ clients|length }}</h3>
+                <h6 class="mb-0 opacity-90">Total Students</h6>
+                <small class="opacity-75">Registered in system</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <h5>Active Clients</h5>
-                <h3>{{ clients|selectattr('status', 'equalto', 'ACTIVE')|list|length }}</h3>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border-radius: 15px; box-shadow: 0 8px 20px rgba(17, 153, 142, 0.3);">
+            <div class="card-body text-center p-4">
+                <div class="mb-2">
+                    <i class="fas fa-graduation-cap fa-2x opacity-75"></i>
+                </div>
+                <h3 class="mb-1 fw-bold">{{ clients|selectattr('status', 'equalto', 'ACTIVE')|list|length }}</h3>
+                <h6 class="mb-0 opacity-90">Active Students</h6>
+                <small class="opacity-75">Currently enrolled</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body">
-                <h5>Discharged</h5>
-                <h3>{{ clients|selectattr('status', 'equalto', 'DISCHARGED')|list|length }}</h3>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #5a5a5a; border-radius: 15px; box-shadow: 0 8px 20px rgba(252, 182, 159, 0.3);">
+            <div class="card-body text-center p-4">
+                <div class="mb-2">
+                    <i class="fas fa-certificate fa-2x opacity-75"></i>
+                </div>
+                <h3 class="mb-1 fw-bold">{{ clients|selectattr('status', 'equalto', 'COMPLETE')|list|length }}</h3>
+                <h6 class="mb-0 opacity-90">Graduated</h6>
+                <small class="opacity-75">Program completed</small>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <h5>Street Admissions</h5>
-                <h3>{{ clients|selectattr('admissionType', 'equalto', 'STREET')|list|length }}</h3>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-gradient" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: #5a5a5a; border-radius: 15px; box-shadow: 0 8px 20px rgba(168, 237, 234, 0.3);">
+            <div class="card-body text-center p-4">
+                <div class="mb-2">
+                    <i class="fas fa-home fa-2x opacity-75"></i>
+                </div>
+                <h3 class="mb-1 fw-bold">{{ clients|selectattr('admissionType', 'equalto', 'STREET')|list|length }}</h3>
+                <h6 class="mb-0 opacity-90">Street Outreach</h6>
+                <small class="opacity-75">Special program</small>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Academic Performance Overview -->
+{% if current_user.department == 'education' %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card" style="border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div class="card-header bg-light" style="border-radius: 15px 15px 0 0;">
+                <h5 class="mb-0"><i class="fas fa-chart-line text-primary"></i> Academic Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <i class="fas fa-book fa-2x text-info mb-2"></i>
+                            <h4 class="text-info mb-1">{{ subjects|length if subjects else 0 }}</h4>
+                            <small class="text-muted">Subjects Offered</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <i class="fas fa-clipboard-check fa-2x text-success mb-2"></i>
+                            <h4 class="text-success mb-1">{{ total_assessments if total_assessments else 0 }}</h4>
+                            <small class="text-muted">Total Assessments</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center p-3">
+                            <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                            <h4 class="text-warning mb-1">{{ average_performance if average_performance else 'N/A' }}%</h4>
+                            <small class="text-muted">Average Performance</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <div class="card">
     <div class="card-header">

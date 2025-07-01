@@ -148,7 +148,28 @@ def logout():
 @login_required
 def dashboard():
     clients = Client.query.all()
-    return render_template('dashboard.html', clients=clients, user=current_user)
+    
+    # Add academic metrics for education department
+    academic_data = {}
+    if current_user.department == 'education':
+        subjects = Subject.query.all()
+        total_assessments = StudentMark.query.count()
+        
+        # Calculate average performance
+        all_marks = StudentMark.query.all()
+        if all_marks:
+            total_percentage = sum((mark.marks / mark.max_marks) * 100 for mark in all_marks)
+            average_performance = round(total_percentage / len(all_marks), 1)
+        else:
+            average_performance = 0
+        
+        academic_data = {
+            'subjects': subjects,
+            'total_assessments': total_assessments,
+            'average_performance': average_performance
+        }
+    
+    return render_template('dashboard.html', clients=clients, user=current_user, **academic_data)
 
 @app.route('/register_client', methods=['GET', 'POST'])
 @login_required
