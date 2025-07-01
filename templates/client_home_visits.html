@@ -8,316 +8,325 @@
     <div class="row">
         <div class="col-12">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-2">
-                <h2 class="mb-0">Home Visits - {{ client.firstName }} {{ client.secondName }}</h2>
+                <div>
+                    <h2 class="mb-1">{{ client.firstName }} {{ client.secondName }}</h2>
+                    <p class="text-muted mb-0">Home Visit History</p>
+                </div>
                 <div class="d-flex flex-wrap gap-2">
-                    {% if client.status == 'ACTIVE' and visits|length == 0 %}
+                    {% if client.status == 'ACTIVE' %}
                     <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Add Home Visit
+                        <i class="fas fa-plus me-1"></i> Add Visit
                     </a>
                     {% endif %}
-                    <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Client
+                    <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Client
                     </a>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        <i class="fas fa-history"></i> Visit History
-                        {% if visits %}
-                            <span class="badge bg-primary ms-2">{{ visits|length }} visit{{ 's' if visits|length != 1 else '' }}</span>
-                        {% endif %}
-                    </h5>
-                    
-                    {% if visits %}
-                    <!-- Desktop Table View -->
-                    <div class="d-none d-lg-block">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Conducted By</th>
-                                        <th>Department</th>
-                                        <th>Report</th>
-                                        <th>Recommendations</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for visit in visits %}
-                                    <tr>
-                                        <td>{{ visit.date.strftime('%Y-%m-%d') }}</td>
-                                        <td>{{ visit.conductedBy }}</td>
-                                        <td>
-                                            <span class="badge bg-primary">{{ visit.department.title() }}</span>
-                                        </td>
-                                        <td>
-                                            {% if visit.report %}
-                                                <div class="expandable-text">
-                                                    <div class="text-preview">{{ visit.report[:100] }}{% if visit.report|length > 100 %}...{% endif %}</div>
-                                                    {% if visit.report|length > 100 %}
-                                                    <button class="btn btn-sm btn-link p-0 expand-btn" onclick="toggleText(this)">Show more</button>
-                                                    <div class="text-full" style="display: none;">{{ visit.report }}</div>
-                                                    {% endif %}
-                                                </div>
-                                            {% else %}
-                                                <em class="text-muted">No report</em>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            {% if visit.recommendations %}
-                                                <div class="expandable-text">
-                                                    <div class="text-preview">{{ visit.recommendations[:100] }}{% if visit.recommendations|length > 100 %}...{% endif %}</div>
-                                                    {% if visit.recommendations|length > 100 %}
-                                                    <button class="btn btn-sm btn-link p-0 expand-btn" onclick="toggleText(this)">Show more</button>
-                                                    <div class="text-full" style="display: none;">{{ visit.recommendations }}</div>
-                                                    {% endif %}
-                                                </div>
-                                            {% else %}
-                                                <em class="text-muted">No recommendations</em>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{{ url_for('edit_home_visit', visit_id=visit.id) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i> Edit
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Mobile Card View -->
-                    <div class="d-lg-none">
-                        {% for visit in visits %}
-                        <div class="card mb-3 shadow-sm">
-                            <div class="card-header d-flex justify-content-between align-items-center py-2">
+            {% if visits %}
+            <!-- Statistics Summary Card -->
+            <div class="card mb-4 border-0 shadow-sm">
+                <div class="card-body py-3">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-calendar-check text-primary me-2"></i>
                                 <div>
-                                    <strong class="text-primary">{{ visit.date.strftime('%b %d, %Y') }}</strong>
-                                </div>
-                                <div>
-                                    <span class="badge bg-primary">{{ visit.department.title() }}</span>
+                                    <h5 class="mb-0 text-primary">{{ visits|length }}</h5>
+                                    <small class="text-muted">Total Visits</small>
                                 </div>
                             </div>
-                            <div class="card-body p-3">
-                                <div class="row g-2">
-                                    <div class="col-12">
-                                        <small class="text-muted d-block">Conducted By:</small>
-                                        <strong>{{ visit.conductedBy }}</strong>
-                                    </div>
-                                    
-                                    {% if visit.report %}
-                                    <div class="col-12 mt-2">
-                                        <small class="text-muted d-block">Report:</small>
-                                        <div class="expandable-text-mobile">
-                                            <div class="text-preview-mobile">
-                                                {{ visit.report[:80] }}{% if visit.report|length > 80 %}...{% endif %}
-                                            </div>
-                                            {% if visit.report|length > 80 %}
-                                            <button class="btn btn-sm btn-link p-0 mt-1 expand-btn-mobile" onclick="toggleTextMobile(this)">
-                                                <small>Show more</small>
-                                            </button>
-                                            <div class="text-full-mobile" style="display: none;">
-                                                {{ visit.report }}
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if visit.recommendations %}
-                                    <div class="col-12 mt-2">
-                                        <small class="text-muted d-block">Recommendations:</small>
-                                        <div class="expandable-text-mobile">
-                                            <div class="text-preview-mobile">
-                                                {{ visit.recommendations[:80] }}{% if visit.recommendations|length > 80 %}...{% endif %}
-                                            </div>
-                                            {% if visit.recommendations|length > 80 %}
-                                            <button class="btn btn-sm btn-link p-0 mt-1 expand-btn-mobile" onclick="toggleTextMobile(this)">
-                                                <small>Show more</small>
-                                            </button>
-                                            <div class="text-full-mobile" style="display: none;">
-                                                {{ visit.recommendations }}
-                                            </div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                    {% endif %}
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-clock text-info me-2"></i>
+                                <div>
+                                    <h5 class="mb-0 text-info">{{ visits[0].date.strftime('%b %Y') }}</h5>
+                                    <small class="text-muted">Latest Visit</small>
                                 </div>
-                                
-                                <div class="d-flex justify-content-end mt-3">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-user-tie text-success me-2"></i>
+                                <div>
+                                    <h5 class="mb-0 text-success">{{ visits|map(attribute='conductedBy')|unique|list|length }}</h5>
+                                    <small class="text-muted">Staff Members</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-building text-warning me-2"></i>
+                                <div>
+                                    <h5 class="mb-0 text-warning">{{ visits|map(attribute='department')|unique|list|length }}</h5>
+                                    <small class="text-muted">Departments</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modern Card Layout for Visits -->
+            <div class="row">
+                {% for visit in visits %}
+                <div class="col-12 mb-4">
+                    <div class="card border-0 shadow-sm h-100 visit-card">
+                        <div class="card-header bg-white border-bottom-0 pb-2">
+                            <div class="row align-items-center">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <div class="visit-date-badge me-3">
+                                            <div class="date-month">{{ visit.date.strftime('%b') }}</div>
+                                            <div class="date-day">{{ visit.date.strftime('%d') }}</div>
+                                            <div class="date-year">{{ visit.date.strftime('%Y') }}</div>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">Visit #{{ loop.revindex }}</h6>
+                                            <p class="mb-0 text-muted small">{{ visit.date.strftime('%A, %B %d, %Y') }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <span class="badge badge-department bg-{{ 'primary' if visit.department == 'socialworkers' else 'info' if visit.department == 'counselling' else 'success' if visit.department == 'education' else 'warning' if visit.department == 'empowerment' else 'secondary' }} me-2">
+                                        <i class="fas fa-{{ 'users' if visit.department == 'socialworkers' else 'heart' if visit.department == 'counselling' else 'book' if visit.department == 'education' else 'lightbulb' if visit.department == 'empowerment' else 'cog' }} me-1"></i>
+                                        {{ visit.department.title() }}
+                                    </span>
                                     <a href="{{ url_for('edit_home_visit', visit_id=visit.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-edit"></i> Edit
+                                        <i class="fas fa-edit me-1"></i> Edit
                                     </a>
                                 </div>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
-
-                    <!-- Tablet View -->
-                    <div class="d-none d-md-block d-lg-none">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Date</th>
-                                        <th>Conducted By</th>
-                                        <th>Department</th>
-                                        <th>Details</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for visit in visits %}
-                                    <tr>
-                                        <td>{{ visit.date.strftime('%m/%d/%Y') }}</td>
-                                        <td>{{ visit.conductedBy }}</td>
-                                        <td>
-                                            <span class="badge bg-primary">{{ visit.department.title() }}</span>
-                                        </td>
-                                        <td>
-                                            {% if visit.report or visit.recommendations %}
-                                            <button class="btn btn-sm btn-outline-info" type="button" data-bs-toggle="collapse" data-bs-target="#details{{ visit.id }}" aria-expanded="false">
-                                                <i class="fas fa-eye"></i> View Details
-                                            </button>
-                                            <div class="collapse mt-2" id="details{{ visit.id }}">
-                                                {% if visit.report %}
-                                                <div class="mb-2">
-                                                    <small class="text-muted">Report:</small>
-                                                    <div class="small">{{ visit.report }}</div>
-                                                </div>
-                                                {% endif %}
-                                                {% if visit.recommendations %}
-                                                <div>
-                                                    <small class="text-muted">Recommendations:</small>
-                                                    <div class="small">{{ visit.recommendations }}</div>
-                                                </div>
-                                                {% endif %}
+                        
+                        <div class="card-body pt-3">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <div class="info-section">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-user-tie me-1"></i> Conducted By
+                                        </h6>
+                                        <p class="mb-0 fw-semibold">{{ visit.conductedBy }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if visit.report %}
+                                <div class="col-md-8 mb-3">
+                                    <div class="info-section">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-file-alt me-1"></i> Visit Report
+                                        </h6>
+                                        <div class="report-content">
+                                            <div class="report-preview" id="report-preview-{{ visit.id }}">
+                                                {{ visit.report[:150] }}{% if visit.report|length > 150 %}...{% endif %}
                                             </div>
-                                            {% else %}
-                                            <em class="text-muted small">No details</em>
+                                            {% if visit.report|length > 150 %}
+                                            <div class="report-full d-none" id="report-full-{{ visit.id }}">
+                                                {{ visit.report }}
+                                            </div>
+                                            <button class="btn btn-link p-0 mt-1 text-primary small" onclick="toggleReport({{ visit.id }})">
+                                                <span id="toggle-text-{{ visit.id }}">Read more</span>
+                                                <i class="fas fa-chevron-down ms-1" id="toggle-icon-{{ visit.id }}"></i>
+                                            </button>
                                             {% endif %}
-                                        </td>
-                                        <td>
-                                            <a href="{{ url_for('edit_home_visit', visit_id=visit.id) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if visit.recommendations %}
+                                <div class="col-12">
+                                    <div class="info-section recommendations-section">
+                                        <h6 class="text-muted mb-2">
+                                            <i class="fas fa-lightbulb me-1"></i> Recommendations
+                                        </h6>
+                                        <div class="recommendations-content">
+                                            <div class="recommendations-preview" id="rec-preview-{{ visit.id }}">
+                                                {{ visit.recommendations[:150] }}{% if visit.recommendations|length > 150 %}...{% endif %}
+                                            </div>
+                                            {% if visit.recommendations|length > 150 %}
+                                            <div class="recommendations-full d-none" id="rec-full-{{ visit.id }}">
+                                                {{ visit.recommendations }}
+                                            </div>
+                                            <button class="btn btn-link p-0 mt-1 text-primary small" onclick="toggleRecommendations({{ visit.id }})">
+                                                <span id="rec-toggle-text-{{ visit.id }}">Read more</span>
+                                                <i class="fas fa-chevron-down ms-1" id="rec-toggle-icon-{{ visit.id }}"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
+                </div>
+                {% endfor %}
+            </div>
 
-                    {% else %}
-                    <div class="text-center py-5">
-                        <div class="mb-3">
-                            <i class="fas fa-home fa-3x text-muted"></i>
-                        </div>
-                        <p class="text-muted mb-3">No home visit records found for this client.</p>
-                        {% if client.status == 'ACTIVE' %}
-                        <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> Add First Home Visit
-                        </a>
-                        {% endif %}
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="empty-state">
+                    <div class="empty-icon mb-4">
+                        <i class="fas fa-home fa-4x text-muted opacity-50"></i>
                     </div>
+                    <h4 class="text-muted mb-3">No Home Visits Yet</h4>
+                    <p class="text-muted mb-4">This client hasn't had any home visits recorded.</p>
+                    {% if client.status == 'ACTIVE' %}
+                    <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus me-2"></i> Schedule First Visit
+                    </a>
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
 
 <style>
-@media (max-width: 576px) {
-    .card-header {
-        font-size: 0.9rem;
-    }
-    
-    .btn-sm {
-        font-size: 0.8rem;
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .badge {
-        font-size: 0.7rem;
-    }
+.visit-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border-radius: 12px;
 }
 
-@media (max-width: 768px) {
-    h2 {
-        font-size: 1.5rem;
-    }
+.visit-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
 }
 
-.expandable-text-mobile {
-    font-size: 0.9rem;
-    line-height: 1.4;
+.visit-date-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 70px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-.text-preview-mobile, .text-full-mobile {
-    word-break: break-word;
+.date-month {
+    font-size: 0.75rem;
+    font-weight: 600;
+    opacity: 0.9;
 }
 
-.card {
-    border: 1px solid #e0e0e0;
+.date-day {
+    font-size: 1.25rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.date-year {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+.badge-department {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+    font-weight: 500;
+}
+
+.info-section {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 3px solid #007bff;
+    height: 100%;
+}
+
+.recommendations-section {
+    border-left-color: #28a745;
+}
+
+.report-content, .recommendations-content {
+    line-height: 1.6;
+    color: #495057;
+}
+
+.empty-state {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.empty-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
 }
 
 .card-header {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #e0e0e0;
+    padding: 1.25rem 1.25rem 0.5rem 1.25rem;
 }
 
-.table th {
-    border-top: none;
+.fw-semibold {
+    font-weight: 600;
 }
 
-.btn-link {
-    color: #007bff;
-    text-decoration: none;
-}
-
-.btn-link:hover {
-    text-decoration: underline;
+@media (max-width: 768px) {
+    .visit-date-badge {
+        min-width: 60px;
+        padding: 8px;
+    }
+    
+    .date-day {
+        font-size: 1.1rem;
+    }
+    
+    .info-section {
+        padding: 12px;
+        margin-bottom: 15px;
+    }
 }
 </style>
 
 <script>
-function toggleText(button) {
-    const container = button.parentElement;
-    const preview = container.querySelector('.text-preview');
-    const full = container.querySelector('.text-full');
+function toggleReport(visitId) {
+    const preview = document.getElementById(`report-preview-${visitId}`);
+    const full = document.getElementById(`report-full-${visitId}`);
+    const toggleText = document.getElementById(`toggle-text-${visitId}`);
+    const toggleIcon = document.getElementById(`toggle-icon-${visitId}`);
     
-    if (full.style.display === 'none') {
-        preview.style.display = 'none';
-        full.style.display = 'block';
-        button.textContent = 'Show less';
+    if (full.classList.contains('d-none')) {
+        preview.classList.add('d-none');
+        full.classList.remove('d-none');
+        toggleText.textContent = 'Read less';
+        toggleIcon.classList.remove('fa-chevron-down');
+        toggleIcon.classList.add('fa-chevron-up');
     } else {
-        preview.style.display = 'block';
-        full.style.display = 'none';
-        button.textContent = 'Show more';
+        preview.classList.remove('d-none');
+        full.classList.add('d-none');
+        toggleText.textContent = 'Read more';
+        toggleIcon.classList.remove('fa-chevron-up');
+        toggleIcon.classList.add('fa-chevron-down');
     }
 }
 
-function toggleTextMobile(button) {
-    const container = button.parentElement;
-    const preview = container.querySelector('.text-preview-mobile');
-    const full = container.querySelector('.text-full-mobile');
+function toggleRecommendations(visitId) {
+    const preview = document.getElementById(`rec-preview-${visitId}`);
+    const full = document.getElementById(`rec-full-${visitId}`);
+    const toggleText = document.getElementById(`rec-toggle-text-${visitId}`);
+    const toggleIcon = document.getElementById(`rec-toggle-icon-${visitId}`);
     
-    if (full.style.display === 'none') {
-        preview.style.display = 'none';
-        full.style.display = 'block';
-        button.innerHTML = '<small>Show less</small>';
+    if (full.classList.contains('d-none')) {
+        preview.classList.add('d-none');
+        full.classList.remove('d-none');
+        toggleText.textContent = 'Read less';
+        toggleIcon.classList.remove('fa-chevron-down');
+        toggleIcon.classList.add('fa-chevron-up');
     } else {
-        preview.style.display = 'block';
-        full.style.display = 'none';
-        button.innerHTML = '<small>Show more</small>';
+        preview.classList.remove('d-none');
+        full.classList.add('d-none');
+        toggleText.textContent = 'Read more';
+        toggleIcon.classList.remove('fa-chevron-up');
+        toggleIcon.classList.add('fa-chevron-down');
     }
 }
 </script>
