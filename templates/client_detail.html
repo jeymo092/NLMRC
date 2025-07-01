@@ -82,9 +82,15 @@
                         <div class="card-body">
                             <p class="card-text">This client is active and eligible for home visits.</p>
                             <div class="d-flex gap-2">
+                                {% if client.home_visits|length == 0 %}
                                 <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">
                                     <i class="fas fa-plus"></i> Add New Home Visit
                                 </a>
+                                {% else %}
+                                <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Edit Home Visits ({{ client.home_visits|length }})
+                                </a>
+                                {% endif %}
                                 <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="btn btn-outline-primary">
                                     <i class="fas fa-list"></i> View All Home Visits ({{ client.home_visits|length }})
                                 </a>

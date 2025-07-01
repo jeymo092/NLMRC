@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -22,10 +21,10 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     department = db.Column(db.String(50), nullable=False)
-    
+
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
-    
+
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
@@ -51,10 +50,10 @@ class Client(db.Model):
     status = db.Column(db.String(30), nullable=False, default='ACTIVE')
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
-    
+
     # Relationship to aftercare records
     aftercare_records = db.relationship('AfterCare', backref='client', lazy=True)
-    
+
     # Relationship to home visits
     home_visits = db.relationship('HomeVisit', backref='client', lazy=True)
 
@@ -101,14 +100,14 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         user = User.query.filter_by(username=username).first()
         if user and user.check_password(password):
             login_user(user)
             return redirect(url_for('dashboard'))
         else:
             flash('Invalid username or password')
-    
+
     return render_template('login.html')
 
 @app.route('/logout')
@@ -134,7 +133,7 @@ def register_client():
         try:
             # Parse date of birth
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
-            
+
             client = Client(
                 firstName=request.form['firstName'],
                 secondName=request.form['secondName'],
@@ -155,21 +154,22 @@ def register_client():
                 status=request.form.get('status', 'ACTIVE'),
                 createdBy=current_user.id
             )
-            
+
             db.session.add(client)
             db.session.commit()
             flash('Client registered successfully!')
             return redirect(url_for('dashboard'))
         except Exception as e:
             flash(f'Error registering client: {str(e)}')
-    
+
     return render_template('register_client.html')
 
 @app.route('/client/<int:client_id>')
 @login_required
 def view_client(client_id):
     client = Client.query.get_or_404(client_id)
-    return render_template('client_detail.html', client=client)
+    has_home_visits = HomeVisit.query.filter_by(client_id=client_id).count() > 0  # Check if client has home visits
+    return render_template('client_detail.html', client=client, has_home_visits=has_home_visits)
 
 @app.route('/client/<int:client_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -178,14 +178,14 @@ def edit_client(client_id):
     if current_user.department not in ['admin', 'socialworkers']:
         flash('Access denied. Only Admin and Social Workers can edit client information.')
         return redirect(url_for('view_client', client_id=client_id))
-    
+
     client = Client.query.get_or_404(client_id)
-    
+
     if request.method == 'POST':
         try:
             # Parse date of birth
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
-            
+
             # Update client information
             client.firstName = request.form['firstName']
             client.secondName = request.form['secondName']
@@ -204,13 +204,13 @@ def edit_client(client_id):
             client.grade = request.form.get('grade', '')
             client.secondaryForm = request.form.get('secondaryForm', '')
             client.status = request.form.get('status', 'ACTIVE')
-            
+
             db.session.commit()
             flash('Client information updated successfully!')
             return redirect(url_for('view_client', client_id=client_id))
         except Exception as e:
             flash(f'Error updating client: {str(e)}')
-    
+
     return render_template('edit_client.html', client=client)
 
 @app.route('/client/<int:client_id>/export_pdf')
@@ -224,16 +224,17 @@ def export_client_pdf(client_id):
     from reportlab.lib.enums import TA_CENTER, TA_LEFT
     from io import BytesIO
     import os
-    
+
     client = Client.query.get_or_404(client_id)
-    
+    home_visits = HomeVisit.query.filter_by(client_id=client_id).all()
+
     # Create PDF buffer
     buffer = BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=A4, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
-    
+
     # Container for the 'Flowable' objects
     elements = []
-    
+
     # Define styles
     styles = getSampleStyleSheet()
     title_style = ParagraphStyle(
@@ -244,7 +245,7 @@ def export_client_pdf(client_id):
         alignment=TA_CENTER,
         textColor=colors.darkblue
     )
-    
+
     heading_style = ParagraphStyle(
         'CustomHeading',
         parent=styles['Heading2'],
@@ -252,12 +253,12 @@ def export_client_pdf(client_id):
         spaceAfter=12,
         textColor=colors.darkblue
     )
-    
+
     # Add logo and header
     elements.append(Paragraph("NEW LIFE MWANGAZA", title_style))
     elements.append(Paragraph("Client Information Report", styles['Heading2']))
     elements.append(Spacer(1, 20))
-    
+
     # Client basic information
     elements.append(Paragraph("Personal Information", heading_style))
     personal_data = [
@@ -268,27 +269,27 @@ def export_client_pdf(client_id):
         ['Status:', client.status],
         ['Registration Date:', client.createdAt.strftime('%Y-%m-%d %H:%M') if client.createdAt else 'N/A']
     ]
-    
+
     personal_table = Table(personal_data, colWidths=[2*inch, 3*inch])
     personal_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('GRID', (0, 0), (-1, -1), 1, colors.black)
     ]))
     elements.append(personal_table)
     elements.append(Spacer(1, 20))
-    
+
     # Admission information
     elements.append(Paragraph("Admission Information", heading_style))
     admission_data = [
         ['Admission Type:', client.admissionType],
         ['Intake Number:', str(client.intake)]
     ]
-    
+
     if client.admissionType == 'REFERRAL':
         admission_data.extend([
             ['Referral Institution:', client.referralInstitution or 'N/A'],
@@ -296,20 +297,20 @@ def export_client_pdf(client_id):
         ])
     else:
         admission_data.append(['Street Name:', client.streetName or 'N/A'])
-    
+
     admission_table = Table(admission_data, colWidths=[2*inch, 3*inch])
     admission_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
         ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
         ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-        ('FONTSIZE', (0, 0), (-1, -1), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('FONTSIZE', (0, 0), (-1, -1), 9),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
         ('GRID', (0, 0), (-1, -1), 1, colors.black)
     ]))
     elements.append(admission_table)
     elements.append(Spacer(1, 20))
-    
+
     # Education information
     if client.educationLevel or client.grade or client.secondaryForm:
         elements.append(Paragraph("Education Information", heading_style))
@@ -320,20 +321,20 @@ def export_client_pdf(client_id):
             education_data.append(['Grade:', client.grade])
         if client.secondaryForm:
             education_data.append(['Secondary Form:', client.secondaryForm])
-        
+
         education_table = Table(education_data, colWidths=[2*inch, 3*inch])
         education_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
             ('GRID', (0, 0), (-1, -1), 1, colors.black)
         ]))
         elements.append(education_table)
         elements.append(Spacer(1, 20))
-    
+
     # Parent/Guardian information
     if client.parentGuardianName or client.parentGuardianLocation or client.parentGuardianContact:
         elements.append(Paragraph("Parent/Guardian Information", heading_style))
@@ -344,19 +345,45 @@ def export_client_pdf(client_id):
             parent_data.append(['Location:', client.parentGuardianLocation])
         if client.parentGuardianContact:
             parent_data.append(['Contact:', client.parentGuardianContact])
-        
+
         parent_table = Table(parent_data, colWidths=[2*inch, 3*inch])
         parent_table.setStyle(TableStyle([
             ('BACKGROUND', (0, 0), (0, -1), colors.lightblue),
             ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 10),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('FONTSIZE', (0, 0), (-1, -1), 9),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
             ('GRID', (0, 0), (-1, -1), 1, colors.black)
         ]))
         elements.append(parent_table)
-    
+        elements.append(Spacer(1, 20))
+
+    # Home Visit information
+    if home_visits:
+        elements.append(Paragraph("Home Visit Information", heading_style))
+        for visit in home_visits:
+            visit_data = [
+                ['Date:', str(visit.date)],
+                ['Conducted By:', visit.conductedBy],
+                ['Department:', visit.department],
+                ['Report:', visit.report or 'N/A'],
+                ['Recommendations:', visit.recommendations or 'N/A']
+            ]
+
+            visit_table = Table(visit_data, colWidths=[2 * inch, 3 * inch])
+            visit_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (0, -1), colors.lightgreen),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            elements.append(visit_table)
+            elements.append(Spacer(1, 12))
+
     # Add footer
     elements.append(Spacer(1, 40))
     footer_style = ParagraphStyle(
@@ -367,14 +394,15 @@ def export_client_pdf(client_id):
         textColor=colors.grey
     )
     elements.append(Paragraph(f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} by {current_user.username}", footer_style))
-    
+
     # Build PDF
-    doc.build(elements)
-    
+    doc.build(elements, onFirstPage=lambda canvas, doc: [canvas.setFont('Helvetica', 9), canvas.drawCentredString(letter[0] / 2.0, 0.75 * inch, "Page 1")],
+              onLaterPages=lambda canvas, doc: [canvas.setFont('Helvetica', 9), canvas.drawCentredString(letter[0] / 2.0, 0.75 * inch, "Page %d" % doc.page)])
+
     # Get PDF data
     pdf = buffer.getvalue()
     buffer.close()
-    
+
     # Return PDF as response
     from flask import Response
     response = Response(pdf, content_type='application/pdf')
@@ -388,7 +416,7 @@ def aftercare():
     if current_user.department != 'socialworkers':
         flash('Access denied. Only Social Workers can access aftercare records.')
         return redirect(url_for('dashboard'))
-    
+
     aftercare_records = AfterCare.query.join(Client).all()
     return render_template('aftercare.html', aftercare_records=aftercare_records)
 
@@ -399,7 +427,7 @@ def alumni():
     if current_user.department != 'socialworkers':
         flash('Access denied. Only Social Workers can access alumni records.')
         return redirect(url_for('dashboard'))
-    
+
     alumni_clients = Client.query.filter_by(status='COMPLETE').all()
     return render_template('alumni.html', alumni_clients=alumni_clients)
 
@@ -410,13 +438,13 @@ def complete_client(client_id):
     if current_user.department not in ['admin', 'socialworkers']:
         flash('Access denied. Only Admin and Social Workers can mark clients as completed.')
         return redirect(url_for('dashboard'))
-    
+
     client = Client.query.get_or_404(client_id)
-    
+
     if client.status == 'COMPLETE':
         flash('Client is already marked as completed.')
         return redirect(url_for('dashboard'))
-    
+
     try:
         client.status = 'COMPLETE'
         db.session.commit()
@@ -433,19 +461,19 @@ def add_aftercare(client_id):
     if current_user.department != 'socialworkers':
         flash('Access denied. Only Social Workers can add aftercare records.')
         return redirect(url_for('dashboard'))
-    
+
     client = Client.query.get_or_404(client_id)
-    
+
     if request.method == 'POST':
         try:
             placement_date = None
             if request.form.get('placement_date'):
                 placement_date = datetime.strptime(request.form['placement_date'], '%Y-%m-%d').date()
-            
+
             placement_completion_date = None
             if request.form.get('placement_completion_date'):
                 placement_completion_date = datetime.strptime(request.form['placement_completion_date'], '%Y-%m-%d').date()
-            
+
             aftercare = AfterCare(
                 client_id=client_id,
                 status=request.form['status'],
@@ -458,19 +486,19 @@ def add_aftercare(client_id):
                 notes=request.form.get('notes', ''),
                 createdBy=current_user.id
             )
-            
+
             db.session.add(aftercare)
-            
+
             # If status is COMPLETE, update client status
             if request.form['status'] == 'SUCCESSFUL':
                 client.status = 'COMPLETE'
-            
+
             db.session.commit()
             flash('Aftercare record added successfully!')
             return redirect(url_for('aftercare'))
         except Exception as e:
             flash(f'Error adding aftercare record: {str(e)}')
-    
+
     return render_template('add_aftercare.html', client=client)
 
 @app.route('/home_visits')
@@ -485,16 +513,16 @@ def home_visits():
 @login_required
 def add_home_visit(client_id):
     client = Client.query.get_or_404(client_id)
-    
+
     # Only allow home visits for active clients
     if client.status != 'ACTIVE':
         flash('Home visits can only be added for active clients.')
         return redirect(url_for('dashboard'))
-    
+
     if request.method == 'POST':
         try:
             visit_date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
-            
+
             home_visit = HomeVisit(
                 client_id=client_id,
                 date=visit_date,
@@ -504,14 +532,14 @@ def add_home_visit(client_id):
                 recommendations=request.form.get('recommendations', ''),
                 createdBy=current_user.id
             )
-            
+
             db.session.add(home_visit)
             db.session.commit()
             flash('Home visit record added successfully!')
             return redirect(url_for('home_visits'))
         except Exception as e:
             flash(f'Error adding home visit record: {str(e)}')
-    
+
     return render_template('add_home_visit.html', client=client)
 
 @app.route('/client/<int:client_id>/home_visits')
@@ -526,23 +554,23 @@ def client_home_visits(client_id):
 def edit_home_visit(visit_id):
     visit = HomeVisit.query.get_or_404(visit_id)
     client = visit.client
-    
+
     if request.method == 'POST':
         try:
             visit_date = datetime.strptime(request.form['date'], '%Y-%m-%d').date()
-            
+
             visit.date = visit_date
             visit.conductedBy = request.form['conductedBy']
             visit.department = request.form['department']
             visit.report = request.form.get('report', '')
             visit.recommendations = request.form.get('recommendations', '')
-            
+
             db.session.commit()
             flash('Home visit record updated successfully!')
             return redirect(url_for('client_home_visits', client_id=client.id))
         except Exception as e:
             flash(f'Error updating home visit record: {str(e)}')
-    
+
     return render_template('edit_home_visit.html', visit=visit, client=client)
 
 @app.route('/api/clients')
@@ -561,18 +589,18 @@ def api_clients():
 def create_default_users():
     """Create default users for each department"""
     departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
-    
+
     for dept in departments:
         if not User.query.filter_by(username=dept).first():
             user = User(username=dept, department=dept)
             user.set_password('password123')  # Change this in production!
             db.session.add(user)
-    
+
     db.session.commit()
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         create_default_users()
-    
+
     app.run(host='0.0.0.0', port=5000, debug=True)
