@@ -1,0 +1,122 @@
+
+{% extends "base.html" %}
+
+{% block title %}Clients Aged 14-18 - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Clients Aged 14-18 Years</h2>
+    <div>
+        <span class="badge bg-primary">{{ stats.total }} Total</span>
+        <span class="badge bg-success">{{ stats.active }} Active</span>
+        <span class="badge bg-info">{{ stats.completed }} Completed</span>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #007bff;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                <h4 class="text-primary mb-1">{{ stats.total }}</h4>
+                <small class="text-muted">Total Clients (14-18)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #28a745;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-user-check fa-2x text-success mb-2"></i>
+                <h4 class="text-success mb-1">{{ stats.active }}</h4>
+                <small class="text-muted">Active Clients</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #17a2b8;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-road fa-2x text-info mb-2"></i>
+                <h4 class="text-info mb-1">{{ stats.street_admissions }}</h4>
+                <small class="text-muted">Street Admissions</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #ffc107;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-handshake fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning mb-1">{{ stats.referral_admissions }}</h4>
+                <small class="text-muted">Referral Admissions</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Clients List -->
+<div class="card">
+    <div class="card-header">
+        <h4>All Clients Aged 14-18 Years</h4>
+    </div>
+    <div class="card-body">
+        {% if clients %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Intake</th>
+                        <th>Status</th>
+                        <th>Admission Type</th>
+                        <th>Education Level</th>
+                        <th>Registration Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for client in clients %}
+                    <tr>
+                        <td>{{ client.firstName }} {{ client.secondName }}</td>
+                        <td><strong>{{ client.age }}</strong></td>
+                        <td>{{ client.intake if client.intake else 'N/A' }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'COMPLETE' else 'secondary' }}">
+                                {{ client.status }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'info' }}">
+                                {{ client.admissionType }}
+                            </span>
+                        </td>
+                        <td>{{ client.educationLevel or client.grade or 'Not specified' }}</td>
+                        <td>{{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else 'N/A' }}</td>
+                        <td>
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">View</a>
+                            {% if client.status == 'ACTIVE' %}
+                            <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-sm btn-outline-info">
+                                <i class="fas fa-home"></i> Visit
+                            </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No clients found in the 14-18 age range.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
+</div>
+{% endblock %}

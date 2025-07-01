@@ -973,6 +973,30 @@ def client_report(client_id):
     
     return render_template('client_report.html', client=client, marks=marks, overall_average=overall_average)
 
+@app.route('/clients_14_18')
+@login_required
+def clients_14_18():
+    # Get clients aged between 14-18
+    clients_14_18 = Client.query.filter(
+        Client.age >= 14,
+        Client.age <= 18
+    ).order_by(Client.age, Client.firstName).all()
+    
+    # Statistics for this age group
+    total_count = len(clients_14_18)
+    active_count = len([c for c in clients_14_18 if c.status == 'ACTIVE'])
+    completed_count = len([c for c in clients_14_18 if c.status == 'COMPLETE'])
+    
+    stats = {
+        'total': total_count,
+        'active': active_count,
+        'completed': completed_count,
+        'street_admissions': len([c for c in clients_14_18 if c.admissionType == 'STREET']),
+        'referral_admissions': len([c for c in clients_14_18 if c.admissionType == 'REFERRAL'])
+    }
+    
+    return render_template('clients_14_18.html', clients=clients_14_18, stats=stats)
+
 @app.route('/overall_report')
 @login_required
 def overall_report():
