@@ -528,37 +528,37 @@ def export_client_pdf(client_id):
     org_title_style = ParagraphStyle(
         'OrgTitle',
         parent=styles['Title'],
-        fontSize=24,
+        fontSize=16,
         spaceAfter=3,
         alignment=TA_CENTER,
         textColor=PRIMARY_BLUE,
         fontName='Times-Bold',
-        letterSpacing=1
+        letterSpacing=0.5
     )
     
     # Report Title Style
     report_title_style = ParagraphStyle(
         'ReportTitle',
         parent=styles['Normal'],
-        fontSize=14,
-        spaceAfter=15,
+        fontSize=11,
+        spaceAfter=10,
         alignment=TA_CENTER,
         textColor=TEXT_GRAY,
         fontName='Times-Roman',
-        letterSpacing=0.5
+        letterSpacing=0.3
     )
     
     # Main Section Header - Clean and professional
     section_style = ParagraphStyle(
         'SectionHeader',
         parent=styles['Heading1'],
-        fontSize=12,
-        spaceAfter=6,
-        spaceBefore=12,
+        fontSize=10,
+        spaceAfter=4,
+        spaceBefore=8,
         textColor=colors.white,
         fontName='Times-Bold',
         backColor=PRIMARY_BLUE,
-        borderPadding=8,
+        borderPadding=4,
         leftIndent=0,
         rightIndent=0
     )
@@ -603,7 +603,7 @@ def export_client_pdf(client_id):
     # Header with organization info
     elements.append(Paragraph("NEW LIFE MWANGAZA", org_title_style))
     elements.append(Paragraph("CLIENT COMPREHENSIVE REPORT", report_title_style))
-    elements.append(Spacer(1, 15))
+    elements.append(Spacer(1, 8))
 
     # Report metadata in a clean format
     metadata_data = [
@@ -630,11 +630,11 @@ def export_client_pdf(client_id):
         ('GRID', (0, 0), (-1, -1), 0.5, PRIMARY_BLUE)
     ]))
     elements.append(metadata_table)
-    elements.append(Spacer(1, 20))
+    elements.append(Spacer(1, 12))
 
     # SECTION 1: Personal Information
     elements.append(Paragraph("PERSONAL INFORMATION", section_style))
-    elements.append(Spacer(1, 6))
+    elements.append(Spacer(1, 3))
     
     personal_data = [
         ['Full Name', f"{client.firstName} {client.secondName}"],
