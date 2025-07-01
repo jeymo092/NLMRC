@@ -206,14 +206,27 @@ def dashboard():
             ~Client.id.in_(db.session.query(AfterCare.client_id))
         ).count()
         
+        # Aftercare specific stats
+        relapsed_clients = AfterCare.query.filter_by(status='RELAPSED').count()
+        absconded_clients = AfterCare.query.filter_by(status='ABSCONDED').count()
+        
+        # Recent activities
+        recent_completions = Client.query.filter(
+            Client.status == 'COMPLETE',
+            Client.createdAt >= datetime.now() - timedelta(days=30)
+        ).count()
+        
         department_stats.update({
             'clients_needing_aftercare': clients_needing_aftercare,
             'total_home_visits': total_home_visits,
-            'recent_home_visits': recent_home_visits
+            'recent_home_visits': recent_home_visits,
+            'relapsed_clients': relapsed_clients,
+            'absconded_clients': absconded_clients,
+            'recent_completions': recent_completions
         })
     
     # Education department specific stats
-    if current_user.department == 'education':
+    elif current_user.department == 'education':
         subjects = Subject.query.all()
         total_assessments = StudentMark.query.count()
         
@@ -225,38 +238,96 @@ def dashboard():
         else:
             average_performance = 0
         
-        # Performance by grade levels
-        grade_performance = {}
-        for client in Client.query.filter(Client.status == 'ACTIVE', Client.grade.isnot(None)).all():
-            if client.grade:
-                marks = StudentMark.query.filter_by(client_id=client.id).all()
-                if marks:
-                    avg = sum((mark.marks / mark.max_marks) * 100 for mark in marks) / len(marks)
-                    if client.grade not in grade_performance:
-                        grade_performance[client.grade] = []
-                    grade_performance[client.grade].append(avg)
+        # Education specific metrics
+        students_with_assessments = len(set(mark.client_id for mark in all_marks))
+        students_without_assessments = active_clients - students_with_assessments
         
-        # Calculate average per grade
-        for grade in grade_performance:
-            grade_performance[grade] = round(sum(grade_performance[grade]) / len(grade_performance[grade]), 1)
+        # Recent assessments
+        recent_assessments = StudentMark.query.filter(
+            StudentMark.createdAt >= datetime.now() - timedelta(days=30)
+        ).count()
+        
+        # Performance trends
+        high_performers = StudentMark.query.filter(
+            (StudentMark.marks / StudentMark.max_marks) >= 0.75
+        ).count()
         
         department_stats.update({
             'subjects': subjects,
             'total_assessments': total_assessments,
             'average_performance': average_performance,
-            'grade_performance': grade_performance
+            'students_with_assessments': students_with_assessments,
+            'students_without_assessments': students_without_assessments,
+            'recent_assessments': recent_assessments,
+            'high_performers': high_performers
         })
     
-    # Admin gets all statistics
-    if current_user.department == 'admin':
+    # Counselling department specific stats
+    elif current_user.department == 'counselling':
+        # Counselling specific metrics
+        new_admissions_this_month = Client.query.filter(
+            Client.createdAt >= datetime.now().replace(day=1)
+        ).count()
+        
+        long_term_clients = Client.query.filter(
+            Client.status == 'ACTIVE',
+            Client.createdAt <= datetime.now() - timedelta(days=365)
+        ).count()
+        
+        young_clients = Client.query.filter(Client.age <= 15).count()
+        adolescent_clients = Client.query.filter(Client.age >= 16, Client.age <= 18).count()
+        
+        department_stats.update({
+            'new_admissions_this_month': new_admissions_this_month,
+            'long_term_clients': long_term_clients,
+            'young_clients': young_clients,
+            'adolescent_clients': adolescent_clients,
+            'clients_needing_assessment': active_clients  # Assuming all active clients need counselling assessment
+        })
+    
+    # Empowerment department specific stats
+    elif current_user.department == 'empowerment':
+        # Empowerment/Life skills specific metrics
+        clients_over_18 = Client.query.filter(Client.age >= 18, Client.status == 'ACTIVE').count()
+        clients_15_to_17 = Client.query.filter(Client.age >= 15, Client.age <= 17, Client.status == 'ACTIVE').count()
+        
+        # Clients ready for programs
+        vocational_ready = Client.query.filter(
+            Client.age >= 16,
+            Client.status == 'ACTIVE'
+        ).count()
+        
+        life_skills_ready = Client.query.filter(
+            Client.age >= 14,
+            Client.status == 'ACTIVE'
+        ).count()
+        
+        department_stats.update({
+            'clients_over_18': clients_over_18,
+            'clients_15_to_17': clients_15_to_17,
+            'vocational_ready': vocational_ready,
+            'life_skills_ready': life_skills_ready,
+            'potential_graduates': completed_clients  # Those who completed programs
+        })
+    
+    # Admin gets comprehensive statistics from all departments
+    elif current_user.department == 'admin':
+        clients_needing_aftercare = Client.query.filter_by(status='COMPLETE').filter(
+            ~Client.id.in_(db.session.query(AfterCare.client_id))
+        ).count()
+        
+        # System-wide metrics
+        total_assessments = StudentMark.query.count()
+        subjects = Subject.query.all()
+        
         department_stats.update({
             'total_home_visits': total_home_visits,
             'recent_home_visits': recent_home_visits,
-            'clients_needing_aftercare': Client.query.filter_by(status='COMPLETE').filter(
-                ~Client.id.in_(db.session.query(AfterCare.client_id))
-            ).count(),
-            'subjects': Subject.query.all(),
-            'total_assessments': StudentMark.query.count()
+            'clients_needing_aftercare': clients_needing_aftercare,
+            'subjects': subjects,
+            'total_assessments': total_assessments,
+            'system_users': User.query.count(),
+            'database_records': total_clients + total_home_visits + total_aftercare_records + total_assessments
         })
     
     statistics = {

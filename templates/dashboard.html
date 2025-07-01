@@ -62,8 +62,166 @@
     </div>
 </div>
 
-<!-- Secondary Statistics Row -->
+<!-- Department-Specific Statistics Row -->
 <div class="row mb-4">
+    {% if current_user.department == 'socialworkers' %}
+    <!-- Social Workers Dashboard -->
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #28a745;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-heart fa-2x text-success mb-2"></i>
+                <h4 class="text-success mb-1">{{ statistics.total_aftercare_records }}</h4>
+                <small class="text-muted">Aftercare Records</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #dc3545;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-home fa-2x text-danger mb-2"></i>
+                <h4 class="text-danger mb-1">{{ total_home_visits or 0 }}</h4>
+                <small class="text-muted">Home Visits</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #ffc107;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-exclamation-triangle fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning mb-1">{{ relapsed_clients or 0 }}</h4>
+                <small class="text-muted">Relapsed Cases</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #17a2b8;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-calendar-check fa-2x text-info mb-2"></i>
+                <h4 class="text-info mb-1">{{ recent_completions or 0 }}</h4>
+                <small class="text-muted">Recent Completions</small>
+            </div>
+        </div>
+    </div>
+    
+    {% elif current_user.department == 'education' %}
+    <!-- Education Dashboard -->
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #28a745;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-book fa-2x text-success mb-2"></i>
+                <h4 class="text-success mb-1">{{ subjects|length if subjects else 0 }}</h4>
+                <small class="text-muted">Subjects Offered</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #17a2b8;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-clipboard-check fa-2x text-info mb-2"></i>
+                <h4 class="text-info mb-1">{{ total_assessments if total_assessments else 0 }}</h4>
+                <small class="text-muted">Total Assessments</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #ffc107;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-star fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning mb-1">{{ high_performers if high_performers else 0 }}</h4>
+                <small class="text-muted">High Performers</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #dc3545;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-user-clock fa-2x text-danger mb-2"></i>
+                <h4 class="text-danger mb-1">{{ students_without_assessments if students_without_assessments else 0 }}</h4>
+                <small class="text-muted">Need Assessment</small>
+            </div>
+        </div>
+    </div>
+    
+    {% elif current_user.department == 'counselling' %}
+    <!-- Counselling Dashboard -->
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #28a745;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-user-plus fa-2x text-success mb-2"></i>
+                <h4 class="text-success mb-1">{{ new_admissions_this_month or 0 }}</h4>
+                <small class="text-muted">New This Month</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #17a2b8;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-child fa-2x text-info mb-2"></i>
+                <h4 class="text-info mb-1">{{ young_clients or 0 }}</h4>
+                <small class="text-muted">Under 16 Years</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #ffc107;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-user-graduate fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning mb-1">{{ adolescent_clients or 0 }}</h4>
+                <small class="text-muted">Adolescents</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #dc3545;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-clock fa-2x text-danger mb-2"></i>
+                <h4 class="text-danger mb-1">{{ long_term_clients or 0 }}</h4>
+                <small class="text-muted">Long-term Cases</small>
+            </div>
+        </div>
+    </div>
+    
+    {% elif current_user.department == 'empowerment' %}
+    <!-- Empowerment Dashboard -->
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #28a745;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-tools fa-2x text-success mb-2"></i>
+                <h4 class="text-success mb-1">{{ vocational_ready or 0 }}</h4>
+                <small class="text-muted">Vocational Ready</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #17a2b8;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-lightbulb fa-2x text-info mb-2"></i>
+                <h4 class="text-info mb-1">{{ life_skills_ready or 0 }}</h4>
+                <small class="text-muted">Life Skills Ready</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #ffc107;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-users fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning mb-1">{{ clients_over_18 or 0 }}</h4>
+                <small class="text-muted">Adults (18+)</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card" style="border-radius: 10px; border-left: 4px solid #dc3545;">
+            <div class="card-body text-center p-3">
+                <i class="fas fa-trophy fa-2x text-danger mb-2"></i>
+                <h4 class="text-danger mb-1">{{ potential_graduates or 0 }}</h4>
+                <small class="text-muted">Program Graduates</small>
+            </div>
+        </div>
+    </div>
+    
+    {% else %}
+    <!-- Admin Dashboard - General Statistics -->
     <div class="col-md-3 mb-3">
         <div class="card" style="border-radius: 10px; border-left: 4px solid #17a2b8;">
             <div class="card-body text-center p-3">
@@ -85,29 +243,18 @@
     <div class="col-md-3 mb-3">
         <div class="card" style="border-radius: 10px; border-left: 4px solid #ffc107;">
             <div class="card-body text-center p-3">
-                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                <h4 class="text-warning mb-1">{{ statistics.successful_aftercare }}</h4>
-                <small class="text-muted">Successful Placements</small>
+                <i class="fas fa-database fa-2x text-warning mb-2"></i>
+                <h4 class="text-warning mb-1">{{ database_records or 0 }}</h4>
+                <small class="text-muted">Total Records</small>
             </div>
         </div>
     </div>
-    {% if current_user.department in ['admin', 'socialworkers'] %}
     <div class="col-md-3 mb-3">
         <div class="card" style="border-radius: 10px; border-left: 4px solid #dc3545;">
             <div class="card-body text-center p-3">
-                <i class="fas fa-home fa-2x text-danger mb-2"></i>
-                <h4 class="text-danger mb-1">{{ total_home_visits or 0 }}</h4>
-                <small class="text-muted">Home Visits</small>
-            </div>
-        </div>
-    </div>
-    {% else %}
-    <div class="col-md-3 mb-3">
-        <div class="card" style="border-radius: 10px; border-left: 4px solid #6f42c1;">
-            <div class="card-body text-center p-3">
-                <i class="fas fa-clock fa-2x text-purple mb-2"></i>
-                <h4 class="text-purple mb-1">{{ statistics.in_progress_aftercare }}</h4>
-                <small class="text-muted">In Progress</small>
+                <i class="fas fa-user-shield fa-2x text-danger mb-2"></i>
+                <h4 class="text-danger mb-1">{{ system_users or 0 }}</h4>
+                <small class="text-muted">System Users</small>
             </div>
         </div>
     </div>
