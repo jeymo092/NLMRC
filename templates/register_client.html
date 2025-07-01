@@ -219,7 +219,20 @@ document.getElementById('dateOfBirth').addEventListener('change', function() {
         age--;
     }
     
-    document.getElementById('age').value = age >= 0 ? age : '';
+    const ageInput = document.getElementById('age');
+    ageInput.value = age >= 0 ? age : '';
+    
+    // Validate age range (14-18 years)
+    if (age < 14 || age > 18) {
+        ageInput.style.borderColor = '#dc3545';
+        if (age < 14) {
+            alert('Client must be at least 14 years old to be registered in the system.');
+        } else if (age > 18) {
+            alert('Client must be 18 years old or younger to be registered in the system.');
+        }
+    } else {
+        ageInput.style.borderColor = '#28a745';
+    }
 });
 
 // Show/hide fields based on admission type
@@ -261,6 +274,15 @@ document.getElementById('gradeLevel').addEventListener('change', function() {
 
 // Update hidden fields before form submission
 document.getElementById('clientForm').addEventListener('submit', function(e) {
+    const age = parseInt(document.getElementById('age').value);
+    
+    // Validate age range on form submission
+    if (age < 14 || age > 18) {
+        e.preventDefault();
+        alert('Client age must be between 14 and 18 years to be registered in the system.');
+        return false;
+    }
+    
     const gradeLevel = document.getElementById('gradeLevel').value;
     const gradeInput = document.getElementById('gradeInput').value;
     

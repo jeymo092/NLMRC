@@ -177,12 +177,12 @@ def dashboard():
     successful_aftercare = AfterCare.query.filter_by(status='SUCCESSFUL').count()
     in_progress_aftercare = AfterCare.query.filter_by(status='IN_PROGRESS').count()
     
-    # Age demographics
+    # Age demographics (updated for 14-18 target range)
     age_groups = {
-        'under_15': Client.query.filter(Client.age < 15).count(),
-        '15_to_18': Client.query.filter(Client.age >= 15, Client.age <= 18).count(),
-        '19_to_25': Client.query.filter(Client.age >= 19, Client.age <= 25).count(),
-        'over_25': Client.query.filter(Client.age > 25).count()
+        'under_15': Client.query.filter(Client.age < 14).count(),  # Outside range (too young)
+        '15_to_18': Client.query.filter(Client.age >= 14, Client.age <= 18).count(),  # Target group
+        '19_to_25': Client.query.filter(Client.age >= 19, Client.age <= 25).count(),  # Outside range (too old)
+        'over_25': Client.query.filter(Client.age > 18).count()  # Outside range (too old)
     }
     
     # Monthly registration trends (last 6 months)
@@ -390,6 +390,12 @@ def register_client():
         try:
             # Parse date of birth
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
+            age = int(request.form['age'])
+            
+            # Validate age range (14-18 years)
+            if age < 14 or age > 18:
+                flash(f'Client age must be between 14 and 18 years. Current age: {age} years.')
+                return render_template('register_client.html')
 
             client = Client(
                 firstName=request.form['firstName'],
@@ -442,6 +448,12 @@ def edit_client(client_id):
         try:
             # Parse date of birth
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
+            age = int(request.form['age'])
+            
+            # Validate age range (14-18 years)
+            if age < 14 or age > 18:
+                flash(f'Client age must be between 14 and 18 years. Current age: {age} years.')
+                return render_template('edit_client.html', client=client)
 
             # Update client information
             client.firstName = request.form['firstName']

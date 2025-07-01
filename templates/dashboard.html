@@ -288,10 +288,10 @@
                     <div class="col-md-3">
                         <div class="text-center p-2">
                             <div class="progress mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-info" style="width: {{ (statistics.age_groups.under_15 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+                                <div class="progress-bar bg-warning" style="width: {{ (statistics.age_groups.under_15 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
                             </div>
-                            <h5 class="text-info">{{ statistics.age_groups.under_15 }}</h5>
-                            <small class="text-muted">Under 15 years</small>
+                            <h5 class="text-warning">{{ statistics.age_groups.under_15 }}</h5>
+                            <small class="text-muted">Under 14 years (Outside Range)</small>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -300,7 +300,7 @@
                                 <div class="progress-bar bg-success" style="width: {{ (statistics.age_groups['15_to_18'] / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
                             </div>
                             <h5 class="text-success">{{ statistics.age_groups['15_to_18'] }}</h5>
-                            <small class="text-muted">15-18 years</small>
+                            <small class="text-muted">14-18 years (Target Group)</small>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -318,7 +318,7 @@
                                 <div class="progress-bar bg-danger" style="width: {{ (statistics.age_groups.over_25 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
                             </div>
                             <h5 class="text-danger">{{ statistics.age_groups.over_25 }}</h5>
-                            <small class="text-muted">Over 25 years</small>
+                            <small class="text-muted">Over 18 years (Outside Range)</small>
                         </div>
                     </div>
                 </div>
