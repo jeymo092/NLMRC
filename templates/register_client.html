@@ -70,8 +70,7 @@
                             <div class="col-md-4">
                                 <div class="mb-2">
                                     <label for="intake" class="form-label">Intake Number</label>
-                                    <input type="number" class="form-control form-control-sm" id="intake" name="intake" readonly style="background-color: #f8f9fa;">
-                                    <small class="text-muted">Auto-generated</small>
+                                    <input type="number" class="form-control form-control-sm" id="intake" name="intake" placeholder="Enter intake number">
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -209,24 +208,6 @@
 </style>
 
 <script>
-// Auto-generate intake number when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    generateIntakeNumber();
-});
-
-async function generateIntakeNumber() {
-    try {
-        const response = await fetch('/api/next_intake');
-        const data = await response.json();
-        document.getElementById('intake').value = data.next_intake;
-    } catch (error) {
-        console.error('Error fetching intake number:', error);
-        // Fallback to current year + 001
-        const currentYear = new Date().getFullYear();
-        document.getElementById('intake').value = parseInt(currentYear.toString() + '001');
-    }
-}
-
 // Auto-calculate age from date of birth
 document.getElementById('dateOfBirth').addEventListener('change', function() {
     const dob = new Date(this.value);

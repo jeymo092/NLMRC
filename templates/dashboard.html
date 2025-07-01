@@ -398,6 +398,7 @@
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Intake</th>
                         <th>Age</th>
                         <th>Status</th>
                         <th>Admission Type</th>
@@ -409,6 +410,7 @@
                     {% for client in clients %}
                     <tr>
                         <td>{{ client.firstName }} {{ client.secondName }}</td>
+                        <td><strong>{{ client.intake if client.intake else 'N/A' }}</strong></td>
                         <td>{{ client.age }}</td>
                         <td>
                             <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'COMPLETE' else 'secondary' }}">
