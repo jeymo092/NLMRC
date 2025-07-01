@@ -985,6 +985,26 @@ def client_report(client_id):
     
     return render_template('client_report.html', client=client, marks=marks, overall_average=overall_average)
 
+@app.route('/search_clients')
+@login_required
+def search_clients():
+    query = request.args.get('q', '').strip()
+    
+    if not query:
+        return redirect(url_for('dashboard'))
+    
+    # Search by name, intake, or nickname
+    clients = Client.query.filter(
+        db.or_(
+            Client.firstName.ilike(f'%{query}%'),
+            Client.secondName.ilike(f'%{query}%'),
+            Client.nickname.ilike(f'%{query}%'),
+            Client.intake.like(f'%{query}%')
+        )
+    ).order_by(Client.firstName, Client.secondName).all()
+    
+    return render_template('search_results.html', clients=clients, query=query)
+
 @app.route('/clients_14_18')
 @login_required
 def clients_14_18():

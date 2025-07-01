@@ -5,9 +5,21 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Client Management Dashboard</h2>
-    {% if current_user.department in ['admin', 'socialworkers'] %}
-    <a href="{{ url_for('register_client') }}" class="btn btn-success">Register New Client</a>
-    {% endif %}
+    <div class="d-flex gap-2">
+        <!-- Search Form -->
+        <form method="GET" action="{{ url_for('search_clients') }}" class="d-flex">
+            <input type="text" name="q" class="form-control form-control-sm me-2" 
+                   placeholder="Search by name, intake, or nickname..." 
+                   value="{{ request.args.get('q', '') }}" 
+                   style="width: 250px;">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+        {% if current_user.department in ['admin', 'socialworkers'] %}
+        <a href="{{ url_for('register_client') }}" class="btn btn-success">Register New Client</a>
+        {% endif %}
+    </div>
 </div>
 
 
