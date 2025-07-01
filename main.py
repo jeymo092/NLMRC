@@ -226,11 +226,10 @@ def dashboard():
             Client.createdAt >= datetime.now() - timedelta(days=30)
         ).count()
         
-        # Current intake (active clients registered this year)
-        current_year = datetime.now().year
+        # Current intake (active clients with intake numbers)
         current_intake = Client.query.filter(
             Client.status == 'ACTIVE',
-            db.extract('year', Client.createdAt) == current_year
+            Client.intake > 0
         ).count()
         
         # Active clients with recent home visits (last 30 days)
