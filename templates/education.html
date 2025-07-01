@@ -1,0 +1,114 @@
+
+{% extends "base.html" %}
+
+{% block title %}Education Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Education Management</h2>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('add_subject') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Subject
+                    </a>
+                    <a href="{{ url_for('overall_report') }}" class="btn btn-info">
+                        <i class="fas fa-chart-bar"></i> Overall Report
+                    </a>
+                </div>
+            </div>
+
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Subjects Section -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-book"></i> Subjects</h5>
+                </div>
+                <div class="card-body">
+                    {% if subjects %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Subject Name</th>
+                                        <th>Description</th>
+                                        <th>Created Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for subject in subjects %}
+                                    <tr>
+                                        <td><strong>{{ subject.name }}</strong></td>
+                                        <td>{{ subject.description or 'No description' }}</td>
+                                        <td>{{ subject.createdAt.strftime('%Y-%m-%d') }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No subjects added yet. <a href="{{ url_for('add_subject') }}">Add the first subject</a>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Active Students Section -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-users"></i> Active Students</h5>
+                </div>
+                <div class="card-body">
+                    {% if active_clients %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Student Name</th>
+                                        <th>Age</th>
+                                        <th>Education Level</th>
+                                        <th>Grade/Form</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for client in active_clients %}
+                                    <tr>
+                                        <td><strong>{{ client.firstName }} {{ client.secondName }}</strong></td>
+                                        <td>{{ client.age }}</td>
+                                        <td>{{ client.educationLevel or 'Not specified' }}</td>
+                                        <td>{{ client.grade or client.secondaryForm or 'Not specified' }}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url_for('add_marks', client_id=client.id) }}" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-plus"></i> Add Marks
+                                                </a>
+                                                <a href="{{ url_for('client_report', client_id=client.id) }}" class="btn btn-sm btn-info">
+                                                    <i class="fas fa-chart-line"></i> View Report
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No active students found.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

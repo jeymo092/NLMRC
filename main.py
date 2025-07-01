@@ -57,6 +57,9 @@ class Client(db.Model):
     # Relationship to home visits
     home_visits = db.relationship('HomeVisit', backref='client', lazy=True)
 
+    # Relationship to student marks
+    student_marks = db.relationship('StudentMark', backref='client', lazy=True)
+
 # AfterCare Model
 class AfterCare(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -81,6 +84,31 @@ class HomeVisit(db.Model):
     department = db.Column(db.String(50), nullable=False)
     report = db.Column(db.Text)
     recommendations = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+# Subject Model
+class Subject(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationship to student marks
+    student_marks = db.relationship('StudentMark', backref='subject', lazy=True)
+
+# StudentMark Model
+class StudentMark(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
+    marks = db.Column(db.Float, nullable=False)
+    max_marks = db.Column(db.Float, nullable=False, default=100)
+    test_date = db.Column(db.Date, nullable=False)
+    term = db.Column(db.String(20), nullable=False)  # Term 1, Term 2, Term 3
+    year = db.Column(db.Integer, nullable=False)
+    notes = db.Column(db.Text)
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -585,6 +613,137 @@ def api_clients():
         'status': client.status,
         'admissionType': client.admissionType
     } for client in clients])
+
+# Education Management Routes
+@app.route('/education')
+@login_required
+def education():
+    # Only Education department can access this
+    if current_user.department != 'education':
+        flash('Access denied. Only Education department can access this section.')
+        return redirect(url_for('dashboard'))
+    
+    subjects = Subject.query.all()
+    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    return render_template('education.html', subjects=subjects, active_clients=active_clients)
+
+@app.route('/add_subject', methods=['GET', 'POST'])
+@login_required
+def add_subject():
+    # Only Education department can add subjects
+    if current_user.department != 'education':
+        flash('Access denied. Only Education department can add subjects.')
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        try:
+            subject = Subject(
+                name=request.form['name'],
+                description=request.form.get('description', ''),
+                createdBy=current_user.id
+            )
+            
+            db.session.add(subject)
+            db.session.commit()
+            flash('Subject added successfully!')
+            return redirect(url_for('education'))
+        except Exception as e:
+            flash(f'Error adding subject: {str(e)}')
+    
+    return render_template('add_subject.html')
+
+@app.route('/add_marks/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_marks(client_id):
+    # Only Education department can add marks
+    if current_user.department != 'education':
+        flash('Access denied. Only Education department can add marks.')
+        return redirect(url_for('dashboard'))
+    
+    client = Client.query.get_or_404(client_id)
+    
+    # Only allow marks for active clients
+    if client.status != 'ACTIVE':
+        flash('Marks can only be added for active clients.')
+        return redirect(url_for('education'))
+    
+    if request.method == 'POST':
+        try:
+            test_date = datetime.strptime(request.form['test_date'], '%Y-%m-%d').date()
+            
+            student_mark = StudentMark(
+                client_id=client_id,
+                subject_id=int(request.form['subject_id']),
+                marks=float(request.form['marks']),
+                max_marks=float(request.form.get('max_marks', 100)),
+                test_date=test_date,
+                term=request.form['term'],
+                year=int(request.form['year']),
+                notes=request.form.get('notes', ''),
+                createdBy=current_user.id
+            )
+            
+            db.session.add(student_mark)
+            db.session.commit()
+            flash('Marks added successfully!')
+            return redirect(url_for('client_report', client_id=client_id))
+        except Exception as e:
+            flash(f'Error adding marks: {str(e)}')
+    
+    subjects = Subject.query.all()
+    return render_template('add_marks.html', client=client, subjects=subjects)
+
+@app.route('/client/<int:client_id>/report')
+@login_required
+def client_report(client_id):
+    # Only Education department can view academic reports
+    if current_user.department != 'education':
+        flash('Access denied. Only Education department can view academic reports.')
+        return redirect(url_for('dashboard'))
+    
+    client = Client.query.get_or_404(client_id)
+    marks = StudentMark.query.filter_by(client_id=client_id).join(Subject).order_by(StudentMark.year.desc(), StudentMark.term.desc(), Subject.name).all()
+    
+    # Calculate overall performance
+    total_percentage = 0
+    total_subjects = 0
+    
+    for mark in marks:
+        percentage = (mark.marks / mark.max_marks) * 100
+        total_percentage += percentage
+        total_subjects += 1
+    
+    overall_average = total_percentage / total_subjects if total_subjects > 0 else 0
+    
+    return render_template('client_report.html', client=client, marks=marks, overall_average=overall_average)
+
+@app.route('/overall_report')
+@login_required
+def overall_report():
+    # Only Education department can view overall reports
+    if current_user.department != 'education':
+        flash('Access denied. Only Education department can view overall reports.')
+        return redirect(url_for('dashboard'))
+    
+    # Get all active clients with their marks
+    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    client_reports = []
+    
+    for client in active_clients:
+        marks = StudentMark.query.filter_by(client_id=client.id).all()
+        if marks:
+            total_percentage = sum((mark.marks / mark.max_marks) * 100 for mark in marks)
+            average = total_percentage / len(marks)
+            client_reports.append({
+                'client': client,
+                'average': average,
+                'total_subjects': len(marks)
+            })
+    
+    # Sort by average in descending order
+    client_reports.sort(key=lambda x: x['average'], reverse=True)
+    
+    return render_template('overall_report.html', client_reports=client_reports)
 
 def create_default_users():
     """Create default users for each department"""

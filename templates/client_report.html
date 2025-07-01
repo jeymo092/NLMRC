@@ -1,0 +1,121 @@
+
+{% extends "base.html" %}
+
+{% block title %}Academic Report - {{ client.firstName }} {{ client.secondName }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Academic Report - {{ client.firstName }} {{ client.secondName }}</h2>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('add_marks', client_id=client.id) }}" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Add Marks
+                    </a>
+                    <a href="{{ url_for('education') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Education
+                    </a>
+                </div>
+            </div>
+
+            <!-- Student Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Student Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <strong>Name:</strong> {{ client.firstName }} {{ client.secondName }}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Age:</strong> {{ client.age }}
+                        </div>
+                        <div class="col-md-3">
+                            <strong>Education Level:</strong> {{ client.educationLevel or 'Not specified' }}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Grade/Form:</strong> {{ client.grade or client.secondaryForm or 'Not specified' }}
+                        </div>
+                        <div class="col-md-2">
+                            <strong>Overall Average:</strong> 
+                            <span class="badge bg-{% if overall_average >= 80 %}success{% elif overall_average >= 60 %}warning{% else %}danger{% endif %}">
+                                {{ "%.2f"|format(overall_average) }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Performance -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Academic Performance</h5>
+                </div>
+                <div class="card-body">
+                    {% if marks %}
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Marks</th>
+                                        <th>Max Marks</th>
+                                        <th>Percentage</th>
+                                        <th>Grade</th>
+                                        <th>Term</th>
+                                        <th>Year</th>
+                                        <th>Test Date</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for mark in marks %}
+                                    {% set percentage = (mark.marks / mark.max_marks) * 100 %}
+                                    <tr>
+                                        <td><strong>{{ mark.subject.name }}</strong></td>
+                                        <td>{{ mark.marks }}</td>
+                                        <td>{{ mark.max_marks }}</td>
+                                        <td>
+                                            <span class="badge bg-{% if percentage >= 80 %}success{% elif percentage >= 60 %}warning{% else %}danger{% endif %}">
+                                                {{ "%.2f"|format(percentage) }}%
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if percentage >= 80 %}
+                                                <span class="badge bg-success">A</span>
+                                            {% elif percentage >= 70 %}
+                                                <span class="badge bg-info">B</span>
+                                            {% elif percentage >= 60 %}
+                                                <span class="badge bg-warning">C</span>
+                                            {% elif percentage >= 50 %}
+                                                <span class="badge bg-secondary">D</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">F</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ mark.term }}</td>
+                                        <td>{{ mark.year }}</td>
+                                        <td>{{ mark.test_date.strftime('%Y-%m-%d') }}</td>
+                                        <td>{{ mark.notes or '-' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No academic records found for this student.</p>
+                            <a href="{{ url_for('add_marks', client_id=client.id) }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add First Marks
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
