@@ -110,7 +110,7 @@
                             <i class="fas fa-edit"></i> Edit Client
                         </a>
                         {% endif %}
-                        {% if client.status == 'ACTIVE' %}
+                        {% if client.status == 'ACTIVE' and client.home_visits|length == 0 %}
                         <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Add Home Visit
                         </a>
