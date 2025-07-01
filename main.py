@@ -166,9 +166,10 @@ def dashboard():
     street_clients = Client.query.filter_by(admissionType='STREET').count()
     referral_clients = Client.query.filter_by(admissionType='REFERRAL').count()
     
-    # Home visit statistics
-    total_home_visits = HomeVisit.query.count()
-    recent_home_visits = HomeVisit.query.filter(
+    # Home visit statistics (only for active clients)
+    total_home_visits = HomeVisit.query.join(Client).filter(Client.status == 'ACTIVE').count()
+    recent_home_visits = HomeVisit.query.join(Client).filter(
+        Client.status == 'ACTIVE',
         HomeVisit.createdAt >= datetime.now() - timedelta(days=30)
     ).count()
     
@@ -233,7 +234,8 @@ def dashboard():
         ).count()
         
         # Active clients with recent home visits (last 30 days)
-        recent_visits_clients = db.session.query(HomeVisit.client_id).filter(
+        recent_visits_clients = db.session.query(HomeVisit.client_id).join(Client).filter(
+            Client.status == 'ACTIVE',
             HomeVisit.createdAt >= datetime.now() - timedelta(days=30)
         ).distinct().count()
         
