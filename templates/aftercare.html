@@ -5,18 +5,20 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Aftercare Records</h2>
+    <h2>Aftercare & Graduated Clients</h2>
     <div>
-        <span class="badge bg-info">{{ aftercare_records|length }} aftercare records</span>
+        <span class="badge bg-success">{{ completed_clients|length }} graduated</span>
+        <span class="badge bg-info">{{ aftercare_records|length }} with aftercare records</span>
     </div>
 </div>
 
-<div class="card">
+<!-- Clients with Aftercare Records -->
+{% if aftercare_records %}
+<div class="card mb-4">
     <div class="card-header">
-        <h5 class="mb-0">Aftercare Management</h5>
+        <h5 class="mb-0"><i class="fas fa-heart"></i> Clients with Aftercare Records</h5>
     </div>
     <div class="card-body">
-        {% if aftercare_records %}
         <div class="table-responsive">
             <table class="table table-striped">
                 <thead>
@@ -66,10 +68,55 @@
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- All Graduated Clients -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-graduation-cap"></i> All Graduated Clients</h5>
+        <small class="text-muted">Clients with status "COMPLETE" - ready for aftercare tracking</small>
+    </div>
+    <div class="card-body">
+        {% if completed_clients %}
+        <div class="row">
+            {% for client in completed_clients %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ client.firstName }} {{ client.secondName }}</h6>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-birthday-cake"></i> {{ client.age }} years old<br>
+                                <i class="fas fa-calendar"></i> Graduated: {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt }}<br>
+                                {% set has_aftercare = client.aftercare_records|length > 0 %}
+                                <i class="fas fa-{{ 'check-circle text-success' if has_aftercare else 'clock text-warning' }}"></i> 
+                                {{ 'Has aftercare record' if has_aftercare else 'Needs aftercare record' }}
+                            </small>
+                        </p>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                            {% if not client.aftercare_records %}
+                            <a href="{{ url_for('add_aftercare', client_id=client.id) }}" class="btn btn-sm btn-success">
+                                Add Aftercare
+                            </a>
+                            {% else %}
+                            <span class="badge bg-success">Has Aftercare</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
         {% else %}
         <div class="text-center py-4">
-            <p class="text-muted">No aftercare records found.</p>
-            <a href="{{ url_for('alumni') }}" class="btn btn-primary">View Alumni for Aftercare</a>
+            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No graduated clients found.</p>
+            <p class="text-muted">Clients with status "COMPLETE" will appear here.</p>
         </div>
         {% endif %}
     </div>

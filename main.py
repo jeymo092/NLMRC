@@ -466,8 +466,10 @@ def aftercare():
         flash('Access denied. Only Social Workers can access aftercare records.')
         return redirect(url_for('dashboard'))
 
+    # Get all completed clients with their aftercare records (if any)
+    completed_clients = Client.query.filter_by(status='COMPLETE').all()
     aftercare_records = AfterCare.query.join(Client).all()
-    return render_template('aftercare.html', aftercare_records=aftercare_records)
+    return render_template('aftercare.html', aftercare_records=aftercare_records, completed_clients=completed_clients)
 
 @app.route('/alumni')
 @login_required
