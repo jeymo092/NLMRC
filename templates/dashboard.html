@@ -411,7 +411,7 @@
 
 
 <!-- Age Demographics -->
-<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6 hidden sm:block">
     <div class="flex items-center mb-4">
         <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -466,6 +466,58 @@
                 <p class="text-sm text-gray-600 font-medium">Over 18 years</p>
                 <p class="text-xs text-gray-500">(Outside Range)</p>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Age Demographics - Mobile -->
+<div class="block sm:hidden age-demo-mobile">
+    <div class="age-demo-header-mobile">
+        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <h5 class="age-demo-title-mobile">Age Demographics</h5>
+    </div>
+
+    <div class="age-demo-grid-mobile">
+        <!-- Under 14 years -->
+        <div class="age-demo-card-mobile border-gray-200 bg-yellow-50">
+            <div class="age-demo-progress-mobile">
+                <div class="age-demo-progress-bar-mobile bg-yellow-500" style="width: {{ (statistics.age_groups.under_15 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+            </div>
+            <h3 class="age-demo-value-mobile text-yellow-600">{{ statistics.age_groups.under_15 }}</h3>
+            <p class="age-demo-label-mobile">Under 14 years</p>
+            <p class="age-demo-sublabel-mobile">(Outside Range)</p>
+        </div>
+
+        <!-- 14-18 years (Target Group) -->
+        <div class="age-demo-card-mobile border-green-200 bg-green-50">
+            <div class="age-demo-progress-mobile">
+                <div class="age-demo-progress-bar-mobile bg-green-500" style="width: {{ (statistics.age_groups['15_to_18'] / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+            </div>
+            <h3 class="age-demo-value-mobile text-green-600">{{ statistics.age_groups['15_to_18'] }}</h3>
+            <p class="age-demo-label-mobile">14-18 years</p>
+            <p class="age-demo-sublabel-mobile text-green-600 font-semibold">(Target Group)</p>
+        </div>
+
+        <!-- 19-25 years -->
+        <div class="age-demo-card-mobile border-blue-200 bg-blue-50">
+            <div class="age-demo-progress-mobile">
+                <div class="age-demo-progress-bar-mobile bg-blue-500" style="width: {{ (statistics.age_groups['19_to_25'] / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+            </div>
+            <h3 class="age-demo-value-mobile text-blue-600">{{ statistics.age_groups['19_to_25'] }}</h3>
+            <p class="age-demo-label-mobile">19-25 years</p>
+            <p class="age-demo-sublabel-mobile">&nbsp;</p>
+        </div>
+
+        <!-- Over 25 years -->
+        <div class="age-demo-card-mobile border-red-200 bg-red-50">
+            <div class="age-demo-progress-mobile">
+                <div class="age-demo-progress-bar-mobile bg-red-500" style="width: {{ (statistics.age_groups.over_25 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+            </div>
+            <h3 class="age-demo-value-mobile text-red-600">{{ statistics.age_groups.over_25 }}</h3>
+            <p class="age-demo-label-mobile">Over 25 years</p>
+            <p class="age-demo-sublabel-mobile">(Outside Range)</p>
         </div>
     </div>
 </div>
