@@ -82,30 +82,31 @@
         </div>
         <div class="p-6">
             {% if home_visits %}
-            <div class="overflow-hidden">
+            <!-- Desktop Table View -->
+            <div class="hidden lg:block overflow-hidden">
                 <div class="overflow-x-auto">
-    <table class="w-full border-collapse min-w-full">
-        <thead>
-            <tr class="border-b border-gray-200">
-                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm min-w-[120px]">CLIENT</th>
-                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm min-w-[100px]">VISIT DATE</th>
-                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm min-w-[120px]">CONDUCTED BY</th>
-                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm min-w-[100px]">DEPARTMENT</th>
-                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm min-w-[150px]">REPORT</th>
-                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm min-w-[80px]">ACTIONS</th>
-            </tr>
-        </thead>
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm">CLIENT</th>
+                                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm">VISIT DATE</th>
+                                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm">CONDUCTED BY</th>
+                                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm">DEPARTMENT</th>
+                                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm">REPORT</th>
+                                <th class="text-left py-3 px-2 font-medium text-gray-700 text-sm">ACTIONS</th>
+                            </tr>
+                        </thead>
         <tbody>
             {% for visit in home_visits %}
             <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                 <td class="py-4 px-2">
-                    <a href="{{ url_for('client_detail', client_id=visit.client.id) }}" 
+                    <a href="{{ url_for('view_client', client_id=visit.client.id) }}" 
                        class="text-blue-600 hover:text-blue-800 font-medium">
                         {{ visit.client.firstName }} {{ visit.client.secondName }}
                     </a>
                 </td>
                 <td class="py-4 px-2 text-sm text-gray-700">
-                    {{ visit.visitDate.strftime('%Y-%m-%d') }}
+                    {{ visit.date.strftime('%Y-%m-%d') }}
                 </td>
                 <td class="py-4 px-2 text-sm text-gray-700">
                     {{ visit.conductedBy }}
@@ -140,17 +141,18 @@
             </tr>
             {% endfor %}
         </tbody>
-    </table>
-</div>
+                    </table>
+                </div>
+            </div>
 
-<!-- Mobile Card View for better responsiveness -->
-<div class="block lg:hidden">
+            <!-- Mobile Card View -->
+            <div class="lg:hidden">
     <div class="space-y-4">
         {% for visit in home_visits %}
         <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
             <div class="flex justify-between items-start mb-3">
                 <h3 class="font-medium text-gray-900">
-                    <a href="{{ url_for('client_detail', client_id=visit.client.id) }}" 
+                    <a href="{{ url_for('view_client', client_id=visit.client.id) }}" 
                        class="text-blue-600 hover:text-blue-800">
                         {{ visit.client.firstName }} {{ visit.client.secondName }}
                     </a>
@@ -161,7 +163,7 @@
             </div>
             
             <div class="space-y-2 text-sm text-gray-600">
-                <div><strong>Visit Date:</strong> {{ visit.visitDate.strftime('%Y-%m-%d') }}</div>
+                <div><strong>Visit Date:</strong> {{ visit.date.strftime('%Y-%m-%d') }}</div>
                 <div><strong>Conducted By:</strong> {{ visit.conductedBy }}</div>
                 <div><strong>Report:</strong> {{ visit.report }}</div>
             </div>
@@ -184,21 +186,6 @@
         </div>
         {% endfor %}
     </div>
-</div>
-
-<style>
-@media (max-width: 1024px) {
-    .overflow-x-auto table {
-        display: none;
-    }
-}
-
-@media (min-width: 1025px) {
-    .block.lg\\:hidden {
-        display: none !important;
-    }
-}
-</style>
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
