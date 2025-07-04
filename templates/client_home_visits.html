@@ -26,97 +26,48 @@
             {% if visits %}
             <!-- Statistics Summary Card -->
             <div class="card mb-4 border-0 shadow-sm">
-                <div class="card-body py-3">
-                    <div class="row text-center">
-                        <div class="col-md-3">
-                            <div class="d-flex align-items-center justify-content-center">
-                                <i class="fas fa-calendar-check text-primary me-2"></i>
-                                <div>
-                                    <h5 class="mb-0 text-primary">{{ visits|length }}</h5>
-                                    <small class="text-muted">Total Visits</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex align-items-center justify-content-center">
-                                <i class="fas fa-clock text-info me-2"></i>
-                                <div>
-                                    <h5 class="mb-0 text-info">{{ visits[0].date.strftime('%b %Y') }}</h5>
-                                    <small class="text-muted">Latest Visit</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex align-items-center justify-content-center">
-                                <i class="fas fa-user-tie text-success me-2"></i>
-                                <div>
-                                    <h5 class="mb-0 text-success">{{ visits|map(attribute='conductedBy')|unique|list|length }}</h5>
-                                    <small class="text-muted">Staff Members</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="d-flex align-items-center justify-content-center">
-                                <i class="fas fa-building text-warning me-2"></i>
-                                <div>
-                                    <h5 class="mb-0 text-warning">{{ visits|map(attribute='department')|unique|list|length }}</h5>
-                                    <small class="text-muted">Departments</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="card-header bg-white border-bottom">
+                    <h5 class="mb-0 fw-semibold text-gray-800">
+                        <i class="fas fa-chart-bar me-2 text-primary"></i>Visit Statistics
+                    </h5>
                 </div>
-            </div>
-
-            <!-- Statistics Section -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">Visit Statistics</h2>
-                </div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <!-- Total Visits -->
-                        <div class="text-center">
-                            <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-3">
-                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                </svg>
+                <div class="card-body py-4">
+                    <div class="row g-4">
+                        <div class="col-6 col-md-3">
+                            <div class="stats-card text-center p-3 rounded-3 bg-primary bg-opacity-10 h-100">
+                                <div class="stats-icon mb-2">
+                                    <i class="fas fa-calendar-check fa-2x text-primary"></i>
+                                </div>
+                                <h4 class="mb-1 fw-bold text-primary">{{ visits|length }}</h4>
+                                <small class="text-muted fw-medium">Total Visits</small>
                             </div>
-                            <div class="text-2xl font-bold text-gray-900">{{ visits|length }}</div>
-                            <div class="text-sm text-gray-600">Total Visits</div>
                         </div>
-
-                        <!-- Latest Visit -->
-                        <div class="text-center">
-                            <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-3">
-                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
+                        <div class="col-6 col-md-3">
+                            <div class="stats-card text-center p-3 rounded-3 bg-success bg-opacity-10 h-100">
+                                <div class="stats-icon mb-2">
+                                    <i class="fas fa-clock fa-2x text-success"></i>
+                                </div>
+                                <h4 class="mb-1 fw-bold text-success">{{ visits[0].date.strftime('%b %Y') }}</h4>
+                                <small class="text-muted fw-medium">Latest Visit</small>
                             </div>
-                            <div class="text-2xl font-bold text-gray-900">{{ visits[0].date.strftime('%b %Y') if visits else 'None' }}</div>
-                            <div class="text-sm text-gray-600">Latest Visit</div>
                         </div>
-
-                        <!-- Staff Members -->
-                        <div class="text-center">
-                            <div class="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mb-3">
-                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
+                        <div class="col-6 col-md-3">
+                            <div class="stats-card text-center p-3 rounded-3 bg-info bg-opacity-10 h-100">
+                                <div class="stats-icon mb-2">
+                                    <i class="fas fa-user-tie fa-2x text-info"></i>
+                                </div>
+                                <h4 class="mb-1 fw-bold text-info">{{ visits|map(attribute='conductedBy')|unique|list|length }}</h4>
+                                <small class="text-muted fw-medium">Staff Members</small>
                             </div>
-                            <div class="text-2xl font-bold text-gray-900">{{ visits|map(attribute='conductedBy')|unique|list|length }}</div>
-                            <div class="text-sm text-gray-600">Staff Members</div>
                         </div>
-
-                        <!-- Departments -->
-                        <div class="text-center">
-                            <div class="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mb-3">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                                </svg>
+                        <div class="col-6 col-md-3">
+                            <div class="stats-card text-center p-3 rounded-3 bg-warning bg-opacity-10 h-100">
+                                <div class="stats-icon mb-2">
+                                    <i class="fas fa-building fa-2x text-warning"></i>
+                                </div>
+                                <h4 class="mb-1 fw-bold text-warning">{{ visits|map(attribute='department')|unique|list|length }}</h4>
+                                <small class="text-muted fw-medium">Departments</small>
                             </div>
-                            <div class="text-2xl font-bold text-gray-900">{{ visits|map(attribute='department')|unique|list|length }}</div>
-                            <div class="text-sm text-gray-600">Departments</div>
                         </div>
                     </div>
                 </div>
@@ -241,6 +192,25 @@
 </div>
 
 <style>
+.stats-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    border-color: rgba(0,0,0,0.1);
+}
+
+.stats-icon {
+    transition: transform 0.3s ease;
+}
+
+.stats-card:hover .stats-icon {
+    transform: scale(1.1);
+}
+
 .visit-card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     border-radius: 12px;
