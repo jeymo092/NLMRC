@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,7 +47,7 @@
             min-height: calc(100vh - 4rem);
             width: 280px;
             position: fixed;
-            top: 4rem;
+            top: 3.5rem;
             left: 0;
             z-index: 30;
             overflow-y: auto;
@@ -95,7 +94,7 @@
         .main-content {
             margin-left: 280px;
             background: #fafafa;
-            min-height: calc(100vh - 4rem);
+            min-height: calc(100vh - 3.5rem);
             padding: 2rem;
             width: calc(100% - 280px);
             box-sizing: border-box;
@@ -134,11 +133,11 @@
                 transition: transform 0.3s ease-in-out;
                 width: 280px;
             }
-            
+
             .sidebar-custom.open {
                 transform: translateX(0);
             }
-            
+
             .main-content {
                 margin-left: 0;
                 width: 100%;
@@ -151,7 +150,7 @@
                 padding: 1rem 0.75rem;
                 width: 100%;
             }
-            
+
             .navbar-custom .container {
                 padding: 0 1rem;
             }
@@ -230,7 +229,7 @@
 
             <!-- Client Management -->
             <div class="sidebar-header">Client Management</div>
-            
+
             {% if current_user.department in ['admin', 'socialworkers'] %}
             <a href="{{ url_for('register_client') }}" class="sidebar-link">
                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,7 +249,7 @@
             {% if current_user.department == 'socialworkers' %}
             <!-- Social Work -->
             <div class="sidebar-header">Social Work</div>
-            
+
             <a href="{{ url_for('aftercare') }}" class="sidebar-link">
                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -276,7 +275,7 @@
             {% if current_user.department == 'education' %}
             <!-- Education -->
             <div class="sidebar-header">Education</div>
-            
+
             <a href="{{ url_for('education') }}" class="sidebar-link">
                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
@@ -302,7 +301,7 @@
             {% if current_user.department == 'admin' %}
             <!-- Administration -->
             <div class="sidebar-header">Administration</div>
-            
+
             <a href="{{ url_for('manage_users') }}" class="sidebar-link">
                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
@@ -348,8 +347,6 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-            {% endwith %}
-
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -358,7 +355,7 @@
         function toggleMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
-            
+
             sidebar.classList.toggle('open');
             overlay.classList.toggle('show');
         }
@@ -366,7 +363,7 @@
         function closeMobileMenu() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.getElementById('mobileOverlay');
-            
+
             sidebar.classList.remove('open');
             overlay.classList.remove('show');
         }
@@ -387,7 +384,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const currentPath = window.location.pathname;
             const sidebarLinks = document.querySelectorAll('.sidebar-link');
-            
+
             sidebarLinks.forEach(link => {
                 if (link.getAttribute('href') === currentPath) {
                     link.classList.add('active');
