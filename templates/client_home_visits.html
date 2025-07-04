@@ -126,85 +126,107 @@
             </div>
 
             <!-- Modern Card Layout for Visits -->
-            <div class="row">
+            <div class="space-y-6">
                 {% for visit in visits %}
-                <div class="col-12 mb-4">
-                    <div class="card border-0 shadow-sm h-100 visit-card">
-                        <div class="card-header bg-white border-bottom-0 pb-2">
-                            <div class="row align-items-center">
-                                <div class="col-md-6">
-                                    <div>
-                                        <h6 class="mb-1 fw-bold">Visit #{{ loop.revindex }}</h6>
-                                        <p class="mb-0 text-muted small">{{ visit.date.strftime('%A, %B %d, %Y') }}</p>
-                                    </div>
-                                </div>
-                                <div class="col-md-6 text-md-end">
-                                    <span class="badge badge-department bg-{{ 'primary' if visit.department == 'socialworkers' else 'info' if visit.department == 'counselling' else 'success' if visit.department == 'education' else 'warning' if visit.department == 'empowerment' else 'secondary' }} me-2">
-                                        <i class="fas fa-{{ 'users' if visit.department == 'socialworkers' else 'heart' if visit.department == 'counselling' else 'book' if visit.department == 'education' else 'lightbulb' if visit.department == 'empowerment' else 'cog' }} me-1"></i>
-                                        {{ visit.department.title() }}
-                                    </span>
-                                    <a href="{{ url_for('edit_home_visit', visit_id=visit.id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-edit me-1"></i> Edit
-                                    </a>
-                                </div>
+                <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <!-- Card Header with Gradient Background -->
+                    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                            <div class="text-white">
+                                <h3 class="text-xl font-bold mb-1">Visit #{{ loop.revindex }}</h3>
+                                <p class="text-blue-100 text-sm font-medium">{{ visit.date.strftime('%A, %B %d, %Y') }}</p>
+                            </div>
+                            <div class="flex flex-wrap gap-3 items-center">
+                                <span class="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-medium">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                    </svg>
+                                    {{ visit.department.title() }}
+                                </span>
+                                <a href="{{ url_for('edit_home_visit', visit_id=visit.id) }}" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-full text-sm font-semibold hover:bg-blue-50 transition-colors">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                    Edit Visit
+                                </a>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="card-body pt-3">
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <div class="info-section">
-                                        <h6 class="text-muted mb-2">
-                                            <i class="fas fa-user-tie me-1"></i> Conducted By
-                                        </h6>
-                                        <p class="mb-0 fw-semibold">{{ visit.conductedBy }}</p>
-                                    </div>
-                                </div>
-
-                                {% if visit.report %}
-                                <div class="col-md-8 mb-3">
-                                    <div class="info-section">
-                                        <h6 class="text-muted mb-2">
-                                            <i class="fas fa-file-alt me-1"></i> Visit Report
-                                        </h6>
-                                        <div class="report-content">
-                                            <div class="report-preview" id="report-preview-{{ visit.id }}">
-                                                {{ visit.report[:150] }}{% if visit.report|length > 150 %}...{% endif %}
-                                            </div>
-                                            {% if visit.report|length > 150 %}
-                                            <div class="report-full d-none" id="report-full-{{ visit.id }}">
-                                                {{ visit.report }}
-                                            </div>
-                                            <button class="btn btn-link p-0 mt-1 text-primary small" onclick="toggleReport({{ visit.id }})">
-                                                <span id="toggle-text-{{ visit.id }}">Read more</span>
-                                                <i class="fas fa-chevron-down ms-1" id="toggle-icon-{{ visit.id }}"></i>
-                                            </button>
-                                            {% endif %}
+                        <!-- Card Body -->
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Staff Information -->
+                            <div class="lg:col-span-1">
+                                <div class="bg-gray-50 rounded-xl p-4 h-full border-l-4 border-blue-500">
+                                    <div class="flex items-center mb-3">
+                                        <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
                                         </div>
+                                        <h4 class="text-sm font-medium text-gray-700">Conducted By</h4>
+                                    </div>
+                                    <p class="text-lg font-semibold text-gray-900">{{ visit.conductedBy }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Visit Content -->
+                            <div class="lg:col-span-2 space-y-6">
+                                {% if visit.report %}
+                                <div class="bg-gray-50 rounded-xl p-4 border-l-4 border-green-500">
+                                    <div class="flex items-center mb-3">
+                                        <div class="bg-green-100 p-2 rounded-full mr-3">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <h4 class="text-sm font-medium text-gray-700">Visit Report</h4>
+                                    </div>
+                                    <div class="text-gray-800 leading-relaxed">
+                                        <div class="report-preview" id="report-preview-{{ visit.id }}">
+                                            {{ visit.report[:150] }}{% if visit.report|length > 150 %}...{% endif %}
+                                        </div>
+                                        {% if visit.report|length > 150 %}
+                                        <div class="report-full hidden" id="report-full-{{ visit.id }}">
+                                            {{ visit.report }}
+                                        </div>
+                                        <button class="mt-3 inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors" onclick="toggleReport({{ visit.id }})">
+                                            <span id="toggle-text-{{ visit.id }}">Read more</span>
+                                            <svg class="w-4 h-4 ml-1 transition-transform" id="toggle-icon-{{ visit.id }}">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 {% endif %}
 
                                 {% if visit.recommendations %}
-                                <div class="col-12">
-                                    <div class="info-section recommendations-section">
-                                        <h6 class="text-muted mb-2">
-                                            <i class="fas fa-lightbulb me-1"></i> Recommendations
-                                        </h6>
-                                        <div class="recommendations-content">
-                                            <div class="recommendations-preview" id="rec-preview-{{ visit.id }}">
-                                                {{ visit.recommendations[:150] }}{% if visit.recommendations|length > 150 %}...{% endif %}
-                                            </div>
-                                            {% if visit.recommendations|length > 150 %}
-                                            <div class="recommendations-full d-none" id="rec-full-{{ visit.id }}">
-                                                {{ visit.recommendations }}
-                                            </div>
-                                            <button class="btn btn-link p-0 mt-1 text-primary small" onclick="toggleRecommendations({{ visit.id }})">
-                                                <span id="rec-toggle-text-{{ visit.id }}">Read more</span>
-                                                <i class="fas fa-chevron-down ms-1" id="rec-toggle-icon-{{ visit.id }}"></i>
-                                            </button>
-                                            {% endif %}
+                                <div class="bg-gray-50 rounded-xl p-4 border-l-4 border-yellow-500">
+                                    <div class="flex items-center mb-3">
+                                        <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                                            <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                                            </svg>
                                         </div>
+                                        <h4 class="text-sm font-medium text-gray-700">Recommendations</h4>
+                                    </div>
+                                    <div class="text-gray-800 leading-relaxed">
+                                        <div class="recommendations-preview" id="rec-preview-{{ visit.id }}">
+                                            {{ visit.recommendations[:150] }}{% if visit.recommendations|length > 150 %}...{% endif %}
+                                        </div>
+                                        {% if visit.recommendations|length > 150 %}
+                                        <div class="recommendations-full hidden" id="rec-full-{{ visit.id }}">
+                                            {{ visit.recommendations }}
+                                        </div>
+                                        <button class="mt-3 inline-flex items-center text-blue-600 hover:text-blue-800 font-medium text-sm transition-colors" onclick="toggleRecommendations({{ visit.id }})">
+                                            <span id="rec-toggle-text-{{ visit.id }}">Read more</span>
+                                            <svg class="w-4 h-4 ml-1 transition-transform" id="rec-toggle-icon-{{ visit.id }}">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 {% endif %}
@@ -328,18 +350,16 @@ function toggleReport(visitId) {
     const toggleText = document.getElementById(`toggle-text-${visitId}`);
     const toggleIcon = document.getElementById(`toggle-icon-${visitId}`);
 
-    if (full.classList.contains('d-none')) {
-        preview.classList.add('d-none');
-        full.classList.remove('d-none');
+    if (full.classList.contains('hidden')) {
+        preview.classList.add('hidden');
+        full.classList.remove('hidden');
         toggleText.textContent = 'Read less';
-        toggleIcon.classList.remove('fa-chevron-down');
-        toggleIcon.classList.add('fa-chevron-up');
+        toggleIcon.style.transform = 'rotate(180deg)';
     } else {
-        preview.classList.remove('d-none');
-        full.classList.add('d-none');
+        preview.classList.remove('hidden');
+        full.classList.add('hidden');
         toggleText.textContent = 'Read more';
-        toggleIcon.classList.remove('fa-chevron-up');
-        toggleIcon.classList.add('fa-chevron-down');
+        toggleIcon.style.transform = 'rotate(0deg)';
     }
 }
 
@@ -349,18 +369,16 @@ function toggleRecommendations(visitId) {
     const toggleText = document.getElementById(`rec-toggle-text-${visitId}`);
     const toggleIcon = document.getElementById(`rec-toggle-icon-${visitId}`);
 
-    if (full.classList.contains('d-none')) {
-        preview.classList.add('d-none');
-        full.classList.remove('d-none');
+    if (full.classList.contains('hidden')) {
+        preview.classList.add('hidden');
+        full.classList.remove('hidden');
         toggleText.textContent = 'Read less';
-        toggleIcon.classList.remove('fa-chevron-down');
-        toggleIcon.classList.add('fa-chevron-up');
+        toggleIcon.style.transform = 'rotate(180deg)';
     } else {
-        preview.classList.remove('d-none');
-        full.classList.add('d-none');
+        preview.classList.remove('hidden');
+        full.classList.add('hidden');
         toggleText.textContent = 'Read more';
-        toggleIcon.classList.remove('fa-chevron-up');
-        toggleIcon.classList.add('fa-chevron-down');
+        toggleIcon.style.transform = 'rotate(0deg)';
     }
 }
 </script>
