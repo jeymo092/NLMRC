@@ -112,6 +112,20 @@
             
             .sidebar-custom {
                 min-height: auto;
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 40;
+                background: white;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar-custom {
+                position: static !important;
+                box-shadow: none !important;
             }
         }
     </style>
@@ -141,10 +155,20 @@
         </div>
     </nav>
 
-    <div class="flex">
+    <div class="flex flex-col lg:flex-row">
         {% if current_user.is_authenticated %}
+        <!-- Mobile Menu Button -->
+        <div class="lg:hidden flex items-center justify-between p-4 bg-white border-b">
+            <h2 class="text-lg font-semibold">Menu</h2>
+            <button onclick="toggleMobileMenu()" class="p-2 rounded-md hover:bg-gray-100">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+
         <!-- Sidebar -->
-        <div class="w-64 sidebar-custom">
+        <div id="sidebar" class="w-full lg:w-64 sidebar-custom lg:block hidden">
             <div class="py-4">
                 <!-- Dashboard -->
                 <a href="{{ url_for('dashboard') }}" class="sidebar-link">
@@ -229,7 +253,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 main-content">
+        <div class="flex-1 main-content w-full lg:w-auto">
         {% else %}
         <!-- Full width for non-authenticated users -->
         <div class="w-full main-content">
@@ -257,5 +281,35 @@
             {% block content %}{% endblock %}
         </div>
     </div>
+<script>
+        function toggleMobileMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('block');
+        }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const sidebar = document.getElementById('sidebar');
+            const menuButton = event.target.closest('[onclick*="toggleMobileMenu"]');
+            
+            if (!menuButton && !sidebar.contains(event.target) && window.innerWidth < 1024) {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('block');
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('block');
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('block');
+            }
+        });
+    </script>
 </body>
 </html>
