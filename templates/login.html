@@ -10,8 +10,20 @@
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .login-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            box-sizing: border-box;
         }
         
         .login-card {
@@ -19,27 +31,12 @@
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
         }
         
         .input-group {
             position: relative;
-        }
-        
-        .input-group input:focus + label,
-        .input-group input:not(:placeholder-shown) + label {
-            transform: translateY(-1.5rem) scale(0.875);
-            color: #667eea;
-        }
-        
-        .input-group label {
-            position: absolute;
-            left: 0.75rem;
-            top: 0.75rem;
-            color: #6b7280;
-            pointer-events: none;
-            transition: all 0.2s ease-in-out;
-            background: white;
-            padding: 0 0.25rem;
         }
         
         .btn-primary {
@@ -61,7 +58,7 @@
         
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-8px); }
         }
         
         .floating {
@@ -73,33 +70,86 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        
+        /* Responsive adjustments */
+        @media (max-height: 700px) {
+            .login-container {
+                padding: 0.5rem;
+            }
+            
+            .header-section {
+                margin-bottom: 1rem;
+            }
+            
+            .header-section h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header-section .logo {
+                width: 3rem;
+                height: 3rem;
+            }
+            
+            .login-card {
+                padding: 1.5rem;
+            }
+            
+            .form-section {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        @media (max-height: 600px) {
+            .header-section {
+                display: none;
+            }
+            
+            .welcome-section h2 {
+                font-size: 1.25rem;
+            }
+            
+            .welcome-section p {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 0.75rem;
+            }
+            
+            .login-card {
+                padding: 1.25rem;
+            }
+        }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body>
     <!-- Background decorative elements -->
     <div class="absolute inset-0 overflow-hidden">
-        <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full glass-effect opacity-50"></div>
-        <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full glass-effect opacity-50"></div>
-        <div class="absolute top-1/4 left-1/4 w-32 h-32 rounded-full glass-effect opacity-30 floating"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-24 h-24 rounded-full glass-effect opacity-30 floating" style="animation-delay: -1s;"></div>
+        <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full glass-effect opacity-30"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full glass-effect opacity-30"></div>
+        <div class="absolute top-1/4 left-1/4 w-24 h-24 rounded-full glass-effect opacity-20 floating"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-20 h-20 rounded-full glass-effect opacity-20 floating" style="animation-delay: -1s;"></div>
     </div>
 
-    <div class="w-full max-w-md relative z-10">
-        <!-- Logo and Title Section -->
-        <div class="text-center mb-8">
-            <div class="mx-auto w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-lg">
-                <i class="fas fa-heart text-3xl organization-logo"></i>
+    <div class="login-container">
+        <div class="w-full max-w-md relative z-10">
+            <!-- Logo and Title Section -->
+            <div class="header-section text-center mb-6">
+                <div class="logo mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg">
+                    <i class="fas fa-heart text-2xl organization-logo"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white mb-1">New Life Mwangaza</h1>
+                <p class="text-white/80 text-xs">Rehabilitation Center Management System</p>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">New Life Mwangaza</h1>
-            <p class="text-white/80 text-sm">Rehabilitation Center Management System</p>
-        </div>
 
-        <!-- Login Card -->
-        <div class="login-card rounded-2xl p-8">
-            <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Welcome Back</h2>
-                <p class="text-gray-600 text-sm">Please sign in to your account</p>
-            </div>
+            <!-- Login Card -->
+            <div class="login-card rounded-2xl p-6">
+                <div class="welcome-section text-center mb-5">
+                    <h2 class="text-xl font-bold text-gray-800 mb-1">Welcome Back</h2>
+                    <p class="text-gray-600 text-xs">Please sign in to your account</p>
+                </div>
 
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages() %}
@@ -115,84 +165,81 @@
                 {% endif %}
             {% endwith %}
 
-            <form method="POST" class="space-y-6">
-                <!-- Department Selection -->
-                <div class="space-y-2">
-                    <label for="department" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-building mr-2"></i>Department
-                    </label>
-                    <div class="relative">
-                        <select name="department" id="department" required 
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white">
-                            <option value="">Select Department</option>
-                            <option value="admin">Administration</option>
-                            <option value="socialworkers">Social Workers</option>
-                            <option value="education">Education</option>
-                            <option value="counselling">Counselling</option>
-                            <option value="empowerment">Empowerment</option>
-                        </select>
-                        <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"></i>
-                    </div>
-                </div>
-
-                <!-- Username -->
-                <div class="input-group space-y-2">
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-user mr-2"></i>Username
-                    </label>
-                    <input type="text" name="username" id="username" required
-                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                           placeholder="Enter your username">
-                </div>
-
-                <!-- Password -->
-                <div class="input-group space-y-2">
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        <i class="fas fa-lock mr-2"></i>Password
-                    </label>
-                    <div class="relative">
-                        <input type="password" name="password" id="password" required
-                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-12"
-                               placeholder="Enter your password">
-                        <button type="button" onclick="togglePassword()" 
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                            <i id="passwordToggle" class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Default Password Info -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <div class="flex items-start">
-                        <i class="fas fa-info-circle text-blue-500 mr-2 mt-0.5"></i>
-                        <div>
-                            <p class="text-blue-800 text-xs font-medium">Default Login Information</p>
-                            <p class="text-blue-700 text-xs mt-1">Default password: <code class="bg-blue-100 px-1 rounded">password123</code></p>
+            <form method="POST" class="form-section space-y-4">
+                    <!-- Department Selection -->
+                    <div class="space-y-1">
+                        <label for="department" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-building mr-1"></i>Department
+                        </label>
+                        <div class="relative">
+                            <select name="department" id="department" required 
+                                    class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white">
+                                <option value="">Select Department</option>
+                                <option value="admin">Administration</option>
+                                <option value="socialworkers">Social Workers</option>
+                                <option value="education">Education</option>
+                                <option value="counselling">Counselling</option>
+                                <option value="empowerment">Empowerment</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
                         </div>
                     </div>
+
+                    <!-- Username -->
+                    <div class="input-group space-y-1">
+                        <label for="username" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-user mr-1"></i>Username
+                        </label>
+                        <input type="text" name="username" id="username" required
+                               class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               placeholder="Enter your username">
+                    </div>
+
+                    <!-- Password -->
+                    <div class="input-group space-y-1">
+                        <label for="password" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-lock mr-1"></i>Password
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
+                                   placeholder="Enter your password">
+                            <button type="button" onclick="togglePassword()" 
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                <i id="passwordToggle" class="fas fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Default Password Info -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-500 mr-2 mt-0.5 text-xs"></i>
+                            <div>
+                                <p class="text-blue-800 text-xs font-medium">Default Login</p>
+                                <p class="text-blue-700 text-xs">Password: <code class="bg-blue-100 px-1 rounded text-xs">password123</code></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login Button -->
+                    <button type="submit" 
+                            class="w-full btn-primary text-white py-2.5 px-4 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Footer -->
+                <div class="mt-4 text-center">
+                    <p class="text-gray-500 text-xs">
+                        © 2025 New Life Mwangaza
+                    </p>
+                    <p class="text-gray-400 text-xs mt-1">
+                        Need help? Contact your administrator
+                    </p>
                 </div>
-
-                <!-- Login Button -->
-                <button type="submit" 
-                        class="w-full btn-primary text-white py-3 px-4 rounded-lg font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    <i class="fas fa-sign-in-alt mr-2"></i>
-                    Sign In
-                </button>
-            </form>
-
-            <!-- Footer -->
-            <div class="mt-8 text-center">
-                <p class="text-gray-500 text-xs">
-                    © 2025 New Life Mwangaza Rehabilitation Center
-                </p>
             </div>
-        </div>
-
-        <!-- Support Info -->
-        <div class="mt-6 text-center">
-            <p class="text-white/80 text-sm">
-                Need help? Contact your system administrator
-            </p>
         </div>
     </div>
 
