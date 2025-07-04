@@ -97,11 +97,14 @@
             background: #fafafa;
             min-height: calc(100vh - 4rem);
             padding: 2rem;
+            width: calc(100% - 280px);
+            box-sizing: border-box;
         }
 
         .content-wrapper {
-            max-width: 1400px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: none;
+            margin: 0;
         }
 
         .icon {
@@ -138,6 +141,7 @@
             
             .main-content {
                 margin-left: 0;
+                width: 100%;
                 padding: 1.5rem 1rem;
             }
         }
@@ -145,6 +149,7 @@
         @media (max-width: 640px) {
             .main-content {
                 padding: 1rem 0.75rem;
+                width: 100%;
             }
             
             .navbar-custom .container {
@@ -302,7 +307,7 @@
     {% else %}
     <!-- Full width for non-authenticated users -->
     <div class="w-full" style="margin-top: 4rem; padding: 2rem;">
-        <div class="max-w-6xl mx-auto">
+        <div class="w-full max-w-6xl mx-auto">
     {% endif %}
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
