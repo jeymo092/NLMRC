@@ -474,51 +474,60 @@
 {% endif %}
 
 <!-- Age Demographics -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card" style="border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <div class="card-header bg-light" style="border-radius: 15px 15px 0 0;">
-                <h5 class="mb-0"><i class="fas fa-chart-bar text-primary"></i> Age Demographics</h5>
+<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+    <div class="flex items-center mb-4">
+        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <h5 class="text-lg font-semibold text-gray-900">Age Demographics</h5>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Under 14 years -->
+        <div class="flex flex-col items-center p-4 bg-gray-50 rounded-xl border">
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div class="bg-yellow-500 h-2 rounded-full transition-all duration-300" style="width: {{ (statistics.age_groups.under_15 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="text-center p-2">
-                            <div class="progress mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-warning" style="width: {{ (statistics.age_groups.under_15 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
-                            </div>
-                            <h5 class="text-warning">{{ statistics.age_groups.under_15 }}</h5>
-                            <small class="text-muted">Under 14 years (Outside Range)</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center p-2">
-                            <div class="progress mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-success" style="width: {{ (statistics.age_groups['15_to_18'] / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
-                            </div>
-                            <h5 class="text-success">{{ statistics.age_groups['15_to_18'] }}</h5>
-                            <small class="text-muted">14-18 years (Target Group)</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center p-2">
-                            <div class="progress mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-warning" style="width: {{ (statistics.age_groups['19_to_25'] / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
-                            </div>
-                            <h5 class="text-warning">{{ statistics.age_groups['19_to_25'] }}</h5>
-                            <small class="text-muted">19-25 years</small>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center p-2">
-                            <div class="progress mb-2" style="height: 6px;">
-                                <div class="progress-bar bg-danger" style="width: {{ (statistics.age_groups.over_25 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
-                            </div>
-                            <h5 class="text-danger">{{ statistics.age_groups.over_25 }}</h5>
-                            <small class="text-muted">Over 18 years (Outside Range)</small>
-                        </div>
-                    </div>
-                </div>
+            <div class="text-center">
+                <h3 class="text-2xl font-bold text-yellow-600 mb-1">{{ statistics.age_groups.under_15 }}</h3>
+                <p class="text-sm text-gray-600 font-medium">Under 14 years</p>
+                <p class="text-xs text-gray-500">(Outside Range)</p>
+            </div>
+        </div>
+
+        <!-- 14-18 years (Target Group) -->
+        <div class="flex flex-col items-center p-4 bg-green-50 rounded-xl border border-green-200">
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ (statistics.age_groups['15_to_18'] / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-2xl font-bold text-green-600 mb-1">{{ statistics.age_groups['15_to_18'] }}</h3>
+                <p class="text-sm text-gray-600 font-medium">14-18 years</p>
+                <p class="text-xs text-green-600 font-semibold">(Target Group)</p>
+            </div>
+        </div>
+
+        <!-- 19-25 years -->
+        <div class="flex flex-col items-center p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div class="bg-blue-500 h-2 rounded-full transition-all duration-300" style="width: {{ (statistics.age_groups['19_to_25'] / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-2xl font-bold text-blue-600 mb-1">{{ statistics.age_groups['19_to_25'] }}</h3>
+                <p class="text-sm text-gray-600 font-medium">19-25 years</p>
+                <p class="text-xs text-gray-500">&nbsp;</p>
+            </div>
+        </div>
+
+        <!-- Over 18 years -->
+        <div class="flex flex-col items-center p-4 bg-red-50 rounded-xl border border-red-200">
+            <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                <div class="bg-red-500 h-2 rounded-full transition-all duration-300" style="width: {{ (statistics.age_groups.over_25 / statistics.total_clients * 100) if statistics.total_clients > 0 else 0 }}%"></div>
+            </div>
+            <div class="text-center">
+                <h3 class="text-2xl font-bold text-red-600 mb-1">{{ statistics.age_groups.over_25 }}</h3>
+                <p class="text-sm text-gray-600 font-medium">Over 18 years</p>
+                <p class="text-xs text-gray-500">(Outside Range)</p>
             </div>
         </div>
     </div>
