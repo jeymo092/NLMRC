@@ -115,7 +115,7 @@
 {% endif %}
 
 <!-- Graduated Clients Needing Aftercare -->
-{% set clients_needing_aftercare = completed_clients | rejectattr('aftercare_records') | list %}
+{% set clients_needing_aftercare = completed_clients | selectattr('aftercare_records', 'equalto', []) | list %}
 <div class="card">
     <div class="card-header">
         <h5 class="mb-0"><i class="fas fa-graduation-cap"></i> Graduated Clients</h5>
