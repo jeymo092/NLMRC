@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Home Visits - {{ client.firstName }} {{ client.secondName }}{% endblock %}
@@ -69,6 +68,60 @@
                 </div>
             </div>
 
+            <!-- Statistics Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Visit Statistics</h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <!-- Total Visits -->
+                        <div class="text-center">
+                            <div class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mb-3">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-2xl font-bold text-gray-900">{{ visits|length }}</div>
+                            <div class="text-sm text-gray-600">Total Visits</div>
+                        </div>
+
+                        <!-- Latest Visit -->
+                        <div class="text-center">
+                            <div class="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-lg mb-3">
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-2xl font-bold text-gray-900">{{ visits[0].date.strftime('%b %Y') if visits else 'None' }}</div>
+                            <div class="text-sm text-gray-600">Latest Visit</div>
+                        </div>
+
+                        <!-- Staff Members -->
+                        <div class="text-center">
+                            <div class="inline-flex items-center justify-center w-12 h-12 bg-purple-100 rounded-lg mb-3">
+                                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                </svg>
+                            </div>
+                            <div class="text-2xl font-bold text-gray-900">{{ visits|map(attribute='conductedBy')|unique|list|length }}</div>
+                            <div class="text-sm text-gray-600">Staff Members</div>
+                        </div>
+
+                        <!-- Departments -->
+                        <div class="text-center">
+                            <div class="inline-flex items-center justify-center w-12 h-12 bg-orange-100 rounded-lg mb-3">
+                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                </svg>
+                            </div>
+                            <div class="text-2xl font-bold text-gray-900">{{ visits|map(attribute='department')|unique|list|length }}</div>
+                            <div class="text-sm text-gray-600">Departments</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Modern Card Layout for Visits -->
             <div class="row">
                 {% for visit in visits %}
@@ -100,7 +153,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="card-body pt-3">
                             <div class="row">
                                 <div class="col-md-4 mb-3">
@@ -111,7 +164,7 @@
                                         <p class="mb-0 fw-semibold">{{ visit.conductedBy }}</p>
                                     </div>
                                 </div>
-                                
+
                                 {% if visit.report %}
                                 <div class="col-md-8 mb-3">
                                     <div class="info-section">
@@ -135,7 +188,7 @@
                                     </div>
                                 </div>
                                 {% endif %}
-                                
+
                                 {% if visit.recommendations %}
                                 <div class="col-12">
                                     <div class="info-section recommendations-section">
@@ -275,11 +328,11 @@
         min-width: 60px;
         padding: 8px;
     }
-    
+
     .date-day {
         font-size: 1.1rem;
     }
-    
+
     .info-section {
         padding: 12px;
         margin-bottom: 15px;
@@ -293,7 +346,7 @@ function toggleReport(visitId) {
     const full = document.getElementById(`report-full-${visitId}`);
     const toggleText = document.getElementById(`toggle-text-${visitId}`);
     const toggleIcon = document.getElementById(`toggle-icon-${visitId}`);
-    
+
     if (full.classList.contains('d-none')) {
         preview.classList.add('d-none');
         full.classList.remove('d-none');
@@ -314,7 +367,7 @@ function toggleRecommendations(visitId) {
     const full = document.getElementById(`rec-full-${visitId}`);
     const toggleText = document.getElementById(`rec-toggle-text-${visitId}`);
     const toggleIcon = document.getElementById(`rec-toggle-icon-${visitId}`);
-    
+
     if (full.classList.contains('d-none')) {
         preview.classList.add('d-none');
         full.classList.remove('d-none');
