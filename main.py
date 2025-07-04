@@ -1298,6 +1298,21 @@ def clients_14_18():
         Client.age <= 18
     ).order_by(Client.age, Client.firstName).all()
 
+    # Statistics for this age group
+    total_count = len(clients_14_18)
+    active_count = len([c for c in clients_14_18 if c.status == 'ACTIVE'])
+    completed_count = len([c for c in clients_14_18 if c.status == 'COMPLETE'])
+
+    stats = {
+        'total': total_count,
+        'active': active_count,
+        'completed': completed_count,
+        'street_admissions': len([c for c in clients_14_18 if c.admissionType == 'STREET']),
+        'referral_admissions': len([c for c in clients_14_18 if c.admissionType == 'REFERRAL'])
+    }
+
+    return render_template('clients_14_18.html', clients=clients_14_18, stats=stats)
+
 
 # User Management Routes (Admin only)
 @app.route('/users')
