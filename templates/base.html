@@ -1,139 +1,261 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}New Life Mwangaza Rehabilitation Center{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .navbar-brand {
-            font-weight: bold;
-            color: #28a745 !important;
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 222.2 47.4% 11.2%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 222.2 84% 4.9%;
+            --radius: 0.5rem;
         }
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 1030;
+
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         }
-        .sidebar {
-            background-color: #f8f9fa;
-            height: calc(100vh - 56px);
-            position: sticky;
-            top: 56px;
-            overflow-y: auto;
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
         }
-        .main-content {
-            padding: 20px;
-            background-color: #f8f9fa;
-            min-height: calc(100vh - 56px);
+
+        .sidebar-custom {
+            background: hsl(var(--card));
+            border-right: 1px solid hsl(var(--border));
+            min-height: calc(100vh - 4rem);
         }
-        .list-group-item-header {
-            padding: 8px 12px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            border: none;
-            margin-top: 10px;
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: hsl(var(--foreground));
+            text-decoration: none;
+            border-radius: var(--radius);
+            margin: 0.125rem 0.5rem;
+            transition: all 0.2s ease-in-out;
+            font-size: 0.875rem;
+            font-weight: 500;
         }
-        .list-group-item-header:first-child {
-            margin-top: 0;
+
+        .sidebar-link:hover {
+            background: hsl(var(--accent));
+            color: hsl(var(--accent-foreground));
         }
-        .list-group-item i {
-            width: 16px;
-            margin-right: 8px;
+
+        .sidebar-link.active {
+            background: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
         }
-        .sidebar .form-control-sm {
+
+        .sidebar-header {
+            padding: 0.5rem 1rem;
+            margin: 0.5rem 0.5rem 0.25rem 0.5rem;
             font-size: 0.75rem;
-        }
-        .sidebar .btn-sm {
-            padding: 0.2rem 0.4rem;
-            font-size: 0.75rem;
-        }
-        .list-group-item.list-group-item-header {
-            background-color: #e9ecef !important;
-            color: #6c757d !important;
             font-weight: 600;
+            text-transform: uppercase;
+            color: hsl(var(--muted-foreground));
+            letter-spacing: 0.05em;
+        }
+
+        .alert-custom {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background: hsl(var(--card));
+        }
+
+        .alert-info {
+            border-left: 4px solid #3b82f6;
+            background: #eff6ff;
+        }
+
+        .main-content {
+            background: hsl(var(--background));
+            min-height: calc(100vh - 4rem);
+            padding: 1.5rem;
+        }
+
+        .icon {
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .sidebar-custom {
+                min-height: auto;
+            }
         }
     </style>
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-success">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{{ url_for('dashboard') }}">New Life Mwangaza</a>
-            {% if current_user.is_authenticated %}
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3">Welcome, {{ current_user.username.title() }} ({{ current_user.department.title() }})</span>
-                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="navbar-custom sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="{{ url_for('dashboard') }}" class="text-white font-bold text-lg">
+                        New Life Mwangaza
+                    </a>
+                </div>
+                {% if current_user.is_authenticated %}
+                <div class="flex items-center space-x-4">
+                    <span class="text-white text-sm">
+                        Welcome, {{ current_user.username.title() }} 
+                        <span class="text-white/80">({{ current_user.department.title() }})</span>
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="text-white hover:text-gray-200 text-sm font-medium transition-colors">
+                        Logout
+                    </a>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            {% if current_user.is_authenticated %}
-            <div class="col-md-2 sidebar">
-                <div class="list-group mt-3">
-                    <a href="{{ url_for('dashboard') }}" class="list-group-item list-group-item-action">
-                        Dashboard
-                    </a>
-                    {% if current_user.department in ['admin', 'socialworkers'] %}
-                    <a href="{{ url_for('register_client') }}" class="list-group-item list-group-item-action">
-                        Register New Client
-                    </a>
-                    {% endif %}
-                    {% if current_user.department == 'socialworkers' %}
-                    <a href="{{ url_for('aftercare') }}" class="list-group-item list-group-item-action">
-                        Aftercare Records
-                    </a>
-                    <a href="{{ url_for('alumni') }}" class="list-group-item list-group-item-action">
-                        Alumni List
-                    </a>
-                    <a href="{{ url_for('home_visits') }}" class="list-group-item list-group-item-action">
-                        Home Visits
-                    </a>
-                    {% endif %}
-                    {% if current_user.department == 'education' %}
-                    <a href="{{ url_for('education') }}" class="list-group-item list-group-item-action">
-                        Education Management
-                    </a>
-                    <a href="{{ url_for('add_subject') }}" class="list-group-item list-group-item-action">
-                        Add Subject
-                    </a>
-                    <a href="{{ url_for('overall_report') }}" class="list-group-item list-group-item-action">
-                        Overall Report
-                    </a>
-                    {% endif %}
+    <div class="flex">
+        {% if current_user.is_authenticated %}
+        <!-- Sidebar -->
+        <div class="w-64 sidebar-custom">
+            <div class="py-4">
+                <!-- Dashboard -->
+                <a href="{{ url_for('dashboard') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5a2 2 0 012-2h4a2 2 0 012 2v0H8v0z"></path>
+                    </svg>
+                    Dashboard
+                </a>
 
-                    <!-- All Clients Section -->
-                    <div class="list-group-item list-group-item-header bg-light text-secondary">
-                        <i class="fas fa-users"></i> All Clients
-                    </div>
+                <!-- Client Management -->
+                <div class="sidebar-header">Client Management</div>
+                
+                {% if current_user.department in ['admin', 'socialworkers'] %}
+                <a href="{{ url_for('register_client') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Register New Client
+                </a>
+                {% endif %}
 
-                    <a href="{{ url_for('all_clients') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-list"></i> View All Clients
-                    </a>
-                </div>
-            </div>
-            <div class="col-md-10 main-content">
-            {% else %}
-            <div class="col-12 main-content">
-            {% endif %}
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+                <a href="{{ url_for('all_clients') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    All Clients
+                </a>
 
-                {% block content %}{% endblock %}
+                {% if current_user.department == 'socialworkers' %}
+                <!-- Social Work -->
+                <div class="sidebar-header">Social Work</div>
+                
+                <a href="{{ url_for('aftercare') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Aftercare Records
+                </a>
+
+                <a href="{{ url_for('alumni') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                    </svg>
+                    Alumni List
+                </a>
+
+                <a href="{{ url_for('home_visits') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Home Visits
+                </a>
+                {% endif %}
+
+                {% if current_user.department == 'education' %}
+                <!-- Education -->
+                <div class="sidebar-header">Education</div>
+                
+                <a href="{{ url_for('education') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                    </svg>
+                    Education Management
+                </a>
+
+                <a href="{{ url_for('add_subject') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Add Subject
+                </a>
+
+                <a href="{{ url_for('overall_report') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Overall Report
+                </a>
+                {% endif %}
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Main Content -->
+        <div class="flex-1 main-content">
+        {% else %}
+        <!-- Full width for non-authenticated users -->
+        <div class="w-full main-content">
+        {% endif %}
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert-custom alert-info mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-blue-800">{{ message }}</span>
+                                <button type="button" class="ml-auto text-blue-800 hover:text-blue-600" onclick="this.parentElement.parentElement.remove()">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
 </body>
 </html>

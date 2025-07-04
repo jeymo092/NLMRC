@@ -5,356 +5,485 @@
 
 {% block content %}
 <style>
-    .card {
-        border-radius: 10px;
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 222.2 84% 4.9%;
+        --card: 0 0% 100%;
+        --card-foreground: 222.2 84% 4.9%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 222.2 84% 4.9%;
+        --primary: 222.2 47.4% 11.2%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 210 40% 96%;
+        --secondary-foreground: 222.2 84% 4.9%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 215.4 16.3% 46.9%;
+        --accent: 210 40% 96%;
+        --accent-foreground: 222.2 84% 4.9%;
+        --destructive: 0 84.2% 60.2%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 214.3 31.8% 91.4%;
+        --input: 214.3 31.8% 91.4%;
+        --ring: 222.2 84% 4.9%;
+        --radius: 0.5rem;
     }
-    
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+
+    .shadcn-card {
+        background: hsl(var(--card));
+        border: 1px solid hsl(var(--border));
+        border-radius: var(--radius);
+        box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        transition: all 0.2s ease-in-out;
     }
-    
-    .table th {
-        border-top: none;
-        font-size: 0.9rem;
-        vertical-align: middle;
+
+    .shadcn-card:hover {
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
-    
-    .table td {
-        vertical-align: middle;
-        padding: 12px 8px;
+
+    .shadcn-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius);
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s ease-in-out;
+        border: 1px solid transparent;
+        padding: 0.5rem 1rem;
+        text-decoration: none;
     }
-    
-    .badge {
+
+    .shadcn-button-primary {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+    }
+
+    .shadcn-button-primary:hover {
+        background: hsl(var(--primary) / 0.9);
+        color: hsl(var(--primary-foreground));
+    }
+
+    .shadcn-button-secondary {
+        background: hsl(var(--secondary));
+        color: hsl(var(--secondary-foreground));
+    }
+
+    .shadcn-button-secondary:hover {
+        background: hsl(var(--secondary) / 0.8);
+        color: hsl(var(--secondary-foreground));
+    }
+
+    .shadcn-button-outline {
+        border: 1px solid hsl(var(--border));
+        background: transparent;
+        color: hsl(var(--foreground));
+    }
+
+    .shadcn-button-outline:hover {
+        background: hsl(var(--accent));
+        color: hsl(var(--accent-foreground));
+    }
+
+    .shadcn-input {
+        display: flex;
+        height: 2.5rem;
+        width: 100%;
+        border-radius: var(--radius);
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--background));
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .shadcn-input:focus {
+        outline: none;
+        border-color: hsl(var(--ring));
+        box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+    }
+
+    .shadcn-badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: calc(var(--radius) - 2px);
+        padding: 0.25rem 0.625rem;
         font-size: 0.75rem;
-        border-radius: 6px;
+        font-weight: 600;
+        transition: all 0.2s ease-in-out;
     }
-    
+
+    .shadcn-badge-default {
+        background: hsl(var(--primary));
+        color: hsl(var(--primary-foreground));
+    }
+
+    .shadcn-badge-secondary {
+        background: hsl(var(--secondary));
+        color: hsl(var(--secondary-foreground));
+    }
+
+    .shadcn-badge-success {
+        background: hsl(142.1 76.2% 36.3%);
+        color: hsl(355.7 100% 97.3%);
+    }
+
+    .shadcn-badge-warning {
+        background: hsl(32.2 95% 44%);
+        color: hsl(355.7 100% 97.3%);
+    }
+
+    .shadcn-badge-info {
+        background: hsl(199.07 89.1% 48.04%);
+        color: hsl(355.7 100% 97.3%);
+    }
+
+    .shadcn-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .shadcn-table th {
+        height: 3rem;
+        padding: 0.75rem;
+        text-align: left;
+        font-weight: 500;
+        color: hsl(var(--muted-foreground));
+        border-bottom: 1px solid hsl(var(--border));
+        font-size: 0.875rem;
+    }
+
+    .shadcn-table td {
+        padding: 0.75rem;
+        border-bottom: 1px solid hsl(var(--border));
+        font-size: 0.875rem;
+    }
+
+    .shadcn-table tbody tr:hover {
+        background: hsl(var(--muted) / 0.5);
+    }
+
+    .stat-card {
+        padding: 1.5rem;
+        border-radius: var(--radius);
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--card));
+        transition: all 0.2s ease-in-out;
+    }
+
+    .stat-card:hover {
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .text-muted {
+        color: hsl(var(--muted-foreground));
+    }
+
+    .search-container {
+        position: relative;
+        max-width: 400px;
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: hsl(var(--muted-foreground));
+        width: 1rem;
+        height: 1rem;
+    }
+
+    .search-input {
+        padding-left: 2.5rem;
+    }
+
     @media (max-width: 768px) {
-        .card-body {
-            padding: 15px;
+        .stat-card {
+            padding: 1rem;
         }
         
-        .table-responsive {
-            border-radius: 8px;
+        .shadcn-table th,
+        .shadcn-table td {
+            padding: 0.5rem;
         }
-        
-        .dropdown-menu {
-            min-width: 160px;
-        }
-    }
-    
-    .btn-group .btn {
-        border-radius: 6px !important;
-    }
-    
-    .input-group .form-control {
-        border-radius: 6px 0 0 6px;
-    }
-    
-    .input-group .btn {
-        border-radius: 0 6px 6px 0;
     }
 </style>
-<!-- Header Section with improved responsive design -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card shadow-sm border-0">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-lg-6 col-md-12 mb-3 mb-lg-0">
-                        <h2 class="mb-2 text-success fw-bold">
-                            <i class="fas fa-users me-2"></i>All Clients
-                        </h2>
-                        <p class="text-muted mb-0">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Active clients shown first, followed by completed clients
-                        </p>
-                    </div>
-                    <div class="col-lg-6 col-md-12">
-                        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-lg-end">
-                            <!-- Enhanced Search Form -->
-                            <form method="GET" action="{{ url_for('search_clients') }}" class="flex-grow-1 flex-sm-grow-0">
-                                <div class="input-group">
-                                    <input type="text" name="q" class="form-control" 
-                                           placeholder="Search by name, intake, or nickname..." 
-                                           style="min-width: 250px;">
-                                    <button type="submit" class="btn btn-outline-primary">
-                                        <i class="fas fa-search"></i>
-                                        <span class="d-none d-sm-inline ms-1">Search</span>
-                                    </button>
-                                </div>
-                            </form>
-                            {% if current_user.department in ['admin', 'socialworkers'] %}
-                            <a href="{{ url_for('register_client') }}" class="btn btn-success d-flex align-items-center justify-content-center">
-                                <i class="fas fa-plus me-1"></i> 
-                                <span class="d-none d-sm-inline">Register New</span>
-                                <span class="d-sm-none">Register</span>
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
+
+<!-- Header Section -->
+<div class="mb-6">
+    <div class="shadcn-card">
+        <div class="p-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="space-y-1">
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-900">All Clients</h1>
+                    <p class="text-muted text-sm">Manage and view all registered clients in the system</p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <!-- Search Form -->
+                    <form method="GET" action="{{ url_for('search_clients') }}" class="search-container">
+                        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" name="q" class="shadcn-input search-input" 
+                               placeholder="Search clients..." 
+                               value="{{ request.args.get('q', '') }}">
+                    </form>
+                    {% if current_user.department in ['admin', 'socialworkers'] %}
+                    <a href="{{ url_for('register_client') }}" class="shadcn-button shadcn-button-primary">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add Client
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Enhanced Clients Table -->
-<div class="card shadow-sm border-0">
-    <div class="card-header bg-white border-bottom">
-        <div class="row align-items-center">
-            <div class="col-lg-6 col-md-12 mb-2 mb-lg-0">
-                <h4 class="mb-0 text-dark fw-bold">
-                    <i class="fas fa-table me-2 text-primary"></i>
-                    All Clients 
-                    <span class="badge bg-primary ms-2">{{ clients.total }} total</span>
-                </h4>
+<!-- Statistics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-muted">Total Clients</p>
+                <p class="text-2xl font-bold">{{ stats.total }}</p>
             </div>
-            <div class="col-lg-6 col-md-12">
-                <div class="d-flex flex-column flex-sm-row gap-2 justify-content-lg-end text-muted small">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-info-circle me-1"></i>
-                        <span>Active: <strong class="text-success">{{ stats.active }}</strong> | Completed: <strong class="text-warning">{{ stats.completed }}</strong></span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-list-ol me-1"></i>
-                        <span>
-                            Showing {{ (clients.page - 1) * clients.per_page + 1 }} - 
-                            {{ clients.page * clients.per_page if clients.page * clients.per_page < clients.total else clients.total }} 
-                            of {{ clients.total }}
-                        </span>
-                    </div>
-                </div>
+            <div class="p-3 bg-blue-100 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
             </div>
         </div>
     </div>
-
-<!-- Enhanced Statistics Cards with better responsiveness -->
-<div class="row mb-4 g-3">
-    <div class="col-lg-2 col-md-4 col-sm-6">
-        <div class="card h-100 shadow-sm border-0" style="border-left: 4px solid #0d6efd !important;">
-            <div class="card-body text-center p-3">
-                <i class="fas fa-users fa-2x text-primary mb-2"></i>
-                <h4 class="text-primary mb-1 fw-bold">{{ stats.total }}</h4>
-                <small class="text-muted fw-medium">Total Clients</small>
+    
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-muted">Active</p>
+                <p class="text-2xl font-bold text-green-600">{{ stats.active }}</p>
+            </div>
+            <div class="p-3 bg-green-100 rounded-full">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </div>
         </div>
     </div>
-    <div class="col-lg-2 col-md-4 col-sm-6">
-        <div class="card h-100 shadow-sm border-0" style="border-left: 4px solid #198754 !important;">
-            <div class="card-body text-center p-3">
-                <i class="fas fa-user-check fa-2x text-success mb-2"></i>
-                <h4 class="text-success mb-1 fw-bold">{{ stats.active }}</h4>
-                <small class="text-muted fw-medium">Active</small>
+    
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-muted">Completed</p>
+                <p class="text-2xl font-bold text-yellow-600">{{ stats.completed }}</p>
+            </div>
+            <div class="p-3 bg-yellow-100 rounded-full">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                </svg>
             </div>
         </div>
     </div>
-    <div class="col-lg-2 col-md-4 col-sm-6">
-        <div class="card h-100 shadow-sm border-0" style="border-left: 4px solid #ffc107 !important;">
-            <div class="card-body text-center p-3">
-                <i class="fas fa-graduation-cap fa-2x text-warning mb-2"></i>
-                <h4 class="text-warning mb-1 fw-bold">{{ stats.completed }}</h4>
-                <small class="text-muted fw-medium">Completed</small>
+    
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-muted">Street Admissions</p>
+                <p class="text-2xl font-bold text-purple-600">{{ stats.street_admissions }}</p>
+            </div>
+            <div class="p-3 bg-purple-100 rounded-full">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                </svg>
             </div>
         </div>
     </div>
-    <div class="col-lg-3 col-md-6 col-sm-6">
-        <div class="card h-100 shadow-sm border-0" style="border-left: 4px solid #0dcaf0 !important;">
-            <div class="card-body text-center p-3">
-                <i class="fas fa-road fa-2x text-info mb-2"></i>
-                <h4 class="text-info mb-1 fw-bold">{{ stats.street_admissions }}</h4>
-                <small class="text-muted fw-medium">Street Admissions</small>
+    
+    <div class="stat-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-muted">Referral Admissions</p>
+                <p class="text-2xl font-bold text-indigo-600">{{ stats.referral_admissions }}</p>
             </div>
-        </div>
-    </div>
-    <div class="col-lg-3 col-md-6 col-sm-6">
-        <div class="card h-100 shadow-sm border-0" style="border-left: 4px solid #6c757d !important;">
-            <div class="card-body text-center p-3">
-                <i class="fas fa-handshake fa-2x text-secondary mb-2"></i>
-                <h4 class="text-secondary mb-1 fw-bold">{{ stats.referral_admissions }}</h4>
-                <small class="text-muted fw-medium">Referral Admissions</small>
+            <div class="p-3 bg-indigo-100 rounded-full">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
             </div>
         </div>
     </div>
 </div>
 
-
-    <div class="card-body p-0">
+<!-- Clients Table -->
+<div class="shadcn-card">
+    <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold">Client Directory</h3>
+            <div class="flex items-center gap-2 text-sm text-muted">
+                <span>Showing {{ (clients.page - 1) * clients.per_page + 1 }} - {{ clients.page * clients.per_page if clients.page * clients.per_page < clients.total else clients.total }} of {{ clients.total }}</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
         {% if clients.items %}
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-dark">
-                    <tr>
-                        <th class="fw-bold">
-                            <i class="fas fa-user me-1"></i>Name
-                        </th>
-                        <th class="d-none d-md-table-cell fw-bold">
-                            <i class="fas fa-tag me-1"></i>Nickname
-                        </th>
-                        <th class="d-none d-lg-table-cell fw-bold">
-                            <i class="fas fa-door-open me-1"></i>Intake
-                        </th>
-                        <th class="fw-bold">
-                            <i class="fas fa-birthday-cake me-1"></i>Age
-                        </th>
-                        <th class="fw-bold">
-                            <i class="fas fa-circle me-1"></i>Status
-                        </th>
-                        <th class="d-none d-md-table-cell fw-bold">
-                            <i class="fas fa-route me-1"></i>Admission
-                        </th>
-                        <th class="d-none d-lg-table-cell fw-bold">
-                            <i class="fas fa-calendar me-1"></i>Registered
-                        </th>
-                        <th class="fw-bold text-center">
-                            <i class="fas fa-cogs me-1"></i>Actions
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for client in clients.items %}
-                    <tr class="align-middle">
-                        <td>
-                            <div class="d-flex flex-column">
-                                <a href="{{ url_for('view_client', client_id=client.id) }}" class="text-decoration-none fw-bold text-primary">
-                                    {{ client.firstName }} {{ client.secondName }}
-                                </a>
-                                <!-- Show nickname and intake on mobile -->
-                                <div class="d-md-none small text-muted mt-1">
-                                    {% if client.nickname %}
-                                        <span class="badge bg-light text-dark me-1">{{ client.nickname }}</span>
-                                    {% endif %}
-                                    {% if client.intake %}
-                                        <span class="badge bg-secondary">{{ client.intake }}</span>
-                                    {% endif %}
-                                </div>
+        <table class="shadcn-table">
+            <thead>
+                <tr>
+                    <th>Client</th>
+                    <th class="hidden md:table-cell">Nickname</th>
+                    <th class="hidden lg:table-cell">Intake</th>
+                    <th>Age</th>
+                    <th>Status</th>
+                    <th class="hidden md:table-cell">Admission Type</th>
+                    <th class="hidden lg:table-cell">Registered</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients.items %}
+                <tr>
+                    <td>
+                        <div class="space-y-1">
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" 
+                               class="font-medium text-gray-900 hover:text-blue-600 transition-colors">
+                                {{ client.firstName }} {{ client.secondName }}
+                            </a>
+                            <!-- Mobile info -->
+                            <div class="md:hidden flex flex-wrap gap-1">
+                                {% if client.nickname %}
+                                <span class="shadcn-badge shadcn-badge-secondary text-xs">{{ client.nickname }}</span>
+                                {% endif %}
+                                {% if client.intake %}
+                                <span class="shadcn-badge shadcn-badge-default text-xs">{{ client.intake }}</span>
+                                {% endif %}
                             </div>
-                        </td>
-                        <td class="d-none d-md-table-cell">
-                            {% if client.nickname %}
-                                <span class="badge bg-light text-dark">{{ client.nickname }}</span>
-                            {% else %}
-                                <span class="text-muted">N/A</span>
-                            {% endif %}
-                        </td>
-                        <td class="d-none d-lg-table-cell">
-                            {% if client.intake %}
-                                <span class="badge bg-secondary">{{ client.intake }}</span>
-                            {% else %}
-                                <span class="text-muted">N/A</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <span class="badge bg-info text-white fw-bold">{{ client.age }}</span>
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'COMPLETE' else 'secondary' }} px-2 py-1">
-                                <i class="fas fa-{{ 'check-circle' if client.status == 'ACTIVE' else 'graduation-cap' if client.status == 'COMPLETE' else 'circle' }} me-1"></i>
-                                {{ client.status }}
-                            </span>
-                            <!-- Show admission type on mobile -->
-                            <div class="d-md-none mt-1">
-                                <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'info' }} small">
-                                    {{ client.admissionType }}
-                                </span>
-                            </div>
-                        </td>
-                        <td class="d-none d-md-table-cell">
-                            <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'info' }} px-2 py-1">
-                                <i class="fas fa-{{ 'road' if client.admissionType == 'STREET' else 'handshake' }} me-1"></i>
+                        </div>
+                    </td>
+                    <td class="hidden md:table-cell">
+                        {% if client.nickname %}
+                            <span class="shadcn-badge shadcn-badge-secondary">{{ client.nickname }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="hidden lg:table-cell">
+                        {% if client.intake %}
+                            <span class="shadcn-badge shadcn-badge-default">{{ client.intake }}</span>
+                        {% else %}
+                            <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="shadcn-badge shadcn-badge-info">{{ client.age }}</span>
+                    </td>
+                    <td>
+                        <span class="shadcn-badge {% if client.status == 'ACTIVE' %}shadcn-badge-success{% elif client.status == 'COMPLETE' %}shadcn-badge-warning{% else %}shadcn-badge-secondary{% endif %}">
+                            {{ client.status }}
+                        </span>
+                        <!-- Mobile admission type -->
+                        <div class="md:hidden mt-1">
+                            <span class="shadcn-badge {% if client.admissionType == 'STREET' %}shadcn-badge-default{% else %}shadcn-badge-info{% endif %} text-xs">
                                 {{ client.admissionType }}
                             </span>
-                        </td>
-                        <td class="d-none d-lg-table-cell text-muted">
-                            <small>
-                                <i class="fas fa-calendar me-1"></i>
-                                {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else 'N/A' }}
-                            </small>
-                        </td>
-                        <td>
-                            <div class="dropdown">
-                                <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                    <i class="fas fa-cogs"></i>
-                                    <span class="d-none d-sm-inline ms-1">Actions</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for('view_client', client_id=client.id) }}">
-                                            <i class="fas fa-eye me-2"></i>View Details
-                                        </a>
-                                    </li>
+                        </div>
+                    </td>
+                    <td class="hidden md:table-cell">
+                        <span class="shadcn-badge {% if client.admissionType == 'STREET' %}shadcn-badge-default{% else %}shadcn-badge-info{% endif %}">
+                            {{ client.admissionType }}
+                        </span>
+                    </td>
+                    <td class="hidden lg:table-cell text-muted">
+                        {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else '—' }}
+                    </td>
+                    <td>
+                        <div class="relative">
+                            <button type="button" class="shadcn-button shadcn-button-outline text-xs px-3 py-1" 
+                                    onclick="toggleDropdown({{ client.id }})">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path>
+                                </svg>
+                            </button>
+                            <div id="dropdown-{{ client.id }}" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 hidden z-10">
+                                <div class="py-1">
+                                    <a href="{{ url_for('view_client', client_id=client.id) }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        View Details
+                                    </a>
                                     {% if client.status == 'ACTIVE' %}
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for('add_home_visit', client_id=client.id) }}">
-                                            <i class="fas fa-home me-2"></i>Add Home Visit
-                                        </a>
-                                    </li>
+                                    <a href="{{ url_for('add_home_visit', client_id=client.id) }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        Add Home Visit
+                                    </a>
                                     {% endif %}
                                     {% if current_user.department in ['admin', 'socialworkers'] %}
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item" href="{{ url_for('edit_client', client_id=client.id) }}">
-                                            <i class="fas fa-edit me-2"></i>Edit Client
-                                        </a>
-                                    </li>
+                                    <hr class="my-1">
+                                    <a href="{{ url_for('edit_client', client_id=client.id) }}" 
+                                       class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        Edit Client
+                                    </a>
                                     {% endif %}
-                                </ul>
+                                </div>
                             </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         
         <!-- Pagination -->
         {% if clients.pages > 1 %}
-        <div class="d-flex justify-content-center mt-3 mb-3">
-            <nav aria-label="Clients pagination">
-                <ul class="pagination pagination-sm">
-                    {% if clients.has_prev %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ url_for('all_clients', page=clients.prev_num) }}">Previous</a>
-                    </li>
-                    {% endif %}
-                    
-                    {% for page_num in clients.iter_pages() %}
-                        {% if page_num %}
-                            {% if page_num != clients.page %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('all_clients', page=page_num) }}">{{ page_num }}</a>
-                            </li>
-                            {% else %}
-                            <li class="page-item active">
-                                <span class="page-link">{{ page_num }}</span>
-                            </li>
-                            {% endif %}
+        <div class="flex justify-center p-6 border-t border-gray-200">
+            <nav class="flex items-center gap-2">
+                {% if clients.has_prev %}
+                <a href="{{ url_for('all_clients', page=clients.prev_num) }}" 
+                   class="shadcn-button shadcn-button-outline text-xs px-3 py-1">
+                    Previous
+                </a>
+                {% endif %}
+                
+                {% for page_num in clients.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != clients.page %}
+                        <a href="{{ url_for('all_clients', page=page_num) }}" 
+                           class="shadcn-button shadcn-button-outline text-xs px-3 py-1">
+                            {{ page_num }}
+                        </a>
                         {% else %}
-                        <li class="page-item disabled">
-                            <span class="page-link">...</span>
-                        </li>
+                        <span class="shadcn-button shadcn-button-primary text-xs px-3 py-1">
+                            {{ page_num }}
+                        </span>
                         {% endif %}
-                    {% endfor %}
-                    
-                    {% if clients.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="{{ url_for('all_clients', page=clients.next_num) }}">Next</a>
-                    </li>
+                    {% else %}
+                    <span class="text-muted px-2">...</span>
                     {% endif %}
-                </ul>
+                {% endfor %}
+                
+                {% if clients.has_next %}
+                <a href="{{ url_for('all_clients', page=clients.next_num) }}" 
+                   class="shadcn-button shadcn-button-outline text-xs px-3 py-1">
+                    Next
+                </a>
+                {% endif %}
             </nav>
         </div>
         {% endif %}
         
         {% else %}
-        <div class="text-center py-4">
-            <i class="fas fa-users fa-3x text-muted mb-3"></i>
-            <p class="text-muted">No clients found.</p>
+        <div class="p-12 text-center">
+            <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No clients found</h3>
+            <p class="text-muted mb-4">Get started by registering your first client.</p>
             {% if current_user.department in ['admin', 'socialworkers'] %}
-            <a href="{{ url_for('register_client') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Register First Client
+            <a href="{{ url_for('register_client') }}" class="shadcn-button shadcn-button-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Register First Client
             </a>
             {% endif %}
         </div>
@@ -363,31 +492,54 @@
 </div>
 
 <!-- Quick Actions -->
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card bg-light">
-            <div class="card-body">
-                <h6 class="card-title">Quick Actions</h6>
-                <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ url_for('clients_14_18') }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-users"></i> View Clients 14-18
-                    </a>
-                    {% if current_user.department == 'socialworkers' %}
-                    <a href="{{ url_for('home_visits') }}" class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-home"></i> View Home Visits
-                    </a>
-                    <a href="{{ url_for('alumni') }}" class="btn btn-outline-success btn-sm">
-                        <i class="fas fa-graduation-cap"></i> View Alumni
-                    </a>
-                    {% endif %}
-                    {% if current_user.department == 'education' %}
-                    <a href="{{ url_for('overall_report') }}" class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-chart-line"></i> Academic Report
-                    </a>
-                    {% endif %}
-                </div>
+<div class="mt-6">
+    <div class="shadcn-card">
+        <div class="p-6">
+            <h4 class="text-sm font-semibold text-gray-900 mb-3">Quick Actions</h4>
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ url_for('clients_14_18') }}" class="shadcn-button shadcn-button-secondary text-xs">
+                    View Clients 14-18
+                </a>
+                {% if current_user.department == 'socialworkers' %}
+                <a href="{{ url_for('home_visits') }}" class="shadcn-button shadcn-button-secondary text-xs">
+                    View Home Visits
+                </a>
+                <a href="{{ url_for('alumni') }}" class="shadcn-button shadcn-button-secondary text-xs">
+                    View Alumni
+                </a>
+                {% endif %}
+                {% if current_user.department == 'education' %}
+                <a href="{{ url_for('overall_report') }}" class="shadcn-button shadcn-button-secondary text-xs">
+                    Academic Report
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function toggleDropdown(clientId) {
+    const dropdown = document.getElementById(`dropdown-${clientId}`);
+    const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+    
+    // Close all other dropdowns
+    allDropdowns.forEach(d => {
+        if (d.id !== `dropdown-${clientId}`) {
+            d.classList.add('hidden');
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('hidden');
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('[onclick*="toggleDropdown"]')) {
+        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+        allDropdowns.forEach(d => d.classList.add('hidden'));
+    }
+});
+</script>
 {% endblock %}
