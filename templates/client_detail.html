@@ -1,4 +1,3 @@
-
 {% extends "base.html" %}
 
 {% block title %}Client Details - New Life Mwangaza{% endblock %}
@@ -252,32 +251,41 @@
                 </div>
                 {% endif %}
 
-                <!-- Quick Actions Card -->
+                <!-- Client Statistics Card -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
                         <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                             <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                             </svg>
-                            Quick Actions
+                            Client Summary
                         </h3>
                     </div>
                     <div class="px-6 py-4">
                         <div class="space-y-3">
-                            {% if client.status == 'ACTIVE' and client.home_visits|length == 0 %}
-                            <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                                </svg>
-                                Add Home Visit
-                            </a>
-                            {% endif %}
-                            <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-indigo-700 bg-indigo-100 rounded-md hover:bg-indigo-200 transition-colors">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                                </svg>
-                                View Home Visits
-                            </a>
+                            <div class="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                    </svg>
+                                    <span class="text-sm font-medium text-blue-900">Home Visits</span>
+                                </div>
+                                <span class="text-lg font-bold text-blue-600">{{ client.home_visits|length }}</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 12V11m0 0a4 4 0 11-8 0V7h8z"></path>
+                                    </svg>
+                                    <span class="text-sm font-medium text-green-900">Client Status</span>
+                                </div>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {% if client.status == 'ACTIVE' %}bg-green-100 text-green-800
+                                    {% elif client.status == 'COMPLETE' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ client.status }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
