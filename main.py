@@ -692,7 +692,7 @@ def export_client_pdf(client_id):
         ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
         ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1,-1), 6),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
