@@ -166,11 +166,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputs = document.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
         input.addEventListener('focus', function() {
-            this.parentElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+            this.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
         });
 
         input.addEventListener('blur', function() {
-            this.parentElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+            this.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
         });
     });
 });
