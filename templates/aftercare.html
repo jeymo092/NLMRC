@@ -4,158 +4,267 @@
 {% block title %}Aftercare Records - New Life Mwangaza{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Aftercare & Graduated Clients</h2>
-    <div>
-        <span class="badge bg-success">{{ completed_clients|length }} graduated</span>
-        <span class="badge bg-info">{{ aftercare_records|length }} with aftercare records</span>
-    </div>
-</div>
-
-<!-- Clients with Aftercare Records -->
-{% if aftercare_records %}
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-heart"></i> Clients with Aftercare Records</h5>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Client</th>
-                        <th>Status</th>
-                        <th>Placement</th>
-                        <th>Institution</th>
-                        <th>Contact Person</th>
-                        <th>Placement Date</th>
-                        <th>Completion Date</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in aftercare_records %}
-                    <tr>
-                        <td>
-                            <strong>{{ record.client.firstName }} {{ record.client.secondName }}</strong>
-                        </td>
-                        <td>
-                            <span class="badge bg-{{ 'success' if record.status == 'SUCCESSFUL' else 'primary' if record.status == 'EMPLOYED' else 'info' if record.status == 'ATTACHMENT' or record.status == 'INTERNSHIP' else 'warning' if record.status == 'IN_PROGRESS' else 'danger' if record.status == 'RELAPSED' else 'secondary' }}">
-                                {{ record.status.replace('_', ' ').title() }}
-                            </span>
-                        </td>
-                        <td>{{ record.placement or 'N/A' }}</td>
-                        <td>{{ record.institution or 'N/A' }}</td>
-                        <td>
-                            {% if record.contact_person %}
-                                {{ record.contact_person }}
-                                {% if record.contact_phone %}
-                                    <br><small class="text-muted">{{ record.contact_phone }}</small>
-                                {% endif %}
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                        <td>{{ record.placement_date.strftime('%Y-%m-%d') if record.placement_date else 'N/A' }}</td>
-                        <td>{{ record.placement_completion_date.strftime('%Y-%m-%d') if record.placement_completion_date else 'N/A' }}</td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <a href="{{ url_for('view_client', client_id=record.client.id) }}" class="btn btn-sm btn-outline-primary">
-                                    View Client
-                                </a>
-                                <a href="{{ url_for('edit_aftercare', aftercare_id=record.id) }}" class="btn btn-sm btn-outline-secondary">
-                                    Edit
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Alumni Section - Clients with Aftercare Records -->
-{% set alumni_clients = completed_clients | selectattr('aftercare_records') | list %}
-{% if alumni_clients %}
-<div class="card mb-4">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-star"></i> Alumni</h5>
-        <small class="text-muted">Graduated clients with aftercare records</small>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            {% for client in alumni_clients %}
-            <div class="col-md-6 col-lg-4 mb-3">
-                <div class="card h-100 border-success">
-                    <div class="card-body">
-                        <h6 class="card-title">{{ client.firstName }} {{ client.secondName }}</h6>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                <i class="fas fa-birthday-cake"></i> {{ client.age }} years old<br>
-                                <i class="fas fa-calendar"></i> Graduated: {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt }}<br>
-                                <i class="fas fa-check-circle text-success"></i> Alumni with aftercare record
-                            </small>
-                        </p>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">
-                                View Details
-                            </a>
-                            <span class="badge bg-success">Alumni</span>
-                        </div>
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Aftercare Records</h1>
+                    <p class="text-gray-600 mt-2">Manage aftercare tracking for graduated clients</p>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
+                        {{ completed_clients|length }} graduated
+                    </div>
+                    <div class="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                        {{ aftercare_records|length }} with aftercare records
                     </div>
                 </div>
             </div>
-            {% endfor %}
         </div>
-    </div>
-</div>
-{% endif %}
 
-<!-- Graduated Clients Needing Aftercare -->
-{% set clients_needing_aftercare = completed_clients | selectattr('aftercare_records', 'equalto', []) | list %}
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-graduation-cap"></i> Graduated Clients</h5>
-        <small class="text-muted">Clients with status "COMPLETE" - ready for aftercare tracking</small>
-    </div>
-    <div class="card-body">
-        {% if clients_needing_aftercare %}
-        <div class="row">
-            {% for client in clients_needing_aftercare %}
-            <div class="col-md-6 col-lg-4 mb-3">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h6 class="card-title">{{ client.firstName }} {{ client.secondName }}</h6>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                <i class="fas fa-birthday-cake"></i> {{ client.age }} years old<br>
-                                <i class="fas fa-calendar"></i> Graduated: {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt }}<br>
-                                <i class="fas fa-clock text-warning"></i> Needs aftercare record
-                            </small>
-                        </p>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary">
+        <!-- Clients with Aftercare Records -->
+        {% if aftercare_records %}
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="border-b border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="bg-red-100 p-2 rounded-lg mr-3">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Clients with Aftercare Records</h2>
+                        <p class="text-gray-600 text-sm">Active aftercare tracking</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Placement</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Institution</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Person</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Placement Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for record in aftercare_records %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="font-medium text-gray-900">{{ record.client.firstName }} {{ record.client.secondName }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if record.status == 'SUCCESSFUL' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            Successful
+                                        </span>
+                                    {% elif record.status == 'EMPLOYED' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            Employed
+                                        </span>
+                                    {% elif record.status == 'ATTACHMENT' or record.status == 'INTERNSHIP' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                            {{ record.status.replace('_', ' ').title() }}
+                                        </span>
+                                    {% elif record.status == 'IN_PROGRESS' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            In Progress
+                                        </span>
+                                    {% elif record.status == 'RELAPSED' %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                            Relapsed
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            {{ record.status.replace('_', ' ').title() }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ record.placement or 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ record.institution or 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if record.contact_person %}
+                                        <div>{{ record.contact_person }}</div>
+                                        {% if record.contact_phone %}
+                                            <div class="text-gray-500 text-xs">{{ record.contact_phone }}</div>
+                                        {% endif %}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ record.placement_date.strftime('%Y-%m-%d') if record.placement_date else 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ record.placement_completion_date.strftime('%Y-%m-%d') if record.placement_completion_date else 'N/A' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                    <div class="flex space-x-2">
+                                        <a href="{{ url_for('view_client', client_id=record.client.id) }}" class="text-blue-600 hover:text-blue-900">
+                                            View Client
+                                        </a>
+                                        <a href="{{ url_for('edit_aftercare', aftercare_id=record.id) }}" class="text-indigo-600 hover:text-indigo-900">
+                                            Edit
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Alumni Section - Clients with Aftercare Records -->
+        {% set alumni_clients = completed_clients | selectattr('aftercare_records') | list %}
+        {% if alumni_clients %}
+        <div class="bg-white rounded-lg shadow-sm mb-6">
+            <div class="border-b border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="bg-yellow-100 p-2 rounded-lg mr-3">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Alumni</h2>
+                        <p class="text-gray-600 text-sm">Graduated clients with aftercare records</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for client in alumni_clients %}
+                    <div class="bg-white border border-green-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">{{ client.firstName }} {{ client.secondName }}</h3>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                Alumni
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ client.age }} years old
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V8a1 1 0 011-1h3z"></path>
+                                </svg>
+                                Graduated: {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt }}
+                            </div>
+                            <div class="flex items-center text-green-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Alumni with aftercare record
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm">
                                 View Details
                             </a>
-                            <a href="{{ url_for('add_aftercare', client_id=client.id) }}" class="btn btn-sm btn-success">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Graduated Clients Needing Aftercare -->
+        {% set clients_needing_aftercare = completed_clients | selectattr('aftercare_records', 'equalto', []) | list %}
+        <div class="bg-white rounded-lg shadow-sm">
+            <div class="border-b border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="bg-purple-100 p-2 rounded-lg mr-3">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Graduated Clients</h2>
+                        <p class="text-gray-600 text-sm">Clients with status "COMPLETE" - ready for aftercare tracking</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                {% if clients_needing_aftercare %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {% for client in clients_needing_aftercare %}
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-300">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">{{ client.firstName }} {{ client.secondName }}</h3>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                Needs Aftercare
+                            </span>
+                        </div>
+                        
+                        <div class="space-y-2 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ client.age }} years old
+                            </div>
+                            <div class="flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a1 1 0 011-1h6a1 1 0 011 1v4h3a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V8a1 1 0 011-1h3z"></path>
+                                </svg>
+                                Graduated: {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt }}
+                            </div>
+                            <div class="flex items-center text-yellow-600">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Needs aftercare record
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" class="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm">
+                                View Details
+                            </a>
+                            <a href="{{ url_for('add_aftercare', client_id=client.id) }}" class="flex-1 bg-green-600 text-white text-center py-2 px-4 rounded-md hover:bg-green-700 transition-colors duration-200 text-sm">
                                 Add Aftercare
                             </a>
                         </div>
                     </div>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <div class="text-center py-12">
+                    <div class="bg-gray-100 rounded-full w-24 h-24 mx-auto mb-4 flex items-center justify-center">
+                        <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                        </svg>
+                    </div>
+                    <p class="text-gray-500 text-lg font-medium">No graduated clients needing aftercare found.</p>
+                    <p class="text-gray-400 mt-2">All graduated clients have aftercare records!</p>
+                </div>
+                {% endif %}
             </div>
-            {% endfor %}
         </div>
-        {% else %}
-        <div class="text-center py-4">
-            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
-            <p class="text-muted">No graduated clients needing aftercare found.</p>
-            <p class="text-muted">All graduated clients have aftercare records!</p>
-        </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
