@@ -1297,6 +1297,115 @@ def clients_14_18():
         Client.age >= 14,
         Client.age <= 18
     ).order_by(Client.age, Client.firstName).all()
+
+
+# User Management Routes (Admin only)
+@app.route('/users')
+@login_required
+def manage_users():
+    # Only Admin can manage users
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can manage users.')
+        return redirect(url_for('dashboard'))
+    
+    users = User.query.all()
+    return render_template('manage_users.html', users=users)
+
+@app.route('/add_user', methods=['GET', 'POST'])
+@login_required
+def add_user():
+    # Only Admin can add users
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can add users.')
+        return redirect(url_for('dashboard'))
+    
+    if request.method == 'POST':
+        try:
+            username = request.form['username']
+            department = request.form['department']
+            password = request.form['password']
+            
+            # Check if username already exists
+            if User.query.filter_by(username=username).first():
+                flash('Username already exists. Please choose a different username.')
+                return render_template('add_user.html')
+            
+            user = User(username=username, department=department)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            
+            flash(f'User {username} created successfully!')
+            return redirect(url_for('manage_users'))
+        except Exception as e:
+            flash(f'Error creating user: {str(e)}')
+    
+    departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
+    return render_template('add_user.html', departments=departments)
+
+@app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def edit_user(user_id):
+    # Only Admin can edit users
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can edit users.')
+        return redirect(url_for('dashboard'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    if request.method == 'POST':
+        try:
+            username = request.form['username']
+            department = request.form['department']
+            
+            # Check if username already exists (except for current user)
+            existing_user = User.query.filter_by(username=username).first()
+            if existing_user and existing_user.id != user_id:
+                flash('Username already exists. Please choose a different username.')
+                return render_template('edit_user.html', user=user)
+            
+            user.username = username
+            user.department = department
+            
+            # Update password if provided
+            if request.form.get('password'):
+                user.set_password(request.form['password'])
+            
+            db.session.commit()
+            flash(f'User {username} updated successfully!')
+            return redirect(url_for('manage_users'))
+        except Exception as e:
+            flash(f'Error updating user: {str(e)}')
+    
+    departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
+    return render_template('edit_user.html', user=user, departments=departments)
+
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
+@login_required
+def delete_user(user_id):
+    # Only Admin can delete users
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can delete users.')
+        return redirect(url_for('dashboard'))
+    
+    # Prevent deleting current user
+    if user_id == current_user.id:
+        flash('You cannot delete your own account.')
+        return redirect(url_for('manage_users'))
+    
+    user = User.query.get_or_404(user_id)
+    
+    try:
+        username = user.username
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'User {username} deleted successfully!')
+    except Exception as e:
+        flash(f'Error deleting user: {str(e)}')
+    
+    return redirect(url_for('manage_users'))
+
+
     
     # Statistics for this age group
     total_count = len(clients_14_18)
@@ -1342,13 +1451,22 @@ def overall_report():
     return render_template('overall_report.html', client_reports=client_reports)
 
 def create_default_users():
-    """Create default users for each department"""
-    departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
+    """Create default users for each department with proper naming"""
+    default_users = [
+        {'username': 'admin_user', 'department': 'admin', 'password': 'admin123'},
+        {'username': 'social_worker', 'department': 'socialworkers', 'password': 'social123'},
+        {'username': 'counselor', 'department': 'counselling', 'password': 'counsel123'},
+        {'username': 'educator', 'department': 'education', 'password': 'edu123'},
+        {'username': 'empowerment_staff', 'department': 'empowerment', 'password': 'empower123'}
+    ]
 
-    for dept in departments:
-        if not User.query.filter_by(username=dept).first():
-            user = User(username=dept, department=dept)
-            user.set_password('password123')  # Change this in production!
+    for user_data in default_users:
+        if not User.query.filter_by(username=user_data['username']).first():
+            user = User(
+                username=user_data['username'], 
+                department=user_data['department']
+            )
+            user.set_password(user_data['password'])
             db.session.add(user)
 
     db.session.commit()
