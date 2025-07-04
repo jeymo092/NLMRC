@@ -100,7 +100,7 @@
                             {% for visit in home_visits %}
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <a href="{{ url_for('view_client', client_id=visit.client.id) }}" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                                    <a href="{{ url_for('client_home_visits', client_id=visit.client.id) }}" class="text-blue-600 hover:text-blue-800 font-medium transition-colors">
                                         {{ visit.client.firstName }} {{ visit.client.secondName }}
                                     </a>
                                 </td>
