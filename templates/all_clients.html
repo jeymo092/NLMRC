@@ -350,7 +350,6 @@
                     <th>Status</th>
                     <th class="hidden md:table-cell">Admission Type</th>
                     <th class="hidden lg:table-cell">Registered</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -408,55 +407,6 @@
                     </td>
                     <td class="hidden lg:table-cell text-muted">
                         {{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else '—' }}
-                    </td>
-                    <td>
-                        <div class="relative">
-                            <button type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors" 
-                                    onclick="toggleDropdown({{ client.id }})">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
-                                </svg>
-                            </button>
-                            <div id="dropdown-{{ client.id }}" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-10 overflow-hidden">
-                                <div class="py-2">
-                                    <a href="{{ url_for('view_client', client_id=client.id) }}" 
-                                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                        </svg>
-                                        View Details
-                                    </a>
-                                    {% if client.status == 'ACTIVE' %}
-                                    <a href="{{ url_for('add_home_visit', client_id=client.id) }}" 
-                                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                                        </svg>
-                                        Add Home Visit
-                                    </a>
-                                    {% endif %}
-                                    {% if current_user.department in ['admin', 'socialworkers'] %}
-                                    <div class="border-t border-gray-100 my-1"></div>
-                                    <a href="{{ url_for('edit_client', client_id=client.id) }}" 
-                                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                        Edit Client
-                                    </a>
-                                    {% endif %}
-                                    {% if current_user.department == 'admin' %}
-                                    <a href="#" onclick="confirmDeleteClient('{{ client.id }}', '{{ client.firstName }} {{ client.secondName }}')" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                        Delete Client
-                                    </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -590,26 +540,10 @@
 </div>
 
 <script>
-function toggleDropdown(clientId) {
-    const dropdown = document.getElementById('dropdown-' + clientId);
-    // Close all other dropdowns
-    document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
-        if (d.id !== 'dropdown-' + clientId) {
-            d.classList.add('hidden');
-        }
-    });
-    dropdown.classList.toggle('hidden');
-}
-
 function confirmDeleteClient(clientId, clientName) {
     document.getElementById('clientNameToDelete').textContent = clientName;
     document.getElementById('deleteClientForm').action = '/delete_client/' + clientId;
     document.getElementById('deleteClientModal').classList.remove('hidden');
-
-    // Close the dropdown
-    document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
-        d.classList.add('hidden');
-    });
 }
 
 function closeDeleteModal() {
@@ -620,15 +554,6 @@ function closeDeleteModal() {
 document.getElementById('deleteClientModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeDeleteModal();
-    }
-});
-
-// Close dropdowns when clicking outside
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('button')) {
-        document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
-            d.classList.add('hidden');
-        });
     }
 });
 </script>
