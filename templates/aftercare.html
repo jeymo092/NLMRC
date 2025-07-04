@@ -127,6 +127,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
+                                        {% for record in aftercare_records %}
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-2 py-4 w-20">
                                                 <div class="text-sm font-medium text-gray-900 truncate">
@@ -179,6 +180,7 @@
                                                 </div>
                                             </td>
                                         </tr>
+                                        {% endfor %}
                                     </tbody>
                                 </table>
                             </div>
