@@ -158,26 +158,26 @@ def logout():
 @login_required
 def dashboard():
     clients = Client.query.all()
-    
+
     # Calculate comprehensive statistics
     total_clients = len(clients)
     active_clients = Client.query.filter_by(status='ACTIVE').count()
     completed_clients = Client.query.filter_by(status='COMPLETE').count()
     street_clients = Client.query.filter_by(admissionType='STREET').count()
     referral_clients = Client.query.filter_by(admissionType='REFERRAL').count()
-    
+
     # Home visit statistics (only for active clients)
     total_home_visits = HomeVisit.query.join(Client).filter(Client.status == 'ACTIVE').count()
     recent_home_visits = HomeVisit.query.join(Client).filter(
         Client.status == 'ACTIVE',
         HomeVisit.createdAt >= datetime.now() - timedelta(days=30)
     ).count()
-    
+
     # Aftercare statistics
     total_aftercare_records = AfterCare.query.count()
     successful_aftercare = AfterCare.query.filter_by(status='SUCCESSFUL').count()
     in_progress_aftercare = AfterCare.query.filter_by(status='IN_PROGRESS').count()
-    
+
     # Age demographics (updated for 14-18 target range)
     age_groups = {
         'under_15': Client.query.filter(Client.age < 14).count(),  # Outside range (too young)
@@ -185,7 +185,7 @@ def dashboard():
         '19_to_25': Client.query.filter(Client.age >= 19, Client.age <= 25).count(),  # Outside range (too old)
         'over_25': Client.query.filter(Client.age > 18).count()  # Outside range (too old)
     }
-    
+
     # Monthly registration trends (last 6 months)
     monthly_registrations = []
     for i in range(6):
@@ -195,56 +195,56 @@ def dashboard():
         else:
             month_end = month_start + timedelta(days=31)
             month_end = month_end.replace(day=1) - timedelta(days=1)
-        
+
         count = Client.query.filter(
             Client.createdAt >= month_start,
             Client.createdAt <= month_end
         ).count()
-        
+
         monthly_registrations.append({
             'month': month_start.strftime('%B %Y'),
             'count': count
         })
-    
+
     monthly_registrations.reverse()  # Show oldest to newest
-    
+
     # Department-specific statistics
     department_stats = {}
-    
+
     # Social Workers specific stats
     if current_user.department == 'socialworkers':
         clients_needing_aftercare = Client.query.filter_by(status='COMPLETE').filter(
             ~Client.id.in_(db.session.query(AfterCare.client_id))
         ).count()
-        
+
         # Aftercare specific stats
         relapsed_clients = AfterCare.query.filter_by(status='RELAPSED').count()
         absconded_clients = AfterCare.query.filter_by(status='ABSCONDED').count()
-        
+
         # Recent activities
         recent_completions = Client.query.filter(
             Client.status == 'COMPLETE',
             Client.createdAt >= datetime.now() - timedelta(days=30)
         ).count()
-        
+
         # Current intake (active clients with intake numbers)
         current_intake = Client.query.filter(
             Client.status == 'ACTIVE',
             Client.intake > 0
         ).count()
-        
+
         # Active clients with recent home visits (last 30 days)
         recent_visits_clients = db.session.query(HomeVisit.client_id).join(Client).filter(
             Client.status == 'ACTIVE',
             HomeVisit.createdAt >= datetime.now() - timedelta(days=30)
         ).distinct().count()
-        
+
         # Get recent home visits with client details for display
         recent_home_visits_details = HomeVisit.query.join(Client).filter(
             HomeVisit.createdAt >= datetime.now() - timedelta(days=7),
             Client.status == 'ACTIVE'
         ).order_by(HomeVisit.createdAt.desc()).limit(5).all()
-        
+
         department_stats.update({
             'clients_needing_aftercare': clients_needing_aftercare,
             'total_home_visits': total_home_visits,
@@ -256,12 +256,12 @@ def dashboard():
             'recent_visits_clients': recent_visits_clients,
             'recent_home_visits_details': recent_home_visits_details
         })
-    
+
     # Education department specific stats
     elif current_user.department == 'education':
         subjects = Subject.query.all()
         total_assessments = StudentMark.query.count()
-        
+
         # Calculate average performance
         all_marks = StudentMark.query.all()
         if all_marks:
@@ -269,21 +269,21 @@ def dashboard():
             average_performance = round(total_percentage / len(all_marks), 1)
         else:
             average_performance = 0
-        
+
         # Education specific metrics
         students_with_assessments = len(set(mark.client_id for mark in all_marks))
         students_without_assessments = active_clients - students_with_assessments
-        
+
         # Recent assessments
         recent_assessments = StudentMark.query.filter(
             StudentMark.createdAt >= datetime.now() - timedelta(days=30)
         ).count()
-        
+
         # Performance trends
         high_performers = StudentMark.query.filter(
             (StudentMark.marks / StudentMark.max_marks) >= 0.75
         ).count()
-        
+
         department_stats.update({
             'subjects': subjects,
             'total_assessments': total_assessments,
@@ -293,22 +293,22 @@ def dashboard():
             'recent_assessments': recent_assessments,
             'high_performers': high_performers
         })
-    
+
     # Counselling department specific stats
     elif current_user.department == 'counselling':
         # Counselling specific metrics
         new_admissions_this_month = Client.query.filter(
             Client.createdAt >= datetime.now().replace(day=1)
         ).count()
-        
+
         long_term_clients = Client.query.filter(
             Client.status == 'ACTIVE',
             Client.createdAt <= datetime.now() - timedelta(days=365)
         ).count()
-        
+
         young_clients = Client.query.filter(Client.age <= 15).count()
         adolescent_clients = Client.query.filter(Client.age >= 16, Client.age <= 18).count()
-        
+
         department_stats.update({
             'new_admissions_this_month': new_admissions_this_month,
             'long_term_clients': long_term_clients,
@@ -316,24 +316,24 @@ def dashboard():
             'adolescent_clients': adolescent_clients,
             'clients_needing_assessment': active_clients  # Assuming all active clients need counselling assessment
         })
-    
+
     # Empowerment department specific stats
     elif current_user.department == 'empowerment':
         # Empowerment/Life skills specific metrics
         clients_over_18 = Client.query.filter(Client.age >= 18, Client.status == 'ACTIVE').count()
         clients_15_to_17 = Client.query.filter(Client.age >= 15, Client.age <= 17, Client.status == 'ACTIVE').count()
-        
+
         # Clients ready for programs
         vocational_ready = Client.query.filter(
             Client.age >= 16,
             Client.status == 'ACTIVE'
         ).count()
-        
+
         life_skills_ready = Client.query.filter(
             Client.age >= 14,
             Client.status == 'ACTIVE'
         ).count()
-        
+
         department_stats.update({
             'clients_over_18': clients_over_18,
             'clients_15_to_17': clients_15_to_17,
@@ -341,17 +341,17 @@ def dashboard():
             'life_skills_ready': life_skills_ready,
             'potential_graduates': completed_clients  # Those who completed programs
         })
-    
+
     # Admin gets comprehensive statistics from all departments
     elif current_user.department == 'admin':
         clients_needing_aftercare = Client.query.filter_by(status='COMPLETE').filter(
             ~Client.id.in_(db.session.query(AfterCare.client_id))
         ).count()
-        
+
         # System-wide metrics
         total_assessments = StudentMark.query.count()
         subjects = Subject.query.all()
-        
+
         department_stats.update({
             'total_home_visits': total_home_visits,
             'recent_home_visits': recent_home_visits,
@@ -361,7 +361,7 @@ def dashboard():
             'system_users': User.query.count(),
             'database_records': total_clients + total_home_visits + total_aftercare_records + total_assessments
         })
-    
+
     statistics = {
         'total_clients': total_clients,
         'active_clients': active_clients,
@@ -374,7 +374,7 @@ def dashboard():
         'age_groups': age_groups,
         'monthly_registrations': monthly_registrations
     }
-    
+
     return render_template('dashboard.html', 
                          clients=clients, 
                          user=current_user, 
@@ -393,7 +393,7 @@ def register_client():
             # Parse date of birth
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
             age = int(request.form['age'])
-            
+
             # Validate age range (14-18 years)
             if age < 14 or age > 18:
                 flash(f'Client age must be between 14 and 18 years. Current age: {age} years.')
@@ -451,7 +451,7 @@ def edit_client(client_id):
             # Parse date of birth
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
             age = int(request.form['age'])
-            
+
             # Validate age range (14-18 years)
             if age < 14 or age > 18:
                 flash(f'Client age must be between 14 and 18 years. Current age: {age} years.')
@@ -523,7 +523,7 @@ def export_client_pdf(client_id):
 
     # Define professional typography styles
     styles = getSampleStyleSheet()
-    
+
     # Organization Header Style - Professional and bold
     org_title_style = ParagraphStyle(
         'OrgTitle',
@@ -535,7 +535,7 @@ def export_client_pdf(client_id):
         fontName='Times-Bold',
         letterSpacing=0.5
     )
-    
+
     # Report Title Style
     report_title_style = ParagraphStyle(
         'ReportTitle',
@@ -547,7 +547,7 @@ def export_client_pdf(client_id):
         fontName='Times-Roman',
         letterSpacing=0.3
     )
-    
+
     # Main Section Header - Clean and professional
     section_style = ParagraphStyle(
         'SectionHeader',
@@ -562,7 +562,7 @@ def export_client_pdf(client_id):
         leftIndent=0,
         rightIndent=0
     )
-    
+
     # Subsection Header Style
     subsection_style = ParagraphStyle(
         'SubsectionHeader',
@@ -573,7 +573,7 @@ def export_client_pdf(client_id):
         textColor=PRIMARY_BLUE,
         fontName='Times-Bold'
     )
-    
+
     # Body text style - Clean and readable
     body_style = ParagraphStyle(
         'BodyText',
@@ -612,7 +612,7 @@ def export_client_pdf(client_id):
         ['Client ID:', f"#{client.id:04d}"],
         ['Report Classification:', 'Confidential']
     ]
-    
+
     metadata_table = Table(metadata_data, colWidths=[3.5*cm, 10*cm])
     metadata_table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (0, -1), SECONDARY_BLUE),
@@ -635,7 +635,7 @@ def export_client_pdf(client_id):
     # SECTION 1: Personal Information
     elements.append(Paragraph("PERSONAL INFORMATION", section_style))
     elements.append(Spacer(1, 3))
-    
+
     personal_data = [
         ['Full Name', f"{client.firstName} {client.secondName}"],
         ['Nickname', client.nickname or 'Not specified'],
@@ -667,7 +667,7 @@ def export_client_pdf(client_id):
     # SECTION 2: Admission Details
     elements.append(Paragraph("ADMISSION DETAILS", section_style))
     elements.append(Spacer(1, 6))
-    
+
     admission_data = [
         ['Admission Type', client.admissionType.replace('_', ' ').title()],
         ['Intake Number', f"#{client.intake}" if client.intake > 0 else 'Not assigned']
@@ -692,7 +692,7 @@ def export_client_pdf(client_id):
         ('FONTNAME', (1, 0), (1, -1), 'Times-Roman'),
         ('FONTSIZE', (0, 0), (-1, -1), 9),
         ('TOPPADDING', (0, 0), (-1, -1), 6),
-        ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ('BOTTOMPADDING', (0, 0), (-1, -1, -1), 6),
         ('LEFTPADDING', (0, 0), (-1, -1), 8),
         ('RIGHTPADDING', (0, 0), (-1, -1), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey)
@@ -704,7 +704,7 @@ def export_client_pdf(client_id):
     if client.educationLevel or client.grade or client.secondaryForm:
         elements.append(Paragraph("EDUCATIONAL BACKGROUND", section_style))
         elements.append(Spacer(1, 6))
-        
+
         education_data = []
         if client.educationLevel:
             education_data.append(['Education Level', client.educationLevel])
@@ -736,7 +736,7 @@ def export_client_pdf(client_id):
     if client.parentGuardianName or client.parentGuardianLocation or client.parentGuardianContact:
         elements.append(Paragraph("FAMILY/GUARDIAN INFORMATION", section_style))
         elements.append(Spacer(1, 6))
-        
+
         family_data = []
         if client.parentGuardianName:
             family_data.append(['Parent/Guardian Name', client.parentGuardianName])
@@ -768,27 +768,27 @@ def export_client_pdf(client_id):
     if home_visits:
         elements.append(Paragraph("HOME VISIT RECORDS", section_style))
         elements.append(Spacer(1, 6))
-        
+
         # Summary
         summary_text = f"Total home visits conducted: <b>{len(home_visits)}</b> | Latest visit: <b>{home_visits[0].date.strftime('%B %d, %Y')}</b>"
         elements.append(Paragraph(summary_text, body_style))
         elements.append(Spacer(1, 10))
-        
+
         for i, visit in enumerate(home_visits, 1):
             # Keep each visit together on the same page
             visit_elements = []
-            
+
             # Visit header with number and date
             visit_header = f"Visit #{i} • {visit.date.strftime('%B %d, %Y')}"
             visit_elements.append(Paragraph(visit_header, subsection_style))
-            
+
             # Visit details in compact table
             visit_info = [
                 ['Conducted By:', visit.conductedBy],
                 ['Department:', visit.department.replace('_', ' ').title()],
                 ['Recorded:', visit.createdAt.strftime('%B %d, %Y') if visit.createdAt else 'Not available']
             ]
-            
+
             visit_info_table = Table(visit_info, colWidths=[2.5*cm, 11*cm])
             visit_info_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (0, -1), colors.Color(0.9, 0.95, 1)),
@@ -807,7 +807,7 @@ def export_client_pdf(client_id):
             ]))
             visit_elements.append(visit_info_table)
             visit_elements.append(Spacer(1, 6))
-            
+
             # Visit Report
             if visit.report:
                 visit_elements.append(Paragraph("<b>Visit Report:</b>", body_style))
@@ -817,7 +817,7 @@ def export_client_pdf(client_id):
                     report_text = report_text[:500] + "..."
                 visit_elements.append(Paragraph(report_text, content_style))
                 visit_elements.append(Spacer(1, 6))
-            
+
             # Recommendations
             if visit.recommendations:
                 visit_elements.append(Paragraph("<b>Recommendations:</b>", body_style))
@@ -826,10 +826,10 @@ def export_client_pdf(client_id):
                     recommendations_text = recommendations_text[:500] + "..."
                 visit_elements.append(Paragraph(recommendations_text, content_style))
                 visit_elements.append(Spacer(1, 6))
-            
+
             # Add the visit as a KeepTogether group
             elements.append(KeepTogether(visit_elements))
-            
+
             # Add separator between visits (except for the last one)
             if i < len(home_visits):
                 elements.append(Spacer(1, 8))
@@ -852,27 +852,27 @@ def export_client_pdf(client_id):
     # Professional page template
     def professional_page_template(canvas, doc):
         canvas.saveState()
-        
+
         # Header with logo area and title
         canvas.setFillColor(PRIMARY_BLUE)
         canvas.rect(1.5*cm, A4[1] - 1.5*cm, A4[0] - 3*cm, 8*mm, fill=1)
-        
+
         canvas.setFillColor(colors.white)
         canvas.setFont('Times-Bold', 10)
         canvas.drawString(2*cm, A4[1] - 1.2*cm, f"NEW LIFE MWANGAZA")
-        
+
         canvas.setFont('Times-Roman', 8)
         canvas.drawRightString(A4[0] - 2*cm, A4[1] - 1.2*cm, f"Client: {client.firstName} {client.secondName}")
-        
+
         # Footer with page number and confidentiality notice
         canvas.setFillColor(colors.Color(0.95, 0.95, 0.95))
         canvas.rect(1.5*cm, 0.5*cm, A4[0] - 3*cm, 8*mm, fill=1)
-        
+
         canvas.setFillColor(TEXT_GRAY)
         canvas.setFont('Times-Roman', 7)
         canvas.drawString(2*cm, 0.8*cm, "© New Life Mwangaza - Confidential Document")
         canvas.drawRightString(A4[0] - 2*cm, 0.8*cm, f"Page {doc.page}")
-        
+
         canvas.restoreState()
 
     # Build PDF with professional styling
@@ -1115,24 +1115,24 @@ def api_clients():
 def api_next_intake():
     # Get current year
     current_year = datetime.now().year
-    
+
     # Get the highest intake number for current year
     # Intake format: YYYY### (e.g., 2025001, 2025002, etc.)
     year_prefix = current_year * 1000  # e.g., 2025000
     year_max = year_prefix + 999       # e.g., 2025999
-    
+
     highest_intake = db.session.query(db.func.max(Client.intake)).filter(
         Client.intake >= year_prefix,
         Client.intake <= year_max
     ).scalar()
-    
+
     # Generate next intake number
     if highest_intake:
         next_intake = highest_intake + 1
     else:
         # First intake for this year
         next_intake = year_prefix + 1  # e.g., 2025001
-    
+
     return jsonify({'next_intake': next_intake})
 
 # Education Management Routes
@@ -1143,7 +1143,7 @@ def education():
     if current_user.department != 'education':
         flash('Access denied. Only Education department can access this section.')
         return redirect(url_for('dashboard'))
-    
+
     subjects = Subject.query.all()
     active_clients = Client.query.filter_by(status='ACTIVE').all()
     return render_template('education.html', subjects=subjects, active_clients=active_clients)
@@ -1155,7 +1155,7 @@ def add_subject():
     if current_user.department != 'education':
         flash('Access denied. Only Education department can add subjects.')
         return redirect(url_for('dashboard'))
-    
+
     if request.method == 'POST':
         try:
             subject = Subject(
@@ -1163,14 +1163,14 @@ def add_subject():
                 description=request.form.get('description', ''),
                 createdBy=current_user.id
             )
-            
+
             db.session.add(subject)
             db.session.commit()
             flash('Subject added successfully!')
             return redirect(url_for('education'))
         except Exception as e:
             flash(f'Error adding subject: {str(e)}')
-    
+
     return render_template('add_subject.html')
 
 @app.route('/add_marks/<int:client_id>', methods=['GET', 'POST'])
@@ -1180,18 +1180,18 @@ def add_marks(client_id):
     if current_user.department != 'education':
         flash('Access denied. Only Education department can add marks.')
         return redirect(url_for('dashboard'))
-    
+
     client = Client.query.get_or_404(client_id)
-    
+
     # Only allow marks for active clients
     if client.status != 'ACTIVE':
         flash('Marks can only be added for active clients.')
         return redirect(url_for('education'))
-    
+
     if request.method == 'POST':
         try:
             test_date = datetime.strptime(request.form['test_date'], '%Y-%m-%d').date()
-            
+
             student_mark = StudentMark(
                 client_id=client_id,
                 subject_id=int(request.form['subject_id']),
@@ -1203,14 +1203,14 @@ def add_marks(client_id):
                 notes=request.form.get('notes', ''),
                 createdBy=current_user.id
             )
-            
+
             db.session.add(student_mark)
             db.session.commit()
             flash('Marks added successfully!')
             return redirect(url_for('client_report', client_id=client_id))
         except Exception as e:
             flash(f'Error adding marks: {str(e)}')
-    
+
     subjects = Subject.query.all()
     return render_template('add_marks.html', client=client, subjects=subjects)
 
@@ -1221,31 +1221,31 @@ def client_report(client_id):
     if current_user.department != 'education':
         flash('Access denied. Only Education department can view academic reports.')
         return redirect(url_for('dashboard'))
-    
+
     client = Client.query.get_or_404(client_id)
     marks = StudentMark.query.filter_by(client_id=client_id).join(Subject).order_by(StudentMark.year.desc(), StudentMark.term.desc(), Subject.name).all()
-    
+
     # Calculate overall performance
     total_percentage = 0
     total_subjects = 0
-    
+
     for mark in marks:
         percentage = (mark.marks / mark.max_marks) * 100
         total_percentage += percentage
         total_subjects += 1
-    
+
     overall_average = total_percentage / total_subjects if total_subjects > 0 else 0
-    
+
     return render_template('client_report.html', client=client, marks=marks, overall_average=overall_average)
 
 @app.route('/search_clients')
 @login_required
 def search_clients():
     query = request.args.get('q', '').strip()
-    
+
     if not query:
         return redirect(url_for('dashboard'))
-    
+
     # Search by name, intake, or nickname
     clients = Client.query.filter(
         db.or_(
@@ -1255,7 +1255,7 @@ def search_clients():
             Client.intake.like(f'%{query}%')
         )
     ).order_by(Client.firstName, Client.secondName).all()
-    
+
     return render_template('search_results.html', clients=clients, query=query)
 
 @app.route('/all_clients')
@@ -1264,7 +1264,7 @@ def all_clients():
     # Get all clients with pagination support
     page = request.args.get('page', 1, type=int)
     per_page = 50  # Show 50 clients per page
-    
+
     # Order by status (ACTIVE first), then by name
     clients = Client.query.order_by(
         Client.status.desc(),  # ACTIVE comes before COMPLETE alphabetically
@@ -1273,12 +1273,12 @@ def all_clients():
     ).paginate(
         page=page, per_page=per_page, error_out=False
     )
-    
+
     # Statistics for all clients
     total_count = Client.query.count()
     active_count = Client.query.filter_by(status='ACTIVE').count()
     completed_count = Client.query.filter_by(status='COMPLETE').count()
-    
+
     stats = {
         'total': total_count,
         'active': active_count,
@@ -1286,7 +1286,7 @@ def all_clients():
         'street_admissions': Client.query.filter_by(admissionType='STREET').count(),
         'referral_admissions': Client.query.filter_by(admissionType='REFERRAL').count()
     }
-    
+
     return render_template('all_clients.html', clients=clients, stats=stats)
 
 @app.route('/clients_14_18')
@@ -1307,7 +1307,7 @@ def manage_users():
     if current_user.department != 'admin':
         flash('Access denied. Only Admin can manage users.')
         return redirect(url_for('dashboard'))
-    
+
     users = User.query.all()
     return render_template('manage_users.html', users=users)
 
@@ -1318,28 +1318,28 @@ def add_user():
     if current_user.department != 'admin':
         flash('Access denied. Only Admin can add users.')
         return redirect(url_for('dashboard'))
-    
+
     if request.method == 'POST':
         try:
             username = request.form['username']
             department = request.form['department']
             password = request.form['password']
-            
+
             # Check if username already exists
             if User.query.filter_by(username=username).first():
                 flash('Username already exists. Please choose a different username.')
                 return render_template('add_user.html')
-            
+
             user = User(username=username, department=department)
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
-            
+
             flash(f'User {username} created successfully!')
             return redirect(url_for('manage_users'))
         except Exception as e:
             flash(f'Error creating user: {str(e)}')
-    
+
     departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
     return render_template('add_user.html', departments=departments)
 
@@ -1350,33 +1350,33 @@ def edit_user(user_id):
     if current_user.department != 'admin':
         flash('Access denied. Only Admin can edit users.')
         return redirect(url_for('dashboard'))
-    
+
     user = User.query.get_or_404(user_id)
-    
+
     if request.method == 'POST':
         try:
             username = request.form['username']
             department = request.form['department']
-            
+
             # Check if username already exists (except for current user)
             existing_user = User.query.filter_by(username=username).first()
             if existing_user and existing_user.id != user_id:
                 flash('Username already exists. Please choose a different username.')
                 return render_template('edit_user.html', user=user)
-            
+
             user.username = username
             user.department = department
-            
+
             # Update password if provided
             if request.form.get('password'):
                 user.set_password(request.form['password'])
-            
+
             db.session.commit()
             flash(f'User {username} updated successfully!')
             return redirect(url_for('manage_users'))
         except Exception as e:
             flash(f'Error updating user: {str(e)}')
-    
+
     departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
     return render_template('edit_user.html', user=user, departments=departments)
 
@@ -1386,15 +1386,15 @@ def delete_user(user_id):
     # Only Admin can delete users
     if current_user.department != 'admin':
         flash('Access denied. Only Admin can delete users.')
-        return redirect(url_for('dashboard'))
-    
+        return redirect(url_for('manage_users'))
+
     # Prevent deleting current user
     if user_id == current_user.id:
         flash('You cannot delete your own account.')
         return redirect(url_for('manage_users'))
-    
+
     user = User.query.get_or_404(user_id)
-    
+
     try:
         username = user.username
         db.session.delete(user)
@@ -1402,16 +1402,50 @@ def delete_user(user_id):
         flash(f'User {username} deleted successfully!')
     except Exception as e:
         flash(f'Error deleting user: {str(e)}')
-    
+
     return redirect(url_for('manage_users'))
 
+@app.route('/delete_client/<int:client_id>', methods=['POST'])
+@login_required
+def delete_client(client_id):
+    # Only Admin can delete clients
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can delete clients.')
+        return redirect(url_for('dashboard'))
 
-    
+    client = Client.query.get_or_404(client_id)
+
+    try:
+        client_name = f"{client.firstName} {client.secondName}"
+
+        # Delete related records first (due to foreign key constraints)
+        # Delete home visits
+        HomeVisit.query.filter_by(client_id=client_id).delete()
+
+        # Delete aftercare records
+        AfterCare.query.query.filter_by(client_id=client_id).delete()
+
+        # Delete student marks
+        StudentMark.query.filter_by(client_id=client_id).delete()
+
+        # Finally delete the client
+        db.session.delete(client)
+        db.session.commit()
+
+        flash(f'Client {client_name} and all related records have been permanently deleted!')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting client: {str(e)}')
+
+    return redirect(url_for('dashboard'))
+
+
+
     # Statistics for this age group
     total_count = len(clients_14_18)
     active_count = len([c for c in clients_14_18 if c.status == 'ACTIVE'])
     completed_count = len([c for c in clients_14_18 if c.status == 'COMPLETE'])
-    
+
     stats = {
         'total': total_count,
         'active': active_count,
@@ -1419,7 +1453,7 @@ def delete_user(user_id):
         'street_admissions': len([c for c in clients_14_18 if c.admissionType == 'STREET']),
         'referral_admissions': len([c for c in clients_14_18 if c.admissionType == 'REFERRAL'])
     }
-    
+
     return render_template('clients_14_18.html', clients=clients_14_18, stats=stats)
 
 @app.route('/overall_report')
@@ -1429,11 +1463,11 @@ def overall_report():
     if current_user.department != 'education':
         flash('Access denied. Only Education department can view overall reports.')
         return redirect(url_for('dashboard'))
-    
+
     # Get all active clients with their marks
     active_clients = Client.query.filter_by(status='ACTIVE').all()
     client_reports = []
-    
+
     for client in active_clients:
         marks = StudentMark.query.filter_by(client_id=client.id).all()
         if marks:
@@ -1444,10 +1478,10 @@ def overall_report():
                 'average': average,
                 'total_subjects': len(marks)
             })
-    
+
     # Sort by average in descending order
     client_reports.sort(key=lambda x: x['average'], reverse=True)
-    
+
     return render_template('overall_report.html', client_reports=client_reports)
 
 def create_default_users():
