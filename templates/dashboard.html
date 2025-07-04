@@ -3,29 +3,21 @@
 {% block title %}Dashboard - New Life Mwangaza{% endblock %}
 
 {% block content %}
-<div class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6">
-    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Client Management Dashboard</h2>
-    <div class="flex flex-col sm:flex-row gap-3">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Client Management Dashboard</h2>
+    <div class="d-flex gap-2">
         <!-- Search Form -->
-        <form method="GET" action="{{ url_for('search_clients') }}" class="flex flex-1 lg:flex-none">
-            <input type="text" name="q" 
-                   class="flex-1 lg:w-64 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm" 
+        <form method="GET" action="{{ url_for('search_clients') }}" class="d-flex">
+            <input type="text" name="q" class="form-control form-control-sm me-2" 
                    placeholder="Search by name, intake, or nickname..." 
-                   value="{{ request.args.get('q', '') }}">
-            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-r-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-                <span class="hidden sm:inline ml-2">Search</span>
+                   value="{{ request.args.get('q', '') }}" 
+                   style="width: 250px;">
+            <button type="submit" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-search"></i> Search
             </button>
         </form>
         {% if current_user.department in ['admin', 'socialworkers'] %}
-        <a href="{{ url_for('register_client') }}" class="inline-flex items-center justify-center px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
-            Register New Client
-        </a>
+        <a href="{{ url_for('register_client') }}" class="btn btn-success">Register New Client</a>
         {% endif %}
     </div>
 </div>
@@ -33,67 +25,67 @@
 
 
 <!-- Department-Specific Statistics Row -->
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-8"></div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
     {% if current_user.department == 'socialworkers' %}
     <!-- Social Workers Dashboard -->
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Active Clients</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">with Intake</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Active Clients</p>
+                <p class="text-sm text-gray-600">with Intake</p>
             </div>
-            <div class="bg-blue-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-blue-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">{{ current_intake or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-gray-900">{{ current_intake or 0 }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Aftercare</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">Records</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Aftercare</p>
+                <p class="text-sm text-gray-600">Records</p>
             </div>
-            <div class="bg-green-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-green-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">{{ statistics.total_aftercare_records }}</h3>
+        <h3 class="text-2xl font-bold text-green-600">{{ statistics.total_aftercare_records }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Total Home</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">Visits</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Total Home</p>
+                <p class="text-sm text-gray-600">Visits</p>
             </div>
-            <div class="bg-red-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-red-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-red-600">{{ total_home_visits or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-red-600">{{ total_home_visits or 0 }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Clients Visited</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">(30 days)</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Clients Visited</p>
+                <p class="text-sm text-gray-600">(30 days)</p>
             </div>
-            <div class="bg-purple-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-blue-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600">{{ recent_visits_clients or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-blue-600">{{ recent_visits_clients or 0 }}</h3>
     </div>
     
     {% elif current_user.department == 'education' %}
@@ -284,79 +276,79 @@
     
     {% else %}
     <!-- Admin Dashboard - General Statistics -->
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Total</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">Clients</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Total</p>
+                <p class="text-sm text-gray-600">Clients</p>
             </div>
-            <div class="bg-blue-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 515.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            <div class="bg-blue-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">{{ statistics.total_clients or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-blue-600">{{ statistics.total_clients or 0 }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Active</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">Clients</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Active</p>
+                <p class="text-sm text-gray-600">Clients</p>
             </div>
-            <div class="bg-green-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-green-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">{{ statistics.active_clients or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-green-600">{{ statistics.active_clients or 0 }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Completed</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">Cases</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Completed</p>
+                <p class="text-sm text-gray-600">Cases</p>
             </div>
-            <div class="bg-yellow-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-yellow-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-yellow-600">{{ statistics.completed_clients or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-yellow-600">{{ statistics.completed_clients or 0 }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Street</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">Admissions</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Street</p>
+                <p class="text-sm text-gray-600">Admissions</p>
             </div>
-            <div class="bg-purple-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-purple-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-600">{{ statistics.street_clients or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-purple-600">{{ statistics.street_clients or 0 }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
-        <div class="flex items-start justify-between mb-3">
-            <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-gray-600 font-medium leading-tight">Referral</p>
-                <p class="text-xs sm:text-sm text-gray-600 leading-tight">Admissions</p>
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Referral</p>
+                <p class="text-sm text-gray-600">Admissions</p>
             </div>
-            <div class="bg-indigo-100 p-2.5 sm:p-3 rounded-full flex-shrink-0 ml-3">
-                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-indigo-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
                 </svg>
             </div>
         </div>
-        <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-indigo-600">{{ statistics.referral_clients or 0 }}</h3>
+        <h3 class="text-2xl font-bold text-indigo-600">{{ statistics.referral_clients or 0 }}</h3>
     </div>
     {% endif %}
 </div>
