@@ -16,7 +16,7 @@
                 </span>
             </p>
         </div>
-        
+
         <!-- Actions Section -->
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <!-- Enhanced Search Form -->
@@ -41,7 +41,7 @@
                     </button>
                 </div>
             </form>
-            
+
             {% if current_user.department in ['admin', 'socialworkers'] %}
             <!-- Register New Client Button -->
             <a href="{{ url_for('register_client') }}" 
@@ -54,7 +54,7 @@
             {% endif %}
         </div>
     </div>
-    
+
     <!-- Quick Stats Row (Optional - can be uncommented if needed) -->
     <!-- <div class="flex items-center justify-between pt-4 mt-4 border-t border-gray-100">
         <div class="flex items-center space-x-6 text-sm text-gray-600">
@@ -72,7 +72,7 @@
             </div>
         </div>
         <div class="text-xs text-gray-500">
-            Last updated: {{ moment().format('MMM DD, YYYY') }}
+            Last updated: Today
         </div>
     </div> -->
 </div>
@@ -97,7 +97,7 @@
         </div>
         <h3 class="text-2xl font-bold text-gray-900">{{ current_intake or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -112,7 +112,7 @@
         </div>
         <h3 class="text-2xl font-bold text-green-600">{{ statistics.total_aftercare_records }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -127,7 +127,7 @@
         </div>
         <h3 class="text-2xl font-bold text-red-600">{{ total_home_visits or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -142,7 +142,7 @@
         </div>
         <h3 class="text-2xl font-bold text-blue-600">{{ recent_visits_clients or 0 }}</h3>
     </div>
-    
+
     {% elif current_user.department == 'education' %}
     <!-- Education Dashboard -->
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
@@ -159,7 +159,7 @@
         </div>
         <h3 class="text-2xl font-bold text-green-600">{{ subjects|length if subjects else 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -174,7 +174,7 @@
         </div>
         <h3 class="text-2xl font-bold text-blue-600">{{ total_assessments if total_assessments else 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -189,7 +189,7 @@
         </div>
         <h3 class="text-2xl font-bold text-yellow-600">{{ high_performers if high_performers else 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -204,7 +204,7 @@
         </div>
         <h3 class="text-2xl font-bold text-red-600">{{ students_without_assessments if students_without_assessments else 0 }}</h3>
     </div>
-    
+
     {% elif current_user.department == 'counselling' %}
     <!-- Counselling Dashboard -->
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
@@ -221,7 +221,7 @@
         </div>
         <h3 class="text-2xl font-bold text-green-600">{{ new_admissions_this_month or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -236,7 +236,7 @@
         </div>
         <h3 class="text-2xl font-bold text-blue-600">{{ young_clients or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -251,7 +251,7 @@
         </div>
         <h3 class="text-2xl font-bold text-yellow-600">{{ adolescent_clients or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -266,7 +266,7 @@
         </div>
         <h3 class="text-2xl font-bold text-red-600">{{ long_term_clients or 0 }}</h3>
     </div>
-    
+
     {% elif current_user.department == 'empowerment' %}
     <!-- Empowerment Dashboard -->
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
@@ -283,7 +283,7 @@
         </div>
         <h3 class="text-2xl font-bold text-green-600">{{ vocational_ready or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -298,7 +298,7 @@
         </div>
         <h3 class="text-2xl font-bold text-blue-600">{{ life_skills_ready or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -313,7 +313,7 @@
         </div>
         <h3 class="text-2xl font-bold text-yellow-600">{{ clients_over_18 or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -328,7 +328,7 @@
         </div>
         <h3 class="text-2xl font-bold text-red-600">{{ potential_graduates or 0 }}</h3>
     </div>
-    
+
     {% else %}
     <!-- Admin Dashboard - General Statistics -->
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
@@ -339,13 +339,13 @@
             </div>
             <div class="bg-blue-100 p-3 rounded-full">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                 </svg>
             </div>
         </div>
         <h3 class="text-2xl font-bold text-blue-600">{{ statistics.total_clients or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -360,7 +360,7 @@
         </div>
         <h3 class="text-2xl font-bold text-green-600">{{ statistics.active_clients or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -375,7 +375,7 @@
         </div>
         <h3 class="text-2xl font-bold text-yellow-600">{{ statistics.completed_clients or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
@@ -390,7 +390,7 @@
         </div>
         <h3 class="text-2xl font-bold text-purple-600">{{ statistics.street_clients or 0 }}</h3>
     </div>
-    
+
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
         <div class="flex items-center justify-between mb-4">
             <div class="text-left">
