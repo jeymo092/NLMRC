@@ -4,15 +4,16 @@
 {% block title %}Clients Aged 14-18 - New Life Mwangaza{% endblock %}
 
 {% block content %}
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-5">
-    <div class="mb-3 mb-md-0">
-        <h1 class="text-dark fw-bold mb-2">Clients Aged 14-18 Years</h1>
-        <p class="text-muted mb-0">Target demographic overview and management</p>
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+    <div class="mb-4 md:mb-0">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Clients Aged 14-18 Years</h1>
+        <p class="text-gray-600">Target demographic overview and management</p>
     </div>
-    <div class="d-flex flex-wrap gap-2">
-        <span class="badge bg-primary fs-6 px-3 py-2">{{ stats.total }} Total</span>
-        <span class="badge bg-success fs-6 px-3 py-2">{{ stats.active }} Active</span>
-        <span class="badge bg-info fs-6 px-3 py-2">{{ stats.completed }} Completed</span>
+    <div class="flex flex-wrap gap-2">
+        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{{ stats.total }} Total</span>
+        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">{{ stats.active }} Active</span>
+        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">{{ stats.completed }} Completed</span>
     </div>
 </div>
 
@@ -84,108 +85,123 @@
 </div>
 
 <!-- Clients List -->
-<div class="card shadow-sm border-0" style="border-radius: 15px;">
-    <div class="card-header bg-white border-0 py-4" style="border-radius: 15px 15px 0 0;">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="text-dark fw-bold mb-0">All Clients Aged 14-18 Years</h4>
-            <small class="text-muted">{{ clients|length }} client{{ 's' if clients|length != 1 else '' }}</small>
+<div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center">
+            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <h4 class="text-lg font-semibold text-gray-900">All Clients Aged 14-18 Years</h4>
+        </div>
+        <div class="text-sm text-gray-500">
+            {{ clients|length }} client{{ 's' if clients|length != 1 else '' }}
         </div>
     </div>
-    <div class="card-body p-0">
-        {% if clients %}
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
-                    <tr>
-                        <th class="border-0 fw-semibold text-dark py-3">Name</th>
-                        <th class="border-0 fw-semibold text-dark py-3">Age</th>
-                        <th class="border-0 fw-semibold text-dark py-3">Intake</th>
-                        <th class="border-0 fw-semibold text-dark py-3">Status</th>
-                        <th class="border-0 fw-semibold text-dark py-3">Admission Type</th>
-                        <th class="border-0 fw-semibold text-dark py-3">Education Level</th>
-                        <th class="border-0 fw-semibold text-dark py-3">Registration Date</th>
-                        <th class="border-0 fw-semibold text-dark py-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for client in clients %}
-                    <tr class="border-0">
-                        <td class="py-3 border-0">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                        <span class="fw-bold">{{ client.firstName[0] }}{{ client.secondName[0] }}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="fw-semibold text-dark">{{ client.firstName }} {{ client.secondName }}</div>
-                                    {% if client.nickname %}
-                                    <small class="text-muted">"{{ client.nickname }}"</small>
-                                    {% endif %}
-                                </div>
+
+    {% if clients %}
+    <div class="overflow-x-auto">
+        <table class="w-full border-collapse">
+            <thead>
+                <tr class="border-b border-gray-200">
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Name</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Age</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Intake</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Status</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Admission Type</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Education Level</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Registration Date</th>
+                    <th class="text-left py-3 px-4 font-medium text-gray-700 text-sm">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for client in clients %}
+                <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                    <td class="py-4 px-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-semibold mr-3">
+                                {{ client.firstName[0] }}{{ client.secondName[0] }}
                             </div>
-                        </td>
-                        <td class="py-3 border-0">
-                            <span class="badge bg-light text-dark fw-bold fs-6">{{ client.age }}</span>
-                        </td>
-                        <td class="py-3 border-0">
-                            <code class="bg-light px-2 py-1 rounded">{{ client.intake if client.intake else 'N/A' }}</code>
-                        </td>
-                        <td class="py-3 border-0">
-                            <span class="badge bg-{{ 'success' if client.status == 'ACTIVE' else 'warning' if client.status == 'COMPLETE' else 'secondary' }} px-3 py-2">
-                                {{ client.status }}
-                            </span>
-                        </td>
-                        <td class="py-3 border-0">
-                            <span class="badge bg-{{ 'primary' if client.admissionType == 'STREET' else 'info' }} px-3 py-2">
-                                {{ client.admissionType }}
-                            </span>
-                        </td>
-                        <td class="py-3 border-0">
-                            <span class="text-muted">{{ client.educationLevel or client.grade or 'Not specified' }}</span>
-                        </td>
-                        <td class="py-3 border-0">
-                            <span class="text-muted">{{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else 'N/A' }}</span>
-                        </td>
-                        <td class="py-3 border-0">
-                            <div class="d-flex gap-2">
-                                <a href="{{ url_for('view_client', client_id=client.id) }}" class="btn btn-sm btn-outline-primary rounded-pill">
-                                    <i class="fas fa-eye me-1"></i>View
-                                </a>
-                                {% if client.status == 'ACTIVE' %}
-                                <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="btn btn-sm btn-outline-info rounded-pill">
-                                    <i class="fas fa-home me-1"></i>Visit
-                                </a>
+                            <div>
+                                <div class="font-medium text-gray-900">{{ client.firstName }} {{ client.secondName }}</div>
+                                {% if client.nickname %}
+                                <div class="text-sm text-gray-500">"{{ client.nickname }}"</div>
                                 {% endif %}
                             </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </div>
+                    </td>
+                    <td class="py-4 px-4">
+                        <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-sm font-medium">{{ client.age }}</span>
+                    </td>
+                    <td class="py-4 px-4">
+                        <code class="bg-gray-100 px-2 py-1 rounded text-sm">{{ client.intake if client.intake else 'N/A' }}</code>
+                    </td>
+                    <td class="py-4 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium
+                            {% if client.status == 'ACTIVE' %}bg-green-100 text-green-800
+                            {% elif client.status == 'COMPLETE' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ client.status }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium
+                            {% if client.admissionType == 'STREET' %}bg-cyan-100 text-cyan-800
+                            {% else %}bg-purple-100 text-purple-800{% endif %}">
+                            {{ client.admissionType }}
+                        </span>
+                    </td>
+                    <td class="py-4 px-4">
+                        <span class="text-gray-600 text-sm">{{ client.educationLevel or client.grade or 'Not specified' }}</span>
+                    </td>
+                    <td class="py-4 px-4">
+                        <span class="text-gray-600 text-sm">{{ client.createdAt.strftime('%Y-%m-%d') if client.createdAt else 'N/A' }}</span>
+                    </td>
+                    <td class="py-4 px-4">
+                        <div class="flex gap-2">
+                            <a href="{{ url_for('view_client', client_id=client.id) }}" 
+                               class="bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-full text-xs font-medium transition-colors">
+                                View
+                            </a>
+                            {% if client.status == 'ACTIVE' %}
+                            <a href="{{ url_for('add_home_visit', client_id=client.id) }}" 
+                               class="bg-green-100 text-green-700 hover:bg-green-200 px-3 py-1 rounded-full text-xs font-medium transition-colors">
+                                Visit
+                            </a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-12">
+        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <div class="mb-4">
-                <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                    <i class="fas fa-users fa-2x text-muted"></i>
-                </div>
-            </div>
-            <h5 class="text-muted mb-2">No clients found</h5>
-            <p class="text-muted mb-4">No clients found in the 14-18 age range.</p>
-            {% if current_user.department in ['admin', 'socialworkers'] %}
-            <a href="{{ url_for('register_client') }}" class="btn btn-primary rounded-pill">
-                <i class="fas fa-plus me-2"></i>Register New Client
-            </a>
-            {% endif %}
-        </div>
+        <h5 class="text-lg font-medium text-gray-900 mb-2">No clients found</h5>
+        <p class="text-gray-500 mb-6">No clients found in the 14-18 age range.</p>
+        {% if current_user.department in ['admin', 'socialworkers'] %}
+        <a href="{{ url_for('register_client') }}" 
+           class="bg-blue-600 text-white hover:bg-blue-700 px-6 py-2 rounded-full font-medium transition-colors">
+            Register New Client
+        </a>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 
-<div class="mt-4 pt-3 border-top">
-    <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary rounded-pill">
-        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+<!-- Back Button -->
+<div class="mt-6 pt-4 border-t border-gray-200">
+    <a href="{{ url_for('dashboard') }}" 
+       class="bg-gray-100 text-gray-700 hover:bg-gray-200 px-4 py-2 rounded-full font-medium transition-colors inline-flex items-center">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Dashboard
     </a>
 </div>
 {% endblock %}
