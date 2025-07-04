@@ -61,7 +61,7 @@
                                 </svg>
                             </div>
                         </div>
-                        <h3 class="text-2xl font-bold text-green-600">{{ visits[0].date.strftime('%b %Y') }}</h3>
+                        <h3 class="text-2xl font-bold text-green-600">{{ visits[0].date.strftime('%m/%d/%Y') }}</h3>
                     </div>
 
                     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
@@ -104,16 +104,9 @@
                         <div class="card-header bg-white border-bottom-0 pb-2">
                             <div class="row align-items-center">
                                 <div class="col-md-6">
-                                    <div class="d-flex align-items-center">
-                                        <div class="visit-date-badge me-3">
-                                            <div class="date-month">{{ visit.date.strftime('%b') }}</div>
-                                            <div class="date-day">{{ visit.date.strftime('%d') }}</div>
-                                            <div class="date-year">{{ visit.date.strftime('%Y') }}</div>
-                                        </div>
-                                        <div>
-                                            <h6 class="mb-1 fw-bold">Visit #{{ loop.revindex }}</h6>
-                                            <p class="mb-0 text-muted small">{{ visit.date.strftime('%A, %B %d, %Y') }}</p>
-                                        </div>
+                                    <div>
+                                        <h6 class="mb-1 fw-bold">Visit #{{ loop.revindex }}</h6>
+                                        <p class="mb-0 text-muted small">{{ visit.date.strftime('%A, %B %d, %Y') }}</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6 text-md-end">
@@ -244,32 +237,7 @@
     box-shadow: 0 8px 25px rgba(0,0,0,0.1) !important;
 }
 
-.visit-date-badge {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 12px;
-    border-radius: 8px;
-    text-align: center;
-    min-width: 70px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
 
-.date-month {
-    font-size: 0.75rem;
-    font-weight: 600;
-    opacity: 0.9;
-}
-
-.date-day {
-    font-size: 1.25rem;
-    font-weight: bold;
-    line-height: 1;
-}
-
-.date-year {
-    font-size: 0.7rem;
-    opacity: 0.8;
-}
 
 .badge-department {
     font-size: 0.8rem;
@@ -317,15 +285,6 @@
 }
 
 @media (max-width: 768px) {
-    .visit-date-badge {
-        min-width: 60px;
-        padding: 8px;
-    }
-
-    .date-day {
-        font-size: 1.1rem;
-    }
-
     .info-section {
         padding: 12px;
         margin-bottom: 15px;
