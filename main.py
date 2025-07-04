@@ -1025,6 +1025,25 @@ def edit_aftercare(aftercare_id):
 
     return render_template('edit_aftercare.html', aftercare=aftercare, client=client)
 
+@app.route('/delete_aftercare/<int:aftercare_id>', methods=['POST'])
+@login_required
+def delete_aftercare(aftercare_id):
+    # Only Social Workers can delete aftercare records
+    if current_user.department != 'socialworkers':
+        flash('Access denied. Only Social Workers can delete aftercare records.')
+        return redirect(url_for('dashboard'))
+
+    aftercare = AfterCare.query.get_or_404(aftercare_id)
+
+    try:
+        db.session.delete(aftercare)
+        db.session.commit()
+        flash('Aftercare record deleted successfully!')
+    except Exception as e:
+        flash(f'Error deleting aftercare record: {str(e)}')
+
+    return redirect(url_for('aftercare'))
+
 @app.route('/home_visits')
 @login_required
 def home_visits():
