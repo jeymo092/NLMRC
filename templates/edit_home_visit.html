@@ -4,72 +4,172 @@
 {% block title %}Edit Home Visit - {{ client.firstName }} {{ client.secondName }}{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Edit Home Visit Record</h4>
-                    <p class="mb-0 text-muted">Client: {{ client.firstName }} {{ client.secondName }}</p>
-                </div>
-                <div class="card-body">
-                    {% with messages = get_flashed_messages() %}
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-                    {% endwith %}
-
-                    <form method="POST">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="date" class="form-label">Visit Date *</label>
-                                    <input type="date" class="form-control" id="date" name="date" value="{{ visit.date.strftime('%Y-%m-%d') }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="conductedBy" class="form-label">Conducted By *</label>
-                                    <input type="text" class="form-control" id="conductedBy" name="conductedBy" value="{{ visit.conductedBy }}" required placeholder="Name of person who conducted the visit">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="department" class="form-label">Department *</label>
-                            <select class="form-select" id="department" name="department" required>
-                                <option value="">Select Department</option>
-                                <option value="socialworkers" {% if visit.department == 'socialworkers' %}selected{% endif %}>Social Workers</option>
-                                <option value="counselling" {% if visit.department == 'counselling' %}selected{% endif %}>Counselling</option>
-                                <option value="education" {% if visit.department == 'education' %}selected{% endif %}>Education</option>
-                                <option value="empowerment" {% if visit.department == 'empowerment' %}selected{% endif %}>Empowerment</option>
-                                <option value="admin" {% if visit.department == 'admin' %}selected{% endif %}>Administration</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="report" class="form-label">Visit Report</label>
-                            <textarea class="form-control" id="report" name="report" rows="4" placeholder="Enter detailed report of the home visit...">{{ visit.report }}</textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="recommendations" class="form-label">Recommendations</label>
-                            <textarea class="form-control" id="recommendations" name="recommendations" rows="3" placeholder="Enter any recommendations or follow-up actions...">{{ visit.recommendations }}</textarea>
-                        </div>
-
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Update Home Visit</button>
-                        </div>
-                    </form>
-                </div>
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Edit Home Visit Record</h1>
+                <p class="text-sm text-gray-600 mt-1">
+                    Client: <span class="font-medium text-gray-900">{{ client.firstName }} {{ client.secondName }}</span>
+                </p>
             </div>
+            <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Client Visits
+            </a>
+        </div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-red-800 font-medium">{{ message }}</span>
+                        <button type="button" class="ml-auto text-red-400 hover:text-red-600" onclick="this.parentElement.parentElement.remove()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Form Card -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                <h2 class="text-lg font-semibold text-gray-900">Edit Visit Information</h2>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <form method="POST" class="space-y-6">
+                <!-- Date and Conducted By Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700 mb-2">
+                            Visit Date <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="date" 
+                            id="date" 
+                            name="date" 
+                            value="{{ visit.date.strftime('%Y-%m-%d') }}"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        >
+                    </div>
+                    <div>
+                        <label for="conductedBy" class="block text-sm font-medium text-gray-700 mb-2">
+                            Conducted By <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="conductedBy" 
+                            name="conductedBy" 
+                            value="{{ visit.conductedBy }}" 
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                        >
+                    </div>
+                </div>
+
+                <!-- Department -->
+                <div>
+                    <label for="department" class="block text-sm font-medium text-gray-700 mb-2">
+                        Department <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                        id="department" 
+                        name="department" 
+                        required
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    >
+                        <option value="">Select Department</option>
+                        <option value="admin" {% if visit.department == 'admin' %}selected{% endif %}>Admin</option>
+                        <option value="socialworkers" {% if visit.department == 'socialworkers' %}selected{% endif %}>Social Workers</option>
+                        <option value="counselling" {% if visit.department == 'counselling' %}selected{% endif %}>Counselling</option>
+                        <option value="education" {% if visit.department == 'education' %}selected{% endif %}>Education</option>
+                        <option value="empowerment" {% if visit.department == 'empowerment' %}selected{% endif %}>Empowerment</option>
+                    </select>
+                </div>
+
+                <!-- Visit Report -->
+                <div>
+                    <label for="report" class="block text-sm font-medium text-gray-700 mb-2">
+                        Visit Report
+                    </label>
+                    <textarea 
+                        id="report" 
+                        name="report" 
+                        rows="5" 
+                        placeholder="Describe the visit details, observations, and findings..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
+                    >{{ visit.report }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">Provide detailed information about the home visit.</p>
+                </div>
+
+                <!-- Recommendations -->
+                <div>
+                    <label for="recommendations" class="block text-sm font-medium text-gray-700 mb-2">
+                        Recommendations
+                    </label>
+                    <textarea 
+                        id="recommendations" 
+                        name="recommendations" 
+                        rows="4" 
+                        placeholder="Enter any recommendations or follow-up actions..."
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 transition-colors resize-vertical"
+                    >{{ visit.recommendations }}</textarea>
+                    <p class="mt-1 text-xs text-gray-500">Include any recommendations for future visits or actions.</p>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-between pt-6 border-t border-gray-200">
+                    <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex items-center px-6 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Update Home Visit
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<script>
+// Add focus effects for better UX
+document.addEventListener('DOMContentLoaded', function() {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50');
+        });
+
+        input.addEventListener('blur', function() {
+            this.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50');
+        });
+    });
+});
+</script>
 {% endblock %}
