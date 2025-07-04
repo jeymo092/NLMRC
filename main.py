@@ -1265,7 +1265,12 @@ def all_clients():
     page = request.args.get('page', 1, type=int)
     per_page = 50  # Show 50 clients per page
     
-    clients = Client.query.order_by(Client.firstName, Client.secondName).paginate(
+    # Order by status (ACTIVE first), then by name
+    clients = Client.query.order_by(
+        Client.status.desc(),  # ACTIVE comes before COMPLETE alphabetically
+        Client.firstName, 
+        Client.secondName
+    ).paginate(
         page=page, per_page=per_page, error_out=False
     )
     

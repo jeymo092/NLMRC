@@ -103,30 +103,14 @@
                         Overall Report
                     </a>
                     {% endif %}
-                    
+
                     <!-- All Clients Section -->
                     <div class="list-group-item list-group-item-header bg-light text-secondary">
                         <i class="fas fa-users"></i> All Clients
                     </div>
-                    
-                    <!-- Quick Search Form -->
-                    <div class="list-group-item">
-                        <form method="GET" action="{{ url_for('search_clients') }}" class="d-flex">
-                            <input type="text" name="q" class="form-control form-control-sm me-1" 
-                                   placeholder="Search clients..." 
-                                   style="font-size: 0.8rem;">
-                            <button type="submit" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </form>
-                    </div>
-                    
+
                     <a href="{{ url_for('all_clients') }}" class="list-group-item list-group-item-action">
                         <i class="fas fa-list"></i> View All Clients
-                    </a>
-                    
-                    <a href="{{ url_for('clients_14_18') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-users"></i> Clients 14-18
                     </a>
                 </div>
             </div>
