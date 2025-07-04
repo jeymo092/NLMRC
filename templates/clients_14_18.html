@@ -17,58 +17,69 @@
 </div>
 
 <!-- Statistics Cards -->
-<div class="row mb-4 g-3">
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm border-0" style="border-radius: 15px; border-left: 5px solid #007bff; background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);">
-            <div class="card-body text-center p-4">
-                <div class="d-flex align-items-center justify-content-center mb-3">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: rgba(0, 123, 255, 0.1);">
-                        <i class="fas fa-users fa-2x text-primary"></i>
-                    </div>
-                </div>
-                <h3 class="text-primary mb-2 fw-bold">{{ stats.total }}</h3>
-                <p class="text-muted mb-0 small fw-medium">Total Clients (14-18)</p>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <!-- Total Clients -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Total Clients</p>
+                <p class="text-sm text-gray-600">(14-18)</p>
+            </div>
+            <div class="bg-blue-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
             </div>
         </div>
+        <h3 class="text-2xl font-bold text-blue-600">{{ stats.total }}</h3>
     </div>
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm border-0" style="border-radius: 15px; border-left: 5px solid #28a745; background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);">
-            <div class="card-body text-center p-4">
-                <div class="d-flex align-items-center justify-content-center mb-3">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: rgba(40, 167, 69, 0.1);">
-                        <i class="fas fa-user-check fa-2x text-success"></i>
-                    </div>
-                </div>
-                <h3 class="text-success mb-2 fw-bold">{{ stats.active }}</h3>
-                <p class="text-muted mb-0 small fw-medium">Active Clients</p>
+
+    <!-- Active Clients -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Active</p>
+                <p class="text-sm text-gray-600">Clients</p>
+            </div>
+            <div class="bg-green-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
             </div>
         </div>
+        <h3 class="text-2xl font-bold text-green-600">{{ stats.active }}</h3>
     </div>
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm border-0" style="border-radius: 15px; border-left: 5px solid #17a2b8; background: linear-gradient(135deg, #e7f9fc 0%, #ffffff 100%);">
-            <div class="card-body text-center p-4">
-                <div class="d-flex align-items-center justify-content-center mb-3">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: rgba(23, 162, 184, 0.1);">
-                        <i class="fas fa-road fa-2x text-info"></i>
-                    </div>
-                </div>
-                <h3 class="text-info mb-2 fw-bold">{{ stats.street_admissions }}</h3>
-                <p class="text-muted mb-0 small fw-medium">Street Admissions</p>
+
+    <!-- Street Admissions -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Street</p>
+                <p class="text-sm text-gray-600">Admissions</p>
+            </div>
+            <div class="bg-cyan-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                </svg>
             </div>
         </div>
+        <h3 class="text-2xl font-bold text-cyan-600">{{ stats.street_admissions }}</h3>
     </div>
-    <div class="col-md-6 col-lg-3">
-        <div class="card h-100 shadow-sm border-0" style="border-radius: 15px; border-left: 5px solid #ffc107; background: linear-gradient(135deg, #fffbf0 0%, #ffffff 100%);">
-            <div class="card-body text-center p-4">
-                <div class="d-flex align-items-center justify-content-center mb-3">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: rgba(255, 193, 7, 0.1);">
-                        <i class="fas fa-handshake fa-2x text-warning"></i>
-                    </div>
-                </div>
-                <h3 class="text-warning mb-2 fw-bold">{{ stats.referral_admissions }}</h3>
-                <p class="text-muted mb-0 small fw-medium">Referral Admissions</p>
+
+    <!-- Referral Admissions -->
+    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+        <div class="flex items-center justify-between mb-4">
+            <div class="text-left">
+                <p class="text-sm text-gray-600 mb-1">Referral</p>
+                <p class="text-sm text-gray-600">Admissions</p>
+            </div>
+            <div class="bg-yellow-100 p-3 rounded-full">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                </svg>
             </div>
         </div>
+        <h3 class="text-2xl font-bold text-yellow-600">{{ stats.referral_admissions }}</h3>
     </div>
 </div>
 
