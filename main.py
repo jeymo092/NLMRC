@@ -1258,6 +1258,32 @@ def search_clients():
     
     return render_template('search_results.html', clients=clients, query=query)
 
+@app.route('/all_clients')
+@login_required
+def all_clients():
+    # Get all clients with pagination support
+    page = request.args.get('page', 1, type=int)
+    per_page = 50  # Show 50 clients per page
+    
+    clients = Client.query.order_by(Client.firstName, Client.secondName).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+    
+    # Statistics for all clients
+    total_count = Client.query.count()
+    active_count = Client.query.filter_by(status='ACTIVE').count()
+    completed_count = Client.query.filter_by(status='COMPLETE').count()
+    
+    stats = {
+        'total': total_count,
+        'active': active_count,
+        'completed': completed_count,
+        'street_admissions': Client.query.filter_by(admissionType='STREET').count(),
+        'referral_admissions': Client.query.filter_by(admissionType='REFERRAL').count()
+    }
+    
+    return render_template('all_clients.html', clients=clients, stats=stats)
+
 @app.route('/clients_14_18')
 @login_required
 def clients_14_18():

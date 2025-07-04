@@ -41,6 +41,18 @@
             width: 16px;
             margin-right: 8px;
         }
+        .sidebar .form-control-sm {
+            font-size: 0.75rem;
+        }
+        .sidebar .btn-sm {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.75rem;
+        }
+        .list-group-item.list-group-item-header {
+            background-color: #e9ecef !important;
+            color: #6c757d !important;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -91,6 +103,31 @@
                         Overall Report
                     </a>
                     {% endif %}
+                    
+                    <!-- All Clients Section -->
+                    <div class="list-group-item list-group-item-header bg-light text-secondary">
+                        <i class="fas fa-users"></i> All Clients
+                    </div>
+                    
+                    <!-- Quick Search Form -->
+                    <div class="list-group-item">
+                        <form method="GET" action="{{ url_for('search_clients') }}" class="d-flex">
+                            <input type="text" name="q" class="form-control form-control-sm me-1" 
+                                   placeholder="Search clients..." 
+                                   style="font-size: 0.8rem;">
+                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <a href="{{ url_for('all_clients') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-list"></i> View All Clients
+                    </a>
+                    
+                    <a href="{{ url_for('clients_14_18') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-users"></i> Clients 14-18
+                    </a>
                 </div>
             </div>
             <div class="col-md-10 main-content">
