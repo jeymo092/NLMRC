@@ -34,6 +34,18 @@
             color: hsl(var(--foreground));
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             line-height: 1.6;
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            overflow-x: hidden;
+            width: 100%;
         }
 
         .navbar-custom {
@@ -98,13 +110,17 @@
             min-height: calc(100vh - 4rem);
             padding: 1rem 2rem;
             width: calc(100% - 280px);
+            max-width: calc(100vw - 280px);
             box-sizing: border-box;
+            overflow-x: hidden;
         }
 
         .content-wrapper {
             width: 100%;
-            max-width: none;
+            max-width: 100%;
             margin: 0;
+            overflow-x: hidden;
+            word-wrap: break-word;
         }
 
         .icon {
@@ -143,7 +159,9 @@
                 margin-left: 0;
                 margin-top: 4rem;
                 width: 100%;
+                max-width: 100vw;
                 padding: 1rem;
+                overflow-x: hidden;
             }
         }
 
@@ -151,10 +169,53 @@
             .main-content {
                 padding: 0.5rem 0.75rem;
                 width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
             }
 
             .navbar-custom .container {
                 padding: 0 1rem;
+                max-width: 100vw;
+            }
+
+            .content-wrapper {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+
+            /* Ensure tables are responsive */
+            .overflow-x-auto {
+                width: 100%;
+                max-width: calc(100vw - 1.5rem);
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Prevent text from breaking layout */
+            .text-wrap {
+                word-wrap: break-word;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            /* Ensure forms don't overflow */
+            form {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            input, select, textarea {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* Cards and containers */
+            .card, .bg-white {
+                width: 100%;
+                max-width: 100%;
+                word-wrap: break-word;
             }
         }
 
@@ -326,8 +387,8 @@
         <div class="content-wrapper">
     {% else %}
     <!-- Full width for non-authenticated users -->
-    <div class="w-full" style="margin-top: 3.75rem; padding: 0.5rem 2rem;">
-        <div class="w-full max-w-6xl mx-auto">
+    <div class="w-full" style="margin-top: 3.75rem; padding: 0.5rem 2rem; max-width: 100vw; overflow-x: hidden;">
+        <div class="w-full max-w-6xl mx-auto" style="max-width: 100%; overflow-x: hidden;">
     {% endif %}
             {% with messages = get_flashed_messages() %}
                 {% if messages %}
