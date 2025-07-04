@@ -3,59 +3,70 @@
 {% block title %}Dashboard - New Life Mwangaza{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Client Management Dashboard</h2>
-    <div class="d-flex gap-2">
-        <!-- Search Form -->
-        <form method="GET" action="{{ url_for('search_clients') }}" class="d-flex">
-            <input type="text" name="q" class="form-control form-control-sm me-2" 
-                   placeholder="Search by name, intake, or nickname..." 
-                   value="{{ request.args.get('q', '') }}" 
-                   style="width: 250px;">
-            <button type="submit" class="btn btn-outline-primary btn-sm">
-                <i class="fas fa-search"></i> Search
-            </button>
-        </form>
-        {% if current_user.department in ['admin', 'socialworkers'] %}
-        <a href="{{ url_for('register_client') }}" class="btn btn-success">Register New Client</a>
-        {% endif %}
+<!-- Header Section with proper spacing -->
+<div class="container-fluid px-0 mb-4">
+    <div class="row g-0 align-items-center mb-3">
+        <div class="col-12 col-lg-6">
+            <h2 class="mb-2 mb-lg-0">Client Management Dashboard</h2>
+        </div>
+        <div class="col-12 col-lg-6">
+            <div class="d-flex flex-column flex-sm-row gap-2 justify-content-lg-end">
+                <!-- Search Form -->
+                <form method="GET" action="{{ url_for('search_clients') }}" class="d-flex flex-grow-1 flex-sm-grow-0">
+                    <input type="text" name="q" class="form-control form-control-sm me-2" 
+                           placeholder="Search by name, intake, or nickname..." 
+                           value="{{ request.args.get('q', '') }}" 
+                           style="min-width: 200px; max-width: 300px;">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </form>
+                {% if current_user.department in ['admin', 'socialworkers'] %}
+                <a href="{{ url_for('register_client') }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-user-plus"></i> Register New Client
+                </a>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 
-
-
 <!-- Department-Specific Statistics Row -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-6">
+<div class="row g-3 mb-4">
     {% if current_user.department == 'socialworkers' %}
     <!-- Social Workers Dashboard -->
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-        <div class="flex items-center justify-between mb-4">
-            <div class="text-left">
-                <p class="text-sm text-gray-600 mb-1">Active Clients</p>
-                <p class="text-sm text-gray-600">with Intake</p>
-            </div>
-            <div class="bg-blue-100 p-3 rounded-full">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                </svg>
+    <div class="col-6 col-md-4 col-lg-3 col-xl">
+        <div class="card h-100 shadow-sm border-0" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <p class="text-muted mb-1" style="font-size: 0.85rem;">Active Clients</p>
+                        <p class="text-muted mb-0" style="font-size: 0.85rem;">with Intake</p>
+                    </div>
+                    <div class="bg-primary bg-opacity-10 p-2 rounded-circle">
+                        <i class="fas fa-users text-primary"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-dark mb-0">{{ current_intake or 0 }}</h4>
             </div>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900">{{ current_intake or 0 }}</h3>
     </div>
     
-    <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-        <div class="flex items-center justify-between mb-4">
-            <div class="text-left">
-                <p class="text-sm text-gray-600 mb-1">Aftercare</p>
-                <p class="text-sm text-gray-600">Records</p>
-            </div>
-            <div class="bg-green-100 p-3 rounded-full">
-                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                </svg>
+    <div class="col-6 col-md-4 col-lg-3 col-xl">
+        <div class="card h-100 shadow-sm border-0" style="border-radius: 12px;">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <div>
+                        <p class="text-muted mb-1" style="font-size: 0.85rem;">Aftercare</p>
+                        <p class="text-muted mb-0" style="font-size: 0.85rem;">Records</p>
+                    </div>
+                    <div class="bg-success bg-opacity-10 p-2 rounded-circle">
+                        <i class="fas fa-heart text-success"></i>
+                    </div>
+                </div>
+                <h4 class="fw-bold text-success mb-0">{{ statistics.total_aftercare_records }}</h4>
             </div>
         </div>
-        <h3 class="text-2xl font-bold text-green-600">{{ statistics.total_aftercare_records }}</h3>
     </div>
     
     <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
