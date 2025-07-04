@@ -716,32 +716,7 @@
     {% endif %}
 </div>
 
-<!-- Complete Client Modal -->
-<div class="modal fade" id="completeClientModal" tabindex="-1" aria-labelledby="completeClientModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="completeClientModalLabel">Mark Client as Completed</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure you want to mark <strong id="clientNameToComplete"></strong> as completed?</p>
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    <strong>Note:</strong> This will move the client to the alumni list and they will be eligible for aftercare records.
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <form id="completeClientForm" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check-circle"></i> Mark as Completed
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <script>
 function markAsCompleted(clientId, clientName) {
