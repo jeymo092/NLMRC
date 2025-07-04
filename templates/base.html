@@ -95,7 +95,7 @@
             margin-left: 280px;
             background: #fafafa;
             min-height: calc(100vh - 3.5rem);
-            padding: 1rem 2rem;
+            padding: 0.5rem 2rem;
             width: calc(100% - 280px);
             box-sizing: border-box;
         }
@@ -141,13 +141,13 @@
             .main-content {
                 margin-left: 0;
                 width: 100%;
-                padding: 0.75rem 1rem;
+                padding: 0.5rem 1rem;
             }
         }
 
         @media (max-width: 640px) {
             .main-content {
-                padding: 0.5rem 0.75rem;
+                padding: 0.25rem 0.75rem;
                 width: 100%;
             }
 
@@ -324,7 +324,7 @@
         <div class="content-wrapper">
     {% else %}
     <!-- Full width for non-authenticated users -->
-    <div class="w-full" style="margin-top: 4rem; padding: 1rem 2rem;">
+    <div class="w-full" style="margin-top: 3.75rem; padding: 0.5rem 2rem;">
         <div class="w-full max-w-6xl mx-auto">
     {% endif %}
             {% with messages = get_flashed_messages() %}
