@@ -4,11 +4,26 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mwangaza.db')
+
+# Supabase database configuration
+database_url = os.environ.get('DATABASE_URL')
+if database_url and database_url.startswith('postgres://'):
+    # Convert postgres:// to postgresql:// for SQLAlchemy compatibility
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///mwangaza.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -1938,8 +1953,14 @@ def create_default_users():
 
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
-        create_default_users()
+        try:
+            # Create tables if they don't exist
+            db.create_all()
+            create_default_users()
+            print("Database tables created successfully!")
+        except Exception as e:
+            print(f"Database initialization error: {e}")
+            print("Make sure your DATABASE_URL is set correctly in Secrets")
 
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
