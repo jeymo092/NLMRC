@@ -22,7 +22,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 1rem;
+            padding: 0.5rem;
             box-sizing: border-box;
         }
         
@@ -31,8 +31,10 @@
             background: rgba(255, 255, 255, 0.95);
             border: 1px solid rgba(255, 255, 255, 0.2);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            max-height: calc(100vh - 2rem);
+            max-height: calc(100vh - 1rem);
             overflow-y: auto;
+            width: 100%;
+            max-width: 28rem;
         }
         
         .btn-primary {
@@ -69,18 +71,18 @@
     <div class="signup-container">
         <div class="w-full max-w-md relative z-10">
             <!-- Logo and Title Section -->
-            <div class="text-center mb-6">
-                <div class="logo mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg">
-                    <i class="fas fa-heart text-2xl organization-logo"></i>
+            <div class="text-center mb-3">
+                <div class="logo mx-auto w-12 h-12 bg-white rounded-full flex items-center justify-center mb-2 shadow-lg">
+                    <i class="fas fa-heart text-lg organization-logo"></i>
                 </div>
-                <h1 class="text-2xl font-bold text-white mb-1">New Life Mwangaza</h1>
+                <h1 class="text-xl font-bold text-white mb-1">New Life Mwangaza</h1>
                 <p class="text-white/80 text-xs">Create Your Account</p>
             </div>
 
             <!-- Signup Card -->
-            <div class="signup-card rounded-2xl p-6">
-                <div class="text-center mb-5">
-                    <h2 class="text-xl font-bold text-gray-800 mb-1">Create Account</h2>
+            <div class="signup-card rounded-2xl p-4">
+                <div class="text-center mb-3">
+                    <h2 class="text-lg font-bold text-gray-800 mb-1">Create Account</h2>
                     <p class="text-gray-600 text-xs">Register to access the system</p>
                 </div>
 
@@ -98,34 +100,34 @@
                     {% endif %}
                 {% endwith %}
 
-                <form method="POST" class="space-y-4">
+                <form method="POST" class="space-y-3">
                     <!-- Username -->
-                    <div class="space-y-1">
+                    <div>
                         <label for="username" class="block text-xs font-medium text-gray-700 mb-1">
                             <i class="fas fa-user mr-1"></i>Username
                         </label>
                         <input type="text" name="username" id="username" required
-                               class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                placeholder="Enter your username">
                     </div>
 
                     <!-- Full Name -->
-                    <div class="space-y-1">
+                    <div>
                         <label for="full_name" class="block text-xs font-medium text-gray-700 mb-1">
                             <i class="fas fa-id-card mr-1"></i>Full Name
                         </label>
                         <input type="text" name="full_name" id="full_name" required
-                               class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                placeholder="Enter your full name">
                     </div>
 
                     <!-- Department -->
-                    <div class="space-y-1">
+                    <div>
                         <label for="department" class="block text-xs font-medium text-gray-700 mb-1">
                             <i class="fas fa-building mr-1"></i>Department
                         </label>
                         <select name="department" id="department" required 
-                                class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white">
+                                class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white">
                             <option value="">Select Department</option>
                             <option value="admin">Administration</option>
                             <option value="socialworkers">Social Workers</option>
@@ -136,13 +138,13 @@
                     </div>
 
                     <!-- Password -->
-                    <div class="space-y-1">
+                    <div>
                         <label for="password" class="block text-xs font-medium text-gray-700 mb-1">
                             <i class="fas fa-lock mr-1"></i>Password
                         </label>
                         <div class="relative">
                             <input type="password" name="password" id="password" required
-                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
+                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
                                    placeholder="Enter your password">
                             <button type="button" onclick="togglePassword('password')" 
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -152,13 +154,13 @@
                     </div>
 
                     <!-- Confirm Password -->
-                    <div class="space-y-1">
+                    <div>
                         <label for="confirm_password" class="block text-xs font-medium text-gray-700 mb-1">
                             <i class="fas fa-lock mr-1"></i>Confirm Password
                         </label>
                         <div class="relative">
                             <input type="password" name="confirm_password" id="confirm_password" required
-                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
+                                   class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
                                    placeholder="Confirm your password">
                             <button type="button" onclick="togglePassword('confirm_password')" 
                                     class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
@@ -169,14 +171,14 @@
 
                     <!-- Sign Up Button -->
                     <button type="submit" 
-                            class="w-full btn-primary text-white py-2.5 px-4 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            class="w-full btn-primary text-white py-2 px-4 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                         <i class="fas fa-user-plus mr-2"></i>
                         Create Account
                     </button>
                 </form>
 
                 <!-- Login Link -->
-                <div class="mt-4 text-center">
+                <div class="mt-3 text-center">
                     <p class="text-gray-600 text-sm">
                         Already have an account? 
                         <a href="{{ url_for('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">Sign In</a>
@@ -184,7 +186,7 @@
                 </div>
 
                 <!-- Footer -->
-                <div class="mt-4 text-center">
+                <div class="mt-2 text-center">
                     <p class="text-gray-500 text-xs">
                         © 2025 New Life Mwangaza
                     </p>
