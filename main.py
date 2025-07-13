@@ -18,6 +18,17 @@ if database_url and database_url.startswith('postgres://'):
     # Convert postgres:// to postgresql:// for SQLAlchemy compatibility
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
 
+# Fix connection string for passwords containing @ symbol
+if database_url:
+    import urllib.parse
+    # Parse the URL to handle special characters in password
+    parsed = urllib.parse.urlparse(database_url)
+    if parsed.password and '@' in parsed.password:
+        # URL encode the password
+        encoded_password = urllib.parse.quote(parsed.password, safe='')
+        # Rebuild the connection string with encoded password
+        database_url = f"{parsed.scheme}://{parsed.username}:{encoded_password}@{parsed.hostname}:{parsed.port}{parsed.path}"
+
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///mwangaza.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
@@ -199,7 +210,7 @@ def signup():
             user.set_password(password)
             db.session.add(user)
             db.session.commit()
-            
+
             flash('Account created successfully! Please log in.')
             return redirect(url_for('login'))
         except Exception as e:
@@ -1078,7 +1089,7 @@ def edit_aftercare(aftercare_id):
             self.placement_completion_date = AfterCareField('placement_completion_date', 
                 aftercare_record.placement_completion_date.strftime('%Y-%m-%d') if aftercare_record and aftercare_record.placement_completion_date else '')
             self.notes = AfterCareField('notes', aftercare_record.notes if aftercare_record else '')
-            
+
         def hidden_tag(self):
             return ''
 
@@ -1089,7 +1100,7 @@ def edit_aftercare(aftercare_id):
             self.data = value if value is not None else ''
             self.errors = []
             self.label = FieldLabel(name)
-            
+
         def __call__(self, **kwargs):
             from markupsafe import Markup
             attrs = ' '.join([f'{k}="{v}"' for k, v in kwargs.items()])
@@ -1766,7 +1777,7 @@ def export_overall_report_pdf():
 
         # Prepare data for the table
         table_data = [['Rank', 'Student Name', 'Age', 'Average (%)', 'Subjects', 'Performance Level']]
-        
+
         for i, report in enumerate(client_reports, 1):
             if report['average'] >= 80:
                 performance_level = "Excellent"
@@ -1774,7 +1785,7 @@ def export_overall_report_pdf():
                 performance_level = "Good"
             else:
                 performance_level = "Needs Support"
-                
+
             table_data.append([
                 str(i),
                 f"{report['client'].firstName} {report['client'].secondName}",
@@ -1934,7 +1945,7 @@ def export_client_academic_pdf(client_id):
 
         # Prepare data for the marks table
         marks_data = [['Subject', 'Term', 'Year', 'Marks', 'Percentage', 'Test Date', 'Notes']]
-        
+
         for mark in marks:
             percentage = (mark.marks / mark.max_marks) * 100
             marks_data.append([
