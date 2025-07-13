@@ -1019,6 +1019,7 @@ def edit_aftercare(aftercare_id):
             self.label = FieldLabel(name)
             
         def __call__(self, **kwargs):
+            from markupsafe import Markup
             attrs = ' '.join([f'{k}="{v}"' for k, v in kwargs.items()])
             if self.id == 'status':
                 options = []
@@ -1034,15 +1035,15 @@ def edit_aftercare(aftercare_id):
                 for value, label in status_choices:
                     selected = 'selected' if value == self.data else ''
                     options.append(f'<option value="{value}" {selected}>{label}</option>')
-                return f'<select name="{self.name}" id="{self.id}" {attrs}>{"".join(options)}</select>'
+                return Markup(f'<select name="{self.name}" id="{self.id}" {attrs}>{"".join(options)}</select>')
             elif self.id in ['placement_date', 'placement_completion_date']:
-                return f'<input type="date" name="{self.name}" id="{self.id}" value="{self.data}" {attrs}>'
+                return Markup(f'<input type="date" name="{self.name}" id="{self.id}" value="{self.data}" {attrs}>')
             elif self.id == 'notes':
-                return f'<textarea name="{self.name}" id="{self.id}" {attrs}>{self.data}</textarea>'
+                return Markup(f'<textarea name="{self.name}" id="{self.id}" {attrs}>{self.data}</textarea>')
             else:
                 # Escape HTML in values to prevent rendering issues
                 escaped_value = self.data.replace('"', '&quot;') if self.data else ''
-                return f'<input type="text" name="{self.name}" id="{self.id}" value="{escaped_value}" {attrs}>'
+                return Markup(f'<input type="text" name="{self.name}" id="{self.id}" value="{escaped_value}" {attrs}>')
 
     class FieldLabel:
         def __init__(self, name):
