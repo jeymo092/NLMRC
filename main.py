@@ -993,6 +993,68 @@ def edit_aftercare(aftercare_id):
     aftercare = AfterCare.query.get_or_404(aftercare_id)
     client = aftercare.client
 
+    # Create a simple form class for the template
+    class AfterCareForm:
+        def __init__(self, aftercare_record=None):
+            self.status = AfterCareField('status', aftercare_record.status if aftercare_record else '')
+            self.placement = AfterCareField('placement', aftercare_record.placement if aftercare_record else '')
+            self.institution = AfterCareField('institution', aftercare_record.institution if aftercare_record else '')
+            self.contact_person = AfterCareField('contact_person', aftercare_record.contact_person if aftercare_record else '')
+            self.contact_phone = AfterCareField('contact_phone', aftercare_record.contact_phone if aftercare_record else '')
+            self.placement_date = AfterCareField('placement_date', 
+                aftercare_record.placement_date.strftime('%Y-%m-%d') if aftercare_record and aftercare_record.placement_date else '')
+            self.placement_completion_date = AfterCareField('placement_completion_date', 
+                aftercare_record.placement_completion_date.strftime('%Y-%m-%d') if aftercare_record and aftercare_record.placement_completion_date else '')
+            self.notes = AfterCareField('notes', aftercare_record.notes if aftercare_record else '')
+            
+        def hidden_tag(self):
+            return ''
+
+    class AfterCareField:
+        def __init__(self, name, value=''):
+            self.id = name
+            self.name = name
+            self.data = value
+            self.errors = []
+            self.label = FieldLabel(name)
+            
+        def __call__(self, **kwargs):
+            attrs = ' '.join([f'{k}="{v}"' for k, v in kwargs.items()])
+            if self.id in ['status']:
+                options = []
+                status_choices = [
+                    ('IN_PROGRESS', 'In Progress'),
+                    ('SUCCESSFUL', 'Successful'),
+                    ('EMPLOYED', 'Employed'),
+                    ('ATTACHMENT', 'Attachment'),
+                    ('INTERNSHIP', 'Internship'),
+                    ('RELAPSED', 'Relapsed'),
+                    ('ABSCONDED', 'Absconded')
+                ]
+                for value, label in status_choices:
+                    selected = 'selected' if value == self.data else ''
+                    options.append(f'<option value="{value}" {selected}>{label}</option>')
+                return f'<select name="{self.name}" id="{self.id}" {attrs}>{"".join(options)}</select>'
+            elif self.id in ['placement_date', 'placement_completion_date']:
+                return f'<input type="date" name="{self.name}" id="{self.id}" value="{self.data}" {attrs}>'
+            elif self.id == 'notes':
+                return f'<textarea name="{self.name}" id="{self.id}" {attrs}>{self.data}</textarea>'
+            else:
+                return f'<input type="text" name="{self.name}" id="{self.id}" value="{self.data}" {attrs}>'
+
+    class FieldLabel:
+        def __init__(self, name):
+            self.text = {
+                'status': 'Status',
+                'placement': 'Placement',
+                'institution': 'Institution',
+                'contact_person': 'Contact Person',
+                'contact_phone': 'Contact Phone',
+                'placement_date': 'Placement Date',
+                'placement_completion_date': 'Placement Completion Date',
+                'notes': 'Notes'
+            }.get(name, name.replace('_', ' ').title())
+
     if request.method == 'POST':
         try:
             placement_date = None
@@ -1023,7 +1085,8 @@ def edit_aftercare(aftercare_id):
         except Exception as e:
             flash(f'Error updating aftercare record: {str(e)}')
 
-    return render_template('edit_aftercare.html', aftercare=aftercare, client=client)
+    form = AfterCareForm(aftercare)
+    return render_template('edit_aftercare.html', aftercare=aftercare, client=client, form=form)
 
 @app.route('/delete_aftercare/<int:aftercare_id>', methods=['POST'])
 @login_required
