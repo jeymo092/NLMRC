@@ -78,6 +78,16 @@
                         View Details
                     </a>
                     
+                    {% if client.home_visits|length > 0 %}
+                    <a href="{{ url_for('client_home_visits', client_id=client.id) }}" 
+                       class="inline-flex items-center px-3 py-1.5 text-sm bg-orange-100 text-orange-700 rounded-md hover:bg-orange-200 transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        Home Visits ({{ client.home_visits|length }})
+                    </a>
+                    {% endif %}
+                    
                     {% if current_user.department == 'socialworkers' %}
                     <a href="{{ url_for('add_aftercare', client_id=client.id) }}" 
                        class="inline-flex items-center px-3 py-1.5 text-sm bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors">

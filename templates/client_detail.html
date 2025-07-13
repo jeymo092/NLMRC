@@ -219,26 +219,39 @@
         <!-- Right Column - Actions -->
         <div class="lg:col-span-1">
             <div class="sticky top-6">
-                {% if client.status == 'ACTIVE' %}
-                <!-- Home Visit Actions Card -->
+                <!-- Client Actions Card -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-6">
-                    <div class="px-6 py-4 bg-blue-50 border-b border-blue-200">
-                        <h3 class="text-lg font-semibold text-blue-900 flex items-center">
+                    <div class="px-6 py-4 {% if client.status == 'ACTIVE' %}bg-blue-50 border-b border-blue-200{% else %}bg-green-50 border-b border-green-200{% endif %}">
+                        <h3 class="text-lg font-semibold {% if client.status == 'ACTIVE' %}text-blue-900{% else %}text-green-900{% endif %} flex items-center">
+                            {% if client.status == 'ACTIVE' %}
                             <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                             </svg>
-                            Home Visit Actions
+                            Active Client Actions
+                            {% else %}
+                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                            </svg>
+                            Alumni Actions
+                            {% endif %}
                         </h3>
                     </div>
                     <div class="px-6 py-4">
+                        {% if client.status == 'ACTIVE' %}
                         <p class="text-sm text-gray-600 mb-4">This client is active and eligible for home visits.</p>
+                        {% else %}
+                        <p class="text-sm text-gray-600 mb-4">This client has completed the program and is now an alumni.</p>
+                        {% endif %}
+                        
                         <div class="space-y-3">
+                            {% if current_user.department in ['admin', 'socialworkers'] %}
                             <a href="{{ url_for('edit_client', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                 </svg>
                                 Edit Client Information
                             </a>
+                            {% endif %}
 
                             {% if client.status == 'ACTIVE' and (current_user.department == 'admin' or current_user.department == 'socialworkers') %}
                             <form method="POST" action="{{ url_for('complete_client', client_id=client.id) }}" class="w-full" onsubmit="return confirm('Are you sure you want to mark this client as completed? This action will move them to the alumni list.')">
@@ -250,31 +263,44 @@
                                 </button>
                             </form>
                             {% endif %}
-                            {% if client.home_visits|length == 0 %}
+                            
+                            {% if client.status == 'ACTIVE' and client.home_visits|length == 0 %}
                             <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 Add New Home Visit
                             </a>
-                            {% else %}
-                            <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
+                            {% elif client.status == 'ACTIVE' %}
+                            <a href="{{ url_for('add_home_visit', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                                 </svg>
-                                Edit Home Visits ({{ client.home_visits|length }})
+                                Add New Home Visit
                             </a>
                             {% endif %}
+                            
+                            <!-- Home Visits - Always show for all clients -->
+                            {% if client.home_visits|length > 0 %}
                             <a href="{{ url_for('client_home_visits', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-blue-700 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                 </svg>
-                                View All Home Visits ({{ client.home_visits|length }})
+                                View Home Visits ({{ client.home_visits|length }})
                             </a>
+                            {% endif %}
+
+                            {% if client.status == 'COMPLETE' and current_user.department == 'socialworkers' %}
+                            <a href="{{ url_for('add_aftercare', client_id=client.id) }}" class="w-full inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                                Add Aftercare Record
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-                {% endif %}
 
                 <!-- Client Statistics Card -->
                 <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
