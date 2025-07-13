@@ -12,40 +12,12 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
-# Database configuration with fallback
-database_url = os.environ.get('DATABASE_URL')
-
-# If we have a database URL, try to use it
-if database_url:
-    if database_url.startswith('postgres://'):
-        # Convert postgres:// to postgresql:// for SQLAlchemy compatibility
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
-    
-    # Try to connect and fallback to SQLite if it fails
-    try:
-        import psycopg2
-        # Test the connection
-        test_conn = psycopg2.connect(database_url)
-        test_conn.close()
-        print("✅ PostgreSQL connection successful!")
-        app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-            'pool_pre_ping': True,
-            'pool_recycle': 300,
-            'pool_timeout': 20,
-            'max_overflow': 0,
-        }
-    except Exception as e:
-        print(f"❌ PostgreSQL connection failed: {e}")
-        print("🔄 Falling back to SQLite database...")
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mwangaza.db'
-        app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {}
-else:
-    print("📝 No DATABASE_URL found, using SQLite database...")
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mwangaza.db'
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {}
-
+# Use SQLite database exclusively
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mwangaza.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {}
+
+print("📝 Using SQLite database: mwangaza.db")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -2013,25 +1985,14 @@ def create_admin_user():
 
 if __name__ == '__main__':
     with app.app_context():
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                # Create tables if they don't exist
-                db.create_all()
-                create_admin_user()
-                print("✅ Database tables created successfully!")
-                print(f"🗄️  Using database: {app.config['SQLALCHEMY_DATABASE_URI'].split('://')[0]}")
-                break
-            except Exception as e:
-                print(f"❌ Database initialization error (attempt {attempt + 1}/{max_retries}): {e}")
-                if attempt == max_retries - 1:
-                    print("🚨 All database connection attempts failed!")
-                    print("💡 The app will still start but database operations will fail.")
-                    print("💡 Consider using Replit's built-in PostgreSQL database.")
-                else:
-                    print("🔄 Retrying database connection...")
-                    import time
-                    time.sleep(2)
+        try:
+            # Create tables if they don't exist
+            db.create_all()
+            create_admin_user()
+            print("✅ SQLite database tables created successfully!")
+            print("🗄️  Database file: mwangaza.db")
+        except Exception as e:
+            print(f"❌ Database initialization error: {e}")
 
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
