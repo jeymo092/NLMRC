@@ -1014,13 +1014,13 @@ def edit_aftercare(aftercare_id):
         def __init__(self, name, value=''):
             self.id = name
             self.name = name
-            self.data = value
+            self.data = value if value is not None else ''
             self.errors = []
             self.label = FieldLabel(name)
             
         def __call__(self, **kwargs):
             attrs = ' '.join([f'{k}="{v}"' for k, v in kwargs.items()])
-            if self.id in ['status']:
+            if self.id == 'status':
                 options = []
                 status_choices = [
                     ('IN_PROGRESS', 'In Progress'),
@@ -1040,7 +1040,9 @@ def edit_aftercare(aftercare_id):
             elif self.id == 'notes':
                 return f'<textarea name="{self.name}" id="{self.id}" {attrs}>{self.data}</textarea>'
             else:
-                return f'<input type="text" name="{self.name}" id="{self.id}" value="{self.data}" {attrs}>'
+                # Escape HTML in values to prevent rendering issues
+                escaped_value = self.data.replace('"', '&quot;') if self.data else ''
+                return f'<input type="text" name="{self.name}" id="{self.id}" value="{escaped_value}" {attrs}>'
 
     class FieldLabel:
         def __init__(self, name):
