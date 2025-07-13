@@ -12,12 +12,38 @@ load_dotenv()
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 
-# Use SQLite database exclusively
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mwangaza.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {}
+# Database configuration with MySQL, PostgreSQL, and SQLite support
+database_url = os.environ.get('DATABASE_URL')
+mysql_url = os.environ.get('MYSQL_URL')
 
-print("📝 Using SQLite database: mwangaza.db")
+if mysql_url:
+    # Production: Use MySQL
+    # Convert mysql:// to mysql+pymysql:// for SQLAlchemy
+    if mysql_url.startswith('mysql://'):
+        mysql_url = mysql_url.replace('mysql://', 'mysql+pymysql://')
+    app.config['SQLALCHEMY_DATABASE_URI'] = mysql_url
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_timeout': 20,
+    }
+    print("🐬 Using MySQL database (production)")
+elif database_url:
+    # Production: Use PostgreSQL
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+    }
+    print("🐘 Using PostgreSQL database (production)")
+else:
+    # Development: Use SQLite
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mwangaza.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {}
+    print("📝 Using SQLite database (development): mwangaza.db")
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -1368,7 +1394,7 @@ def add_marks(client_id):
 @app.route('/client/<int:client_id>/report')
 @login_required
 def client_report(client_id):
-    # Only Education department can view academic reports
+    # Only Educationdepartment can view academic reports
     if current_user.department != 'education':
         flash('Access denied. Only Education department can view academic reports.')
         return redirect(url_for('dashboard'))
