@@ -211,14 +211,14 @@
                         </div>
                     </div>
 
-                    <!-- Default Password Info -->
+                    <!-- Info Box -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-2.5">
                         <div class="flex items-start">
                             <i class="fas fa-info-circle text-blue-500 mr-2 mt-0.5 text-xs"></i>
                             <div>
-                                <p class="text-blue-800 text-xs font-medium">Default Users</p>
-                                <p class="text-blue-700 text-xs">Admin: <code class="bg-blue-100 px-1 rounded text-xs">admin_user</code> / <code class="bg-blue-100 px-1 rounded text-xs">admin123</code></p>
-                                <p class="text-blue-700 text-xs">Social: <code class="bg-blue-100 px-1 rounded text-xs">social_worker</code> / <code class="bg-blue-100 px-1 rounded text-xs">social123</code></p>
+                                <p class="text-blue-800 text-xs font-medium">First Time Setup</p>
+                                <p class="text-blue-700 text-xs">Initial admin: <code class="bg-blue-100 px-1 rounded text-xs">admin</code> / <code class="bg-blue-100 px-1 rounded text-xs">admin123</code></p>
+                                <p class="text-blue-700 text-xs">Create your own account using the Sign Up link below</p>
                             </div>
                         </div>
                     </div>
@@ -230,6 +230,14 @@
                         Sign In
                     </button>
                 </form>
+
+                <!-- Signup Link -->
+                <div class="mt-4 text-center">
+                    <p class="text-gray-600 text-sm">
+                        Don't have an account? 
+                        <a href="{{ url_for('signup') }}" class="text-blue-600 hover:text-blue-800 font-medium">Sign Up</a>
+                    </p>
+                </div>
 
                 <!-- Footer -->
                 <div class="mt-4 text-center">

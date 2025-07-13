@@ -44,8 +44,11 @@ def inject_current_year():
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    full_name = db.Column(db.String(200), nullable=True)
     password_hash = db.Column(db.String(120), nullable=False)
     department = db.Column(db.String(50), nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -162,6 +165,48 @@ def login():
             flash('Invalid username or password')
 
     return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form['username']
+        full_name = request.form['full_name']
+        department = request.form['department']
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        # Validation
+        if password != confirm_password:
+            flash('Passwords do not match')
+            return render_template('signup.html')
+
+        if len(password) < 6:
+            flash('Password must be at least 6 characters long')
+            return render_template('signup.html')
+
+        # Check if username already exists
+        if User.query.filter_by(username=username).first():
+            flash('Username already exists. Please choose a different username.')
+            return render_template('signup.html')
+
+        # Create new user
+        try:
+            user = User(
+                username=username,
+                full_name=full_name,
+                department=department
+            )
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            
+            flash('Account created successfully! Please log in.')
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash(f'Error creating account: {str(e)}')
+            return render_template('signup.html')
+
+    return render_template('signup.html')
 
 @app.route('/logout')
 @login_required
@@ -1930,33 +1975,26 @@ def export_client_academic_pdf(client_id):
     response.headers['Content-Disposition'] = f'attachment; filename=NLM_Academic_Report_{client.firstName}_{client.secondName}_{datetime.now().strftime("%Y%m%d")}.pdf'
     return response
 
-def create_default_users():
-    """Create default users for each department with proper naming"""
-    default_users = [
-        {'username': 'admin_user', 'department': 'admin', 'password': 'admin123'},
-        {'username': 'social_worker', 'department': 'socialworkers', 'password': 'social123'},
-        {'username': 'counselor', 'department': 'counselling', 'password': 'counsel123'},
-        {'username': 'educator', 'department': 'education', 'password': 'edu123'},
-        {'username': 'empowerment_staff', 'department': 'empowerment', 'password': 'empower123'}
-    ]
-
-    for user_data in default_users:
-        if not User.query.filter_by(username=user_data['username']).first():
-            user = User(
-                username=user_data['username'], 
-                department=user_data['department']
-            )
-            user.set_password(user_data['password'])
-            db.session.add(user)
-
-    db.session.commit()
+def create_admin_user():
+    """Create initial admin user if none exists"""
+    admin_exists = User.query.filter_by(department='admin').first()
+    if not admin_exists:
+        admin_user = User(
+            username='admin',
+            full_name='System Administrator',
+            department='admin'
+        )
+        admin_user.set_password('admin123')
+        db.session.add(admin_user)
+        db.session.commit()
+        print("Initial admin user created: admin/admin123")
 
 if __name__ == '__main__':
     with app.app_context():
         try:
             # Create tables if they don't exist
             db.create_all()
-            create_default_users()
+            create_admin_user()
             print("Database tables created successfully!")
         except Exception as e:
             print(f"Database initialization error: {e}")

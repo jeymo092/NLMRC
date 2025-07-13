@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - New Life Mwangaza</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .signup-container {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        
+        .signup-card {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+        
+        .organization-logo {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <!-- Background decorative elements -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 rounded-full glass-effect opacity-30"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 rounded-full glass-effect opacity-30"></div>
+    </div>
+
+    <div class="signup-container">
+        <div class="w-full max-w-md relative z-10">
+            <!-- Logo and Title Section -->
+            <div class="text-center mb-6">
+                <div class="logo mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 shadow-lg">
+                    <i class="fas fa-heart text-2xl organization-logo"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white mb-1">New Life Mwangaza</h1>
+                <p class="text-white/80 text-xs">Create Your Account</p>
+            </div>
+
+            <!-- Signup Card -->
+            <div class="signup-card rounded-2xl p-6">
+                <div class="text-center mb-5">
+                    <h2 class="text-xl font-bold text-gray-800 mb-1">Create Account</h2>
+                    <p class="text-gray-600 text-xs">Register to access the system</p>
+                </div>
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                                    <span class="text-red-700 text-sm">{{ message }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" class="space-y-4">
+                    <!-- Username -->
+                    <div class="space-y-1">
+                        <label for="username" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-user mr-1"></i>Username
+                        </label>
+                        <input type="text" name="username" id="username" required
+                               class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               placeholder="Enter your username">
+                    </div>
+
+                    <!-- Full Name -->
+                    <div class="space-y-1">
+                        <label for="full_name" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-id-card mr-1"></i>Full Name
+                        </label>
+                        <input type="text" name="full_name" id="full_name" required
+                               class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                               placeholder="Enter your full name">
+                    </div>
+
+                    <!-- Department -->
+                    <div class="space-y-1">
+                        <label for="department" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-building mr-1"></i>Department
+                        </label>
+                        <select name="department" id="department" required 
+                                class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white">
+                            <option value="">Select Department</option>
+                            <option value="admin">Administration</option>
+                            <option value="socialworkers">Social Workers</option>
+                            <option value="education">Education</option>
+                            <option value="counselling">Counselling</option>
+                            <option value="empowerment">Empowerment</option>
+                        </select>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="space-y-1">
+                        <label for="password" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-lock mr-1"></i>Password
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
+                                   placeholder="Enter your password">
+                            <button type="button" onclick="togglePassword('password')" 
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                <i id="passwordToggle" class="fas fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="space-y-1">
+                        <label for="confirm_password" class="block text-xs font-medium text-gray-700 mb-1">
+                            <i class="fas fa-lock mr-1"></i>Confirm Password
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="confirm_password" id="confirm_password" required
+                                   class="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 pr-10"
+                                   placeholder="Confirm your password">
+                            <button type="button" onclick="togglePassword('confirm_password')" 
+                                    class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                <i id="confirmPasswordToggle" class="fas fa-eye text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Sign Up Button -->
+                    <button type="submit" 
+                            class="w-full btn-primary text-white py-2.5 px-4 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create Account
+                    </button>
+                </form>
+
+                <!-- Login Link -->
+                <div class="mt-4 text-center">
+                    <p class="text-gray-600 text-sm">
+                        Already have an account? 
+                        <a href="{{ url_for('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">Sign In</a>
+                    </p>
+                </div>
+
+                <!-- Footer -->
+                <div class="mt-4 text-center">
+                    <p class="text-gray-500 text-xs">
+                        © 2025 New Life Mwangaza
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleIcon = document.getElementById(fieldId + 'Toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.className = 'fas fa-eye-slash text-xs';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.className = 'fas fa-eye text-xs';
+            }
+        }
+
+        // Password validation
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (password !== confirmPassword) {
+                this.setCustomValidity('Passwords do not match');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+    </script>
+</body>
+</html>
