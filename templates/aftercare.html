@@ -48,7 +48,7 @@
                                     <div class="flex justify-between items-start mb-3">
                                         <div>
                                             <h3 class="text-sm font-medium">
-                                                <a href="{{ url_for('edit_aftercare', aftercare_id=record.id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                                <a href="{{ url_for('view_aftercare', aftercare_id=record.id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
                                                     {{ record.client.firstName }} {{ record.client.secondName }}
                                                 </a>
                                             </h3>
@@ -133,7 +133,7 @@
                                         <tr class="hover:bg-gray-50">
                                             <td class="px-2 py-4 w-20">
                                                 <div class="text-sm font-medium truncate">
-                                                    <a href="{{ url_for('edit_aftercare', aftercare_id=record.id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
+                                                    <a href="{{ url_for('view_aftercare', aftercare_id=record.id) }}" class="text-blue-600 hover:text-blue-800 hover:underline">
                                                         {{ record.client.firstName }} {{ record.client.secondName }}
                                                     </a>
                                                 </div>

@@ -982,6 +982,18 @@ def add_aftercare(client_id):
 
     return render_template('add_aftercare.html', client=client)
 
+@app.route('/view_aftercare/<int:aftercare_id>')
+@login_required
+def view_aftercare(aftercare_id):
+    # Only Social Workers can view aftercare records
+    if current_user.department != 'socialworkers':
+        flash('Access denied. Only Social Workers can view aftercare records.')
+        return redirect(url_for('dashboard'))
+
+    aftercare = AfterCare.query.get_or_404(aftercare_id)
+    client = aftercare.client
+    return render_template('view_aftercare.html', aftercare=aftercare, client=client)
+
 @app.route('/edit_aftercare/<int:aftercare_id>', methods=['GET', 'POST'])
 @login_required
 def edit_aftercare(aftercare_id):
