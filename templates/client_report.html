@@ -4,116 +4,153 @@
 {% block title %}Academic Report - {{ client.firstName }} {{ client.secondName }}{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Academic Report - {{ client.firstName }} {{ client.secondName }}</h2>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('add_marks', client_id=client.id) }}" class="btn btn-success">
-                        <i class="fas fa-plus"></i> Add Marks
-                    </a>
-                    <a href="{{ url_for('education') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back to Education
-                    </a>
-                </div>
+<div class="min-h-screen bg-gray-50 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex items-center mb-4">
+                <a href="{{ url_for('education') }}" class="mr-4 inline-flex items-center text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Education
+                </a>
             </div>
+            <h1 class="text-3xl font-bold text-gray-900">Academic Report</h1>
+            <p class="mt-2 text-sm text-gray-600">
+                Student: <span class="font-medium text-gray-900">{{ client.firstName }} {{ client.secondName }}</span> • 
+                Age: <span class="font-medium text-gray-900">{{ client.age }} years</span>
+            </p>
+        </div>
 
-            <!-- Student Info -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-user"></i> Student Information</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <strong>Name:</strong> {{ client.firstName }} {{ client.secondName }}
+        <!-- Performance Overview Card -->
+        {% if marks %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    Performance Overview
+                </h2>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-blue-600">{{ "%.1f"|format(overall_average) }}%</div>
+                        <div class="text-sm text-gray-600 mt-1">Overall Average</div>
+                        <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                            <div class="h-2 rounded-full
+                                {% if overall_average >= 80 %}bg-green-500
+                                {% elif overall_average >= 60 %}bg-yellow-500
+                                {% else %}bg-red-500{% endif %}" 
+                                style="width: {{ overall_average }}%"></div>
                         </div>
-                        <div class="col-md-2">
-                            <strong>Age:</strong> {{ client.age }}
-                        </div>
-                        <div class="col-md-3">
-                            <strong>Education Level:</strong> {{ client.educationLevel or 'Not specified' }}
-                        </div>
-                        <div class="col-md-2">
-                            <strong>Grade/Form:</strong> {{ client.grade or client.secondaryForm or 'Not specified' }}
-                        </div>
-                        <div class="col-md-2">
-                            <strong>Overall Average:</strong> 
-                            <span class="badge bg-{% if overall_average >= 80 %}success{% elif overall_average >= 60 %}warning{% else %}danger{% endif %}">
-                                {{ "%.2f"|format(overall_average) }}%
-                            </span>
-                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-purple-600">{{ marks|length }}</div>
+                        <div class="text-sm text-gray-600 mt-1">Total Assessments</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600">{{ marks|map(attribute='subject.name')|unique|list|length }}</div>
+                        <div class="text-sm text-gray-600 mt-1">Subjects Assessed</div>
                     </div>
                 </div>
             </div>
+        </div>
+        {% endif %}
 
-            <!-- Academic Performance -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> Academic Performance</h5>
+        <!-- Academic Records -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Academic Records
+                    </h2>
+                    <a href="{{ url_for('add_marks', client_id=client.id) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Add New Assessment
+                    </a>
                 </div>
-                <div class="card-body">
-                    {% if marks %}
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Subject</th>
-                                        <th>Marks</th>
-                                        <th>Max Marks</th>
-                                        <th>Percentage</th>
-                                        <th>Grade</th>
-                                        <th>Term</th>
-                                        <th>Year</th>
-                                        <th>Test Date</th>
-                                        <th>Notes</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for mark in marks %}
-                                    {% set percentage = (mark.marks / mark.max_marks) * 100 %}
-                                    <tr>
-                                        <td><strong>{{ mark.subject.name }}</strong></td>
-                                        <td>{{ mark.marks }}</td>
-                                        <td>{{ mark.max_marks }}</td>
-                                        <td>
-                                            <span class="badge bg-{% if percentage >= 80 %}success{% elif percentage >= 60 %}warning{% else %}danger{% endif %}">
-                                                {{ "%.2f"|format(percentage) }}%
-                                            </span>
-                                        </td>
-                                        <td>
-                                            {% if percentage >= 80 %}
-                                                <span class="badge bg-success">A</span>
-                                            {% elif percentage >= 70 %}
-                                                <span class="badge bg-info">B</span>
-                                            {% elif percentage >= 60 %}
-                                                <span class="badge bg-warning">C</span>
-                                            {% elif percentage >= 50 %}
-                                                <span class="badge bg-secondary">D</span>
-                                            {% else %}
-                                                <span class="badge bg-danger">F</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>{{ mark.term }}</td>
-                                        <td>{{ mark.year }}</td>
-                                        <td>{{ mark.test_date.strftime('%Y-%m-%d') }}</td>
-                                        <td>{{ mark.notes or '-' }}</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-4">
-                            <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
-                            <p class="text-muted">No academic records found for this student.</p>
-                            <a href="{{ url_for('add_marks', client_id=client.id) }}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add First Marks
+            </div>
+            <div class="p-6">
+                {% if marks %}
+                    <div class="overflow-hidden">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test Date</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                {% for mark in marks %}
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ mark.subject.name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ mark.term }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-600">{{ mark.year }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ mark.marks }}/{{ mark.max_marks }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% set percentage = (mark.marks / mark.max_marks) * 100 %}
+                                        <div class="flex items-center">
+                                            <div class="text-sm font-medium text-gray-900">{{ "%.1f"|format(percentage) }}%</div>
+                                            <div class="ml-2 w-16 bg-gray-200 rounded-full h-2">
+                                                <div class="h-2 rounded-full
+                                                    {% if percentage >= 80 %}bg-green-500
+                                                    {% elif percentage >= 60 %}bg-yellow-500
+                                                    {% else %}bg-red-500{% endif %}" 
+                                                    style="width: {{ percentage }}%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-600">{{ mark.test_date.strftime('%b %d, %Y') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-600">{{ mark.notes or '-' }}</div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-12">
+                        <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">No academic records found</h3>
+                        <p class="mt-1 text-sm text-gray-500">Start tracking this student's academic performance by adding their first assessment.</p>
+                        <div class="mt-6">
+                            <a href="{{ url_for('add_marks', client_id=client.id) }}" class="inline-flex items-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                </svg>
+                                Add First Assessment
                             </a>
                         </div>
-                    {% endif %}
-                </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
