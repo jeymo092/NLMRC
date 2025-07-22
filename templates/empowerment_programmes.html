@@ -108,7 +108,8 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Programme</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Age Range</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Audience</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enrolled</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -139,7 +140,29 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ programme.duration_weeks }} weeks</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ programme.min_age }}-{{ programme.max_age }} years</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                {% if programme.program_audience == 'YOUTH_14_18' %}Youth (14-18)
+                                {% elif programme.program_audience == 'YOUNG_ADULTS_18_25' %}Young Adults (18-25)
+                                {% elif programme.program_audience == 'PARENTS_GUARDIANS' %}Parents & Guardians
+                                {% elif programme.program_audience == 'COMMUNITY_MEMBERS' %}Community
+                                {% elif programme.program_audience == 'STAFF_VOLUNTEERS' %}Staff & Volunteers
+                                {% elif programme.program_audience == 'MIXED_AUDIENCE' %}Mixed
+                                {% else %}{{ programme.program_audience }}{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {% if programme.program_location == 'ON_SITE' %}On-Site
+                                {% elif programme.program_location == 'COMMUNITY_CENTER' %}Community Center
+                                {% elif programme.program_location == 'PARTNER_FACILITY' %}Partner Facility
+                                {% elif programme.program_location == 'HOME_BASED' %}Home-Based
+                                {% elif programme.program_location == 'MOBILE_OUTREACH' %}Mobile/Outreach
+                                {% elif programme.program_location == 'VIRTUAL_ONLINE' %}Virtual/Online
+                                {% elif programme.program_location == 'OTHER' %}Other
+                                {% else %}{{ programme.program_location }}{% endif %}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ programme.capacity }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ programme.enrollments|selectattr('status', 'equalto', 'ENROLLED')|list|length }}

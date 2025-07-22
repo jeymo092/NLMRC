@@ -172,8 +172,8 @@ class EmpowermentProgramme(db.Model):
     description = db.Column(db.Text)
     programme_type = db.Column(db.String(50), nullable=False)  # VOCATIONAL, LIFE_SKILLS, ENTREPRENEURSHIP, BUSINESS_SKILLS, POSITIVE_PARENTING, CAPACITY_BUILDING
     duration_weeks = db.Column(db.Integer, nullable=False)
-    min_age = db.Column(db.Integer, nullable=False, default=14)
-    max_age = db.Column(db.Integer, nullable=False, default=18)
+    program_audience = db.Column(db.String(50), nullable=False)  # YOUTH_14_18, YOUNG_ADULTS_18_25, PARENTS_GUARDIANS, etc.
+    program_location = db.Column(db.String(50), nullable=False)  # ON_SITE, COMMUNITY_CENTER, PARTNER_FACILITY, etc.
     capacity = db.Column(db.Integer, nullable=False, default=20)
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
@@ -1621,14 +1621,14 @@ def add_programme():
                 description=request.form.get('description', ''),
                 programme_type=request.form['programme_type'],
                 duration_weeks=int(request.form['duration_weeks']),
-                min_age=int(request.form.get('min_age', 14)),
-                max_age=int(request.form.get('max_age', 18)),
+                program_audience=request.form['program_audience'],
+                program_location=request.form['program_location'],
                 capacity=int(request.form.get('capacity', 20)),
                 start_date=start_date,
                 end_date=end_date,
                 status=request.form.get('status', 'ACTIVE'),
                 instructor=request.form.get('instructor', ''),
-                location=request.form.get('location', ''),
+                location=request.form.get('location_details', ''),
                 requirements=request.form.get('requirements', ''),
                 createdBy=current_user.id
             )
@@ -1657,13 +1657,9 @@ def enroll_client(programme_id):
             client_id = int(request.form['client_id'])
             client = Client.query.get_or_404(client_id)
 
-            # Check if client is eligible (age and status)
+            # Check if client is eligible (status only)
             if client.status != 'ACTIVE':
                 flash('Only active clients can be enrolled in programmes.')
-                return render_template('enroll_client.html', programme=programme)
-
-            if not (programme.min_age <= client.age <= programme.max_age):
-                flash(f'Client age ({client.age}) is not within programme age range ({programme.min_age}-{programme.max_age}).')
                 return render_template('enroll_client.html', programme=programme)
 
             # Check if client is already enrolled
@@ -1695,11 +1691,9 @@ def enroll_client(programme_id):
         except Exception as e:
             flash(f'Error enrolling client: {str(e)}')
 
-    # Get eligible clients (active clients within age range)
+    # Get eligible clients (active clients only)
     eligible_clients = Client.query.filter(
-        Client.status == 'ACTIVE',
-        Client.age >= programme.min_age,
-        Client.age <= programme.max_age
+        Client.status == 'ACTIVE'
     ).all()
 
     # Remove already enrolled clients
