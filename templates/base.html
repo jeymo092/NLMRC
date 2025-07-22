@@ -753,7 +753,7 @@
             </a>
             {% endif %}
 
-            {% if current_user.department == 'counselling' %}
+            {% if current_user.department in ['counselling', 'counseling'] %}
             <!-- Counselling -->
             <div class="sidebar-header sidebar-header-toggle" onclick="toggleSection('counselling-section')">
                 <span>Counselling</span>
