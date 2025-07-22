@@ -523,44 +523,6 @@
 </div>
 
 
-<!-- Academic Performance Overview -->
-{% if current_user.department == 'education' %}
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card" style="border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-            <div class="card-header bg-light" style="border-radius: 15px 15px 0 0;">
-                <h5 class="mb-0"><i class="fas fa-chart-line text-primary"></i> Academic Overview</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="text-center p-3">
-                            <i class="fas fa-book fa-2x text-info mb-2"></i>
-                            <h4 class="text-info mb-1">{{ subjects|length if subjects else 0 }}</h4>
-                            <small class="text-muted">Subjects Offered</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="text-center p-3">
-                            <i class="fas fa-clipboard-check fa-2x text-success mb-2"></i>
-                            <h4 class="text-success mb-1">{{ total_assessments if total_assessments else 0 }}</h4>
-                            <small class="text-muted">Total Assessments</small>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="text-center p-3">
-                            <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
-                            <h4 class="text-warning mb-1">{{ average_performance if average_performance else 'N/A' }}%</h4>
-                            <small class="text-muted">Average Performance</small>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 <!-- All Clients Section -->
 <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-100">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
@@ -599,7 +561,7 @@
                     </span>
                 </div>
             </div>
-            
+
             <div class="flex flex-wrap gap-2 mt-3">
                 <a href="{{ url_for('view_client', client_id=client.id) }}" 
                    class="flex-1 min-w-0 inline-flex items-center justify-center px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors">
@@ -723,7 +685,7 @@
 {% if current_user.department == 'socialworkers' %}
 <div class="block sm:hidden bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mt-6">
     <h4 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h4>
-    
+
     <div class="grid grid-cols-2 gap-3">
         <a href="{{ url_for('clients_14_18') }}" 
            class="flex flex-col items-center justify-center p-4 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors">
@@ -732,7 +694,7 @@
             </svg>
             <span class="text-sm font-medium text-blue-800 text-center">View Clients 14-18</span>
         </a>
-        
+
         <a href="{{ url_for('home_visits') }}" 
            class="flex flex-col items-center justify-center p-4 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition-colors">
             <svg class="w-6 h-6 text-green-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -740,7 +702,7 @@
             </svg>
             <span class="text-sm font-medium text-green-800 text-center">View Home Visits</span>
         </a>
-        
+
         <a href="{{ url_for('alumni') }}" 
            class="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-lg border border-yellow-200 hover:bg-yellow-100 transition-colors">
             <svg class="w-6 h-6 text-yellow-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -748,7 +710,7 @@
             </svg>
             <span class="text-sm font-medium text-yellow-800 text-center">View Alumni</span>
         </a>
-        
+
         <a href="{{ url_for('aftercare') }}" 
            class="flex flex-col items-center justify-center p-4 bg-purple-50 rounded-lg border border-purple-200 hover:bg-purple-100 transition-colors">
             <svg class="w-6 h-6 text-purple-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
