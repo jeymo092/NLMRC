@@ -971,9 +971,9 @@ def export_client_pdf(client_id):
 @app.route('/aftercare')
 @login_required
 def aftercare():
-    # Only Social Workers can access aftercare
-    if current_user.department != 'socialworkers':
-        flash('Access denied. Only Social Workers can access aftercare records.')
+    # Only Social Workers and Counselling can access aftercare
+    if current_user.department not in ['socialworkers', 'counselling']:
+        flash('Access denied. Only Social Workers and Counselling can access aftercare records.')
         return redirect(url_for('dashboard'))
 
     # Get all completed clients with their aftercare records (if any)
@@ -984,9 +984,9 @@ def aftercare():
 @app.route('/alumni')
 @login_required
 def alumni():
-    # Only Social Workers can access alumni
-    if current_user.department != 'socialworkers':
-        flash('Access denied. Only Social Workers can access alumni records.')
+    # Only Social Workers and Counselling can access alumni
+    if current_user.department not in ['socialworkers', 'counselling']:
+        flash('Access denied. Only Social Workers and Counselling can access alumni records.')
         return redirect(url_for('dashboard'))
 
     alumni_clients = Client.query.filter_by(status='COMPLETE').all()
