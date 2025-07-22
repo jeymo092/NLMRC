@@ -108,7 +108,7 @@
             margin-top: 4rem;
             background: #fafafa;
             min-height: calc(100vh - 4rem);
-            padding: 1rem 2rem 0 2rem;
+            padding: 1rem 2rem 4rem 2rem;
             width: calc(100% - 280px);
             max-width: calc(100vw - 280px);
             box-sizing: border-box;
@@ -160,14 +160,14 @@
                 margin-top: 4rem;
                 width: 100%;
                 max-width: 100vw;
-                padding: 1rem 1rem 0 1rem;
+                padding: 1rem 1rem 4rem 1rem;
                 overflow-x: hidden;
             }
         }
 
         @media (max-width: 640px) {
             .main-content {
-                padding: 0.75rem 0.75rem 0 0.75rem;
+                padding: 0.75rem 0.75rem 4rem 0.75rem;
                 width: 100%;
                 max-width: 100vw;
                 overflow-x: hidden;
@@ -837,7 +837,7 @@
         <div class="content-wrapper">
     {% else %}
     <!-- Full width for non-authenticated users -->
-    <div class="w-full flex-1" style="margin-top: 3.75rem; padding: 0.5rem 2rem 0 2rem; max-width: 100vw; overflow-x: hidden;">
+    <div class="w-full flex-1" style="margin-top: 3.75rem; padding: 0.5rem 2rem 4rem 2rem; max-width: 100vw; overflow-x: hidden;">
         <div class="w-full max-w-6xl mx-auto" style="max-width: 100%; overflow-x: hidden;">
     {% endif %}
             {% with messages = get_flashed_messages() %}
@@ -866,8 +866,8 @@
     </div>
 
 <!-- Footer -->
-<footer class="bg-gray-900 text-white w-full mt-auto">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<footer class="bg-gray-900 text-white w-full mt-auto fixed bottom-0 left-0 right-0">
+    <div class="w-full px-4 sm:px-6 lg:px-8 py-3">
         <!-- Compact Footer Content -->
         <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
             <!-- Left - Organization Info -->
