@@ -1330,8 +1330,7 @@ def add_home_visit(client_id):
             )
 
             db.session.add(home_visit)
-            db.session.```python
-commit()
+            db.session.commit()
             flash('Home visit record added successfully!')
             return redirect(url_for('home_visits'))
         except Exception as e:
