@@ -665,6 +665,7 @@ def export_client_pdf(client_id):
     from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak, KeepTogether
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
     from reportlab.lib.units import cm, mm
+```python
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT, TA_JUSTIFY
     from reportlab.pdfgen import canvas
@@ -1329,7 +1330,8 @@ def add_home_visit(client_id):
             )
 
             db.session.add(home_visit)
-            db.session.commit()
+            db.session.```python
+commit()
             flash('Home visit record added successfully!')
             return redirect(url_for('home_visits'))
         except Exception as e:
@@ -1700,7 +1702,7 @@ def enroll_client(programme_id):
     enrolled_client_ids = [e.client_id for e in ProgrammeEnrollment.query.filter_by(
         programme_id=programme_id, status='ENROLLED'
     ).all()]
-    
+
     eligible_clients = [c for c in eligible_clients if c.id not in enrolled_client_ids]
 
     return render_template('enroll_client.html', programme=programme, eligible_clients=eligible_clients)
@@ -1715,7 +1717,7 @@ def programme_details(programme_id):
 
     programme = EmpowermentProgramme.query.get_or_404(programme_id)
     enrollments = ProgrammeEnrollment.query.filter_by(programme_id=programme_id).join(Client).order_by(Client.firstName).all()
-    
+
     return render_template('programme_details.html', programme=programme, enrollments=enrollments)
 
 @app.route('/update_enrollment/<int:enrollment_id>', methods=['GET', 'POST'])
@@ -1758,7 +1760,7 @@ def programme_templates():
     if current_user.department != 'empowerment':
         flash('Access denied. Only Empowerment department can view programme templates.')
         return redirect(url_for('dashboard'))
-    
+
     return render_template('programme_templates.html')
 
 @app.route('/create_custom_programme', methods=['GET', 'POST'])
@@ -1815,7 +1817,7 @@ def client_programmes(client_id):
 
     client = Client.query.get_or_404(client_id)
     enrollments = ProgrammeEnrollment.query.filter_by(client_id=client_id).join(EmpowermentProgramme).order_by(ProgrammeEnrollment.enrollment_date.desc()).all()
-    
+
     return render_template('client_programmes.html', client=client, enrollments=enrollments)
 
 # User Management Routes (Admin only)
@@ -1933,8 +1935,8 @@ def parent_records():
         flash('Access denied. Only Empowerment department can access parent records.')
         return redirect(url_for('dashboard'))
 
-    parent_records = ParentRecord.query.join(Client).filter(Client.status == 'ACTIVE').all()
-    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    parent_records = ParentRecord.query.all()
+    active_clients = Client.query.all()
     return render_template('parent_records.html', parent_records=parent_records, active_clients=active_clients)
 
 @app.route('/add_parent_record/<int:client_id>', methods=['GET', 'POST'])
@@ -1946,6 +1948,8 @@ def add_parent_record(client_id):
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
+
+    # Allow parent records for any client status (active, completed, alumni)
 
     if request.method == 'POST':
         try:
@@ -1984,7 +1988,7 @@ def grants_tools():
         return redirect(url_for('dashboard'))
 
     grant_records = GrantRecord.query.join(Client).order_by(GrantRecord.grant_date.desc()).all()
-    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    active_clients = Client.query.all()
     return render_template('grants_tools.html', grant_records=grant_records, active_clients=active_clients)
 
 @app.route('/add_grant/<int:client_id>', methods=['GET', 'POST'])
@@ -1997,10 +2001,12 @@ def add_grant(client_id):
 
     client = Client.query.get_or_404(client_id)
 
+    # Allow grants for any client status (active, completed, alumni)
+
     if request.method == 'POST':
         try:
             grant_date = datetime.strptime(request.form['grant_date'], '%Y-%m-%d').date()
-            
+
             return_date = None
             if request.form.get('return_date'):
                 return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d').date()
@@ -2044,7 +2050,7 @@ def client_empowerment_records(client_id):
     parent_records = ParentRecord.query.filter_by(client_id=client_id).all()
     grant_records = GrantRecord.query.filter_by(client_id=client_id).order_by(GrantRecord.grant_date.desc()).all()
     enrollments = ProgrammeEnrollment.query.filter_by(client_id=client_id).join(EmpowermentProgramme).order_by(ProgrammeEnrollment.enrollment_date.desc()).all()
-    
+
     return render_template('client_empowerment_records.html', 
                          client=client, 
                          parent_records=parent_records, 
