@@ -1065,9 +1065,9 @@ def export_client_pdf(client_id):
 @app.route('/aftercare')
 @login_required
 def aftercare():
-    # Only Social Workers and Counselling can access aftercare
-    if current_user.department not in ['socialworkers', 'counselling']:
-        flash('Access denied. Only Social Workers and Counselling can access aftercare records.')
+    # Only Social Workers, Counselling, and Admin can access aftercare
+    if current_user.department not in ['socialworkers', 'counselling', 'admin']:
+        flash('Access denied. Only Social Workers, Counselling, and Admin can access aftercare records.')
         return redirect(url_for('dashboard'))
 
     # Get all completed clients with their aftercare records (if any)
@@ -1078,9 +1078,9 @@ def aftercare():
 @app.route('/alumni')
 @login_required
 def alumni():
-    # Only Social Workers and Counselling can access alumni
-    if current_user.department not in ['socialworkers', 'counselling']:
-        flash('Access denied. Only Social Workers and Counselling can access alumni records.')
+    # Only Social Workers, Counselling, and Admin can access alumni
+    if current_user.department not in ['socialworkers', 'counselling', 'admin']:
+        flash('Access denied. Only Social Workers, Counselling, and Admin can access alumni records.')
         return redirect(url_for('dashboard'))
 
     alumni_clients = Client.query.filter_by(status='COMPLETE').all()
@@ -1112,9 +1112,9 @@ def complete_client(client_id):
 @app.route('/add_aftercare/<int:client_id>', methods=['GET', 'POST'])
 @login_required
 def add_aftercare(client_id):
-    # Only Social Workers can add aftercare records
-    if current_user.department != 'socialworkers':
-        flash('Access denied. Only Social Workers can add aftercare records.')
+    # Only Social Workers and Admin can add aftercare records
+    if current_user.department not in ['socialworkers', 'admin']:
+        flash('Access denied. Only Social Workers and Admin can add aftercare records.')
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
@@ -1159,9 +1159,9 @@ def add_aftercare(client_id):
 @app.route('/view_aftercare/<int:aftercare_id>')
 @login_required
 def view_aftercare(aftercare_id):
-    # Only Social Workers can view aftercare records
-    if current_user.department != 'socialworkers':
-        flash('Access denied. Only Social Workers can view aftercare records.')
+    # Only Social Workers and Admin can view aftercare records
+    if current_user.department not in ['socialworkers', 'admin']:
+        flash('Access denied. Only Social Workers and Admin can view aftercare records.')
         return redirect(url_for('dashboard'))
 
     aftercare = AfterCare.query.get_or_404(aftercare_id)
@@ -1171,9 +1171,9 @@ def view_aftercare(aftercare_id):
 @app.route('/edit_aftercare/<int:aftercare_id>', methods=['GET', 'POST'])
 @login_required
 def edit_aftercare(aftercare_id):
-    # Only Social Workers can edit aftercare records
-    if current_user.department != 'socialworkers':
-        flash('Access denied. Only Social Workers can edit aftercare records.')
+    # Only Social Workers and Admin can edit aftercare records
+    if current_user.department not in ['socialworkers', 'admin']:
+        flash('Access denied. Only Social Workers and Admin can edit aftercare records.')
         return redirect(url_for('dashboard'))
 
     aftercare = AfterCare.query.get_or_404(aftercare_id)
@@ -1280,9 +1280,9 @@ def edit_aftercare(aftercare_id):
 @app.route('/delete_aftercare/<int:aftercare_id>', methods=['POST'])
 @login_required
 def delete_aftercare(aftercare_id):
-    # Only Social Workers can delete aftercare records
-    if current_user.department != 'socialworkers':
-        flash('Access denied. Only Social Workers can delete aftercare records.')
+    # Only Social Workers and Admin can delete aftercare records
+    if current_user.department not in ['socialworkers', 'admin']:
+        flash('Access denied. Only Social Workers and Admin can delete aftercare records.')
         return redirect(url_for('dashboard'))
 
     aftercare = AfterCare.query.get_or_404(aftercare_id)
@@ -1410,9 +1410,9 @@ def api_next_intake():
 @app.route('/education')
 @login_required
 def education():
-    # Only Education department can access this
-    if current_user.department != 'education':
-        flash('Access denied. Only Education department can access this section.')
+    # Only Education department and Admin can access this
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can access this section.')
         return redirect(url_for('dashboard'))
 
     subjects = Subject.query.all()
@@ -1422,9 +1422,9 @@ def education():
 @app.route('/add_subject', methods=['GET', 'POST'])
 @login_required
 def add_subject():
-    # Only Education department can add subjects
-    if current_user.department != 'education':
-        flash('Access denied. Only Education department can add subjects.')
+    # Only Education department and Admin can add subjects
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can add subjects.')
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
@@ -1447,9 +1447,9 @@ def add_subject():
 @app.route('/add_marks/<int:client_id>', methods=['GET', 'POST'])
 @login_required
 def add_marks(client_id):
-    # Only Education department can add marks
-    if current_user.department != 'education':
-        flash('Access denied. Only Education department can add marks.')
+    # Only Education department and Admin can add marks
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can add marks.')
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
@@ -1488,9 +1488,9 @@ def add_marks(client_id):
 @app.route('/client/<int:client_id>/report')
 @login_required
 def client_report(client_id):
-    # Only Educationdepartment can view academic reports
-    if current_user.department != 'education':
-        flash('Access denied. Only Education department can view academic reports.')
+    # Only Education department and Admin can view academic reports
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can view academic reports.')
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
@@ -1589,9 +1589,9 @@ def clients_14_18():
 @app.route('/empowerment_programmes')
 @login_required
 def empowerment_programmes():
-    # Only Empowerment department can access this
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can access this section.')
+    # Only Empowerment department and Admin can access this
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can access this section.')
         return redirect(url_for('dashboard'))
 
     programmes = EmpowermentProgramme.query.all()
@@ -1601,9 +1601,9 @@ def empowerment_programmes():
 @app.route('/add_programme', methods=['GET', 'POST'])
 @login_required
 def add_programme():
-    # Only Empowerment department can add programmes
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can add programmes.')
+    # Only Empowerment department and Admin can add programmes
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can add programmes.')
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
@@ -1645,9 +1645,9 @@ def add_programme():
 @app.route('/enroll_client/<int:programme_id>', methods=['GET', 'POST'])
 @login_required
 def enroll_client(programme_id):
-    # Only Empowerment department can enroll clients
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can enroll clients.')
+    # Only Empowerment department and Admin can enroll clients
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can enroll clients.')
         return redirect(url_for('dashboard'))
 
     programme = EmpowermentProgramme.query.get_or_404(programme_id)
@@ -1708,9 +1708,9 @@ def enroll_client(programme_id):
 @app.route('/programme/<int:programme_id>')
 @login_required
 def programme_details(programme_id):
-    # Only Empowerment department can view programme details
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can view programme details.')
+    # Only Empowerment department and Admin can view programme details
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can view programme details.')
         return redirect(url_for('dashboard'))
 
     programme = EmpowermentProgramme.query.get_or_404(programme_id)
@@ -1721,9 +1721,9 @@ def programme_details(programme_id):
 @app.route('/update_enrollment/<int:enrollment_id>', methods=['GET', 'POST'])
 @login_required
 def update_enrollment(enrollment_id):
-    # Only Empowerment department can update enrollments
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can update enrollments.')
+    # Only Empowerment department and Admin can update enrollments
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can update enrollments.')
         return redirect(url_for('dashboard'))
 
     enrollment = ProgrammeEnrollment.query.get_or_404(enrollment_id)
@@ -1754,9 +1754,9 @@ def update_enrollment(enrollment_id):
 @app.route('/programme_templates')
 @login_required
 def programme_templates():
-    # Only Empowerment department can view programme templates
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can view programme templates.')
+    # Only Empowerment department and Admin can view programme templates
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can view programme templates.')
         return redirect(url_for('dashboard'))
 
     return render_template('programme_templates.html')
@@ -1764,9 +1764,9 @@ def programme_templates():
 @app.route('/create_custom_programme', methods=['GET', 'POST'])
 @login_required
 def create_custom_programme():
-    # Only Empowerment department can create custom programmes
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can create custom programmes.')
+    # Only Empowerment department and Admin can create custom programmes
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can create custom programmes.')
         return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
@@ -1808,9 +1808,9 @@ def create_custom_programme():
 @app.route('/client/<int:client_id>/programmes')
 @login_required
 def client_programmes(client_id):
-    # Only Empowerment department can view client programmes
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can view client programmes.')
+    # Only Empowerment department and Admin can view client programmes
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can view client programmes.')
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
@@ -1928,9 +1928,9 @@ def delete_user(user_id):
 @app.route('/parent_records')
 @login_required
 def parent_records():
-    # Only Empowerment department can access parent records
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can access parent records.')
+    # Only Empowerment department and Admin can access parent records
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can access parent records.')
         return redirect(url_for('dashboard'))
 
     parent_records = ParentRecord.query.all()
@@ -1940,9 +1940,9 @@ def parent_records():
 @app.route('/add_parent_record/<int:client_id>', methods=['GET', 'POST'])
 @login_required
 def add_parent_record(client_id):
-    # Only Empowerment department can add parent records
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can add parent records.')
+    # Only Empowerment department and Admin can add parent records
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can add parent records.')
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
@@ -1980,9 +1980,9 @@ def add_parent_record(client_id):
 @app.route('/grants_tools')
 @login_required
 def grants_tools():
-    # Only Empowerment department can access grants and tools records
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can access grants and tools records.')
+    # Only Empowerment department and Admin can access grants and tools records
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can access grants and tools records.')
         return redirect(url_for('dashboard'))
 
     grant_records = GrantRecord.query.join(Client).order_by(GrantRecord.grant_date.desc()).all()
@@ -1992,9 +1992,9 @@ def grants_tools():
 @app.route('/add_grant/<int:client_id>', methods=['GET', 'POST'])
 @login_required
 def add_grant(client_id):
-    # Only Empowerment department can add grants
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can add grants.')
+    # Only Empowerment department and Admin can add grants
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can add grants.')
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
@@ -2039,9 +2039,9 @@ def add_grant(client_id):
 @app.route('/client/<int:client_id>/empowerment_records')
 @login_required
 def client_empowerment_records(client_id):
-    # Only Empowerment department can view client empowerment records
-    if current_user.department != 'empowerment':
-        flash('Access denied. Only Empowerment department can view empowerment records.')
+    # Only Empowerment department and Admin can view client empowerment records
+    if current_user.department not in ['empowerment', 'admin']:
+        flash('Access denied. Only Empowerment department and Admin can view empowerment records.')
         return redirect(url_for('dashboard'))
 
     client = Client.query.get_or_404(client_id)
@@ -2118,9 +2118,9 @@ def delete_client(client_id):
 @app.route('/overall_report')
 @login_required
 def overall_report():
-    # Only Education department can view overall reports
-    if current_user.department != 'education':
-        flash('Access denied. Only Education department can view overall reports.')
+    # Only Education department and Admin can view overall reports
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can view overall reports.')
         return redirect(url_for('dashboard'))
 
     # Get all active clients with their marks
@@ -2146,9 +2146,9 @@ def overall_report():
 @app.route('/export_overall_report_pdf')
 @login_required
 def export_overall_report_pdf():
-    # Only Education department can export overall reports
-    if current_user.department != 'education':
-        flash('Access denied. Only Education department can export reports.')
+    # Only Education department and Admin can export overall reports
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can export reports.')
         return redirect(url_for('dashboard'))
 
     from reportlab.lib.pagesizes import A4
@@ -2302,9 +2302,9 @@ def export_overall_report_pdf():
 @app.route('/export_client_academic_pdf/<int:client_id>')
 @login_required
 def export_client_academic_pdf(client_id):
-    # Only Education department can export client academic reports
-    if current_user.department != 'education':
-        flash('Access denied. Only Education department can export academic reports.')
+    # Only Education department and Admin can export client academic reports
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can export academic reports.')
         return redirect(url_for('dashboard'))
 
     from reportlab.lib.pagesizes import A4
