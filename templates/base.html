@@ -623,7 +623,7 @@
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
     <!-- Navigation -->
     <nav class="navbar-custom fixed top-0 left-0 right-0 z-50">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -833,11 +833,11 @@
     </div>
 
     <!-- Main Content -->
-    <div class="main-content">
+    <div class="main-content flex-1">
         <div class="content-wrapper">
     {% else %}
     <!-- Full width for non-authenticated users -->
-    <div class="w-full" style="margin-top: 3.75rem; padding: 0.5rem 2rem 0 2rem; max-width: 100vw; overflow-x: hidden;">
+    <div class="w-full flex-1" style="margin-top: 3.75rem; padding: 0.5rem 2rem 0 2rem; max-width: 100vw; overflow-x: hidden;">
         <div class="w-full max-w-6xl mx-auto" style="max-width: 100%; overflow-x: hidden;">
     {% endif %}
             {% with messages = get_flashed_messages() %}
@@ -864,10 +864,11 @@
             {% block content %}{% endblock %}
         </div>
     </div>
+</div>
 
 <!-- Footer -->
-<footer class="bg-gray-900 text-white mt-8 w-full">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+<footer class="bg-gray-900 text-white w-full mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <!-- Main Footer Content -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
                 <!-- Organization Info - Left -->
