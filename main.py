@@ -1761,6 +1761,50 @@ def programme_templates():
     
     return render_template('programme_templates.html')
 
+@app.route('/create_custom_programme', methods=['GET', 'POST'])
+@login_required
+def create_custom_programme():
+    # Only Empowerment department can create custom programmes
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can create custom programmes.')
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        try:
+            start_date = None
+            if request.form.get('start_date'):
+                start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d').date()
+
+            end_date = None
+            if request.form.get('end_date'):
+                end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d').date()
+
+            programme = EmpowermentProgramme(
+                name=request.form['name'],
+                description=request.form.get('description', ''),
+                programme_type=request.form['programme_type'],
+                duration_weeks=int(request.form['duration_weeks']),
+                program_audience=request.form['program_audience'],
+                program_location=request.form['program_location'],
+                capacity=int(request.form.get('capacity', 20)),
+                start_date=start_date,
+                end_date=end_date,
+                status=request.form.get('status', 'ACTIVE'),
+                instructor=request.form.get('instructor', ''),
+                location=request.form.get('location_details', ''),
+                requirements=request.form.get('requirements', ''),
+                createdBy=current_user.id
+            )
+
+            db.session.add(programme)
+            db.session.commit()
+            flash('Custom programme created successfully!')
+            return redirect(url_for('empowerment_programmes'))
+        except Exception as e:
+            flash(f'Error creating custom programme: {str(e)}')
+
+    return render_template('create_custom_programme.html')
+
 @app.route('/client/<int:client_id>/programmes')
 @login_required
 def client_programmes(client_id):

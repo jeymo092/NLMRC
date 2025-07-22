@@ -1,0 +1,267 @@
+
+{% extends "base.html" %}
+
+{% block title %}Create Custom Programme - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-xl p-8 shadow-sm border border-gray-100">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Create Custom Empowerment Programme</h1>
+            <p class="text-gray-600 mt-2">Design a custom programme tailored to specific rehabilitation and empowerment needs</p>
+        </div>
+
+        <!-- Quick Template Options -->
+        <div class="mb-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 class="text-lg font-semibold text-blue-800 mb-4">Quick Start Templates</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <button type="button" onclick="loadTemplate('business')" class="p-4 bg-white border border-blue-300 rounded-lg hover:bg-blue-50 text-left transition-colors">
+                    <h4 class="font-medium text-blue-800">Business & Entrepreneurship</h4>
+                    <p class="text-sm text-blue-600 mt-1">12-16 weeks, business skills focus</p>
+                </button>
+                <button type="button" onclick="loadTemplate('parenting')" class="p-4 bg-white border border-pink-300 rounded-lg hover:bg-pink-50 text-left transition-colors">
+                    <h4 class="font-medium text-pink-800">Positive Parenting</h4>
+                    <p class="text-sm text-pink-600 mt-1">8-10 weeks, family relationship focus</p>
+                </button>
+                <button type="button" onclick="loadTemplate('capacity')" class="p-4 bg-white border border-green-300 rounded-lg hover:bg-green-50 text-left transition-colors">
+                    <h4 class="font-medium text-green-800">Capacity Building</h4>
+                    <p class="text-sm text-green-600 mt-1">6-8 weeks, leadership skills focus</p>
+                </button>
+                <button type="button" onclick="loadTemplate('life_skills')" class="p-4 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-50 text-left transition-colors">
+                    <h4 class="font-medium text-yellow-800">Life Skills</h4>
+                    <p class="text-sm text-yellow-600 mt-1">10-12 weeks, rehabilitation focus</p>
+                </button>
+                <button type="button" onclick="loadTemplate('integrated')" class="p-4 bg-white border border-purple-300 rounded-lg hover:bg-purple-50 text-left transition-colors">
+                    <h4 class="font-medium text-purple-800">Integrated Recovery</h4>
+                    <p class="text-sm text-purple-600 mt-1">16-24 weeks, comprehensive programme</p>
+                </button>
+                <button type="button" onclick="clearForm()" class="p-4 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 text-left transition-colors">
+                    <h4 class="font-medium text-gray-800">Start from Scratch</h4>
+                    <p class="text-sm text-gray-600 mt-1">Create completely custom programme</p>
+                </button>
+            </div>
+        </div>
+
+        <form method="POST" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Programme Name -->
+                <div class="md:col-span-2">
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Programme Name *</label>
+                    <input type="text" id="name" name="name" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="Enter custom programme name">
+                </div>
+
+                <!-- Programme Type -->
+                <div>
+                    <label for="programme_type" class="block text-sm font-medium text-gray-700 mb-2">Programme Type *</label>
+                    <select id="programme_type" name="programme_type" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="">Select Type</option>
+                        <option value="LIFE_SKILLS">Life Skills</option>
+                        <option value="ENTREPRENEURSHIP">Entrepreneurship</option>
+                        <option value="BUSINESS_SKILLS">Business & Entrepreneurship</option>
+                        <option value="POSITIVE_PARENTING">Positive Parenting</option>
+                        <option value="CAPACITY_BUILDING">Capacity Building</option>
+                    </select>
+                </div>
+
+                <!-- Duration -->
+                <div>
+                    <label for="duration_weeks" class="block text-sm font-medium text-gray-700 mb-2">Duration (Weeks) *</label>
+                    <input type="number" id="duration_weeks" name="duration_weeks" required min="1" max="52"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="e.g., 12">
+                </div>
+
+                <!-- Program Audience -->
+                <div>
+                    <label for="program_audience" class="block text-sm font-medium text-gray-700 mb-2">Program Audience *</label>
+                    <select id="program_audience" name="program_audience" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="">Select Audience</option>
+                        <option value="YOUTH_14_18">Youth (14-18 years)</option>
+                        <option value="YOUNG_ADULTS_18_25">Young Adults (18-25 years)</option>
+                        <option value="PARENTS_GUARDIANS">Parents & Guardians</option>
+                        <option value="COMMUNITY_MEMBERS">Community Members</option>
+                        <option value="STAFF_VOLUNTEERS">Staff & Volunteers</option>
+                        <option value="MIXED_AUDIENCE">Mixed Audience</option>
+                    </select>
+                </div>
+
+                <!-- Program Location -->
+                <div>
+                    <label for="program_location" class="block text-sm font-medium text-gray-700 mb-2">Program Location *</label>
+                    <select id="program_location" name="program_location" required 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="">Select Location</option>
+                        <option value="ON_SITE">On-Site (New Life Mwangaza)</option>
+                        <option value="COMMUNITY_CENTER">Community Center</option>
+                        <option value="PARTNER_FACILITY">Partner Facility</option>
+                        <option value="HOME_BASED">Home-Based</option>
+                        <option value="MOBILE_OUTREACH">Mobile/Outreach</option>
+                        <option value="VIRTUAL_ONLINE">Virtual/Online</option>
+                        <option value="OTHER">Other Location</option>
+                    </select>
+                </div>
+
+                <!-- Capacity -->
+                <div>
+                    <label for="capacity" class="block text-sm font-medium text-gray-700 mb-2">Capacity *</label>
+                    <input type="number" id="capacity" name="capacity" required min="1" max="100" value="20"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="Maximum number of participants">
+                </div>
+
+                <!-- Instructor -->
+                <div>
+                    <label for="instructor" class="block text-sm font-medium text-gray-700 mb-2">Instructor/Facilitator</label>
+                    <input type="text" id="instructor" name="instructor"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="Name of instructor or facilitator">
+                </div>
+
+                <!-- Additional Location Details -->
+                <div>
+                    <label for="location_details" class="block text-sm font-medium text-gray-700 mb-2">Location Details</label>
+                    <input type="text" id="location_details" name="location_details"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                           placeholder="Specific venue, address, or additional details">
+                </div>
+
+                <!-- Start Date -->
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input type="date" id="start_date" name="start_date"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <!-- End Date -->
+                <div>
+                    <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                    <input type="date" id="end_date" name="end_date"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                    <select id="status" name="status" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                        <option value="ACTIVE">Active</option>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="CANCELLED">Cancelled</option>
+                    </select>
+                </div>
+
+                <!-- Description -->
+                <div class="md:col-span-2">
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Programme Description</label>
+                    <textarea id="description" name="description" rows="4"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              placeholder="Describe your custom programme objectives, methodology, and expected outcomes..."></textarea>
+                </div>
+
+                <!-- Requirements -->
+                <div class="md:col-span-2">
+                    <label for="requirements" class="block text-sm font-medium text-gray-700 mb-2">Requirements & Prerequisites</label>
+                    <textarea id="requirements" name="requirements" rows="3"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                              placeholder="List any prerequisites, requirements, or preparation needed for participants..."></textarea>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex justify-end space-x-4 pt-6">
+                <a href="{{ url_for('empowerment_programmes') }}" 
+                   class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                    Create Custom Programme
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const templates = {
+    business: {
+        name: "Business & Entrepreneurship Programme",
+        programme_type: "BUSINESS_SKILLS",
+        duration_weeks: 14,
+        program_audience: "YOUNG_ADULTS_18_25",
+        program_location: "ON_SITE",
+        capacity: 25,
+        description: "Comprehensive business and entrepreneurship programme focusing on:\n• Basic business principles and planning\n• Financial literacy and management\n• Market research and customer analysis\n• Marketing strategies and sales techniques\n• Legal aspects of business operations\n• Practical business setup and management\n\nDesigned to equip participants with skills to start and manage their own businesses or seek employment in commercial settings.",
+        requirements: "• Participants should be 18+ years old\n• Basic literacy and numeracy skills\n• Commitment to attend all sessions\n• Willingness to develop a business plan\n• Interest in entrepreneurship or business management"
+    },
+    parenting: {
+        name: "Positive Parenting Skills Programme",
+        programme_type: "POSITIVE_PARENTING",
+        duration_weeks: 9,
+        program_audience: "PARENTS_GUARDIANS",
+        program_location: "COMMUNITY_CENTER",
+        capacity: 20,
+        description: "Positive parenting programme designed to strengthen family relationships:\n• Understanding child development stages\n• Effective communication with children\n• Positive discipline strategies\n• Building emotional bonds and trust\n• Managing parental stress and challenges\n• Creating supportive home environments\n• Dealing with behavioral issues constructively\n\nHelps parents and guardians develop healthier family dynamics and improve child welfare.",
+        requirements: "• Parents or guardians of children (any age)\n• Willingness to practice new parenting techniques\n• Commitment to attend group sessions\n• Openness to discuss family challenges\n• Basic understanding of local language"
+    },
+    capacity: {
+        name: "Capacity Building & Leadership Programme",
+        programme_type: "CAPACITY_BUILDING",
+        duration_weeks: 7,
+        program_audience: "MIXED_AUDIENCE",
+        program_location: "ON_SITE",
+        capacity: 30,
+        description: "Leadership and capacity building programme focusing on:\n• Leadership skills development\n• Critical thinking and problem-solving\n• Effective communication and presentation\n• Time management and organization\n• Goal setting and strategic planning\n• Team building and collaboration\n• Conflict resolution and negotiation\n\nBuilds personal effectiveness, leadership capabilities, and professional development skills.",
+        requirements: "• Minimum age of 16 years\n• Basic communication skills\n• Interest in leadership development\n• Commitment to participate in group activities\n• Willingness to take on leadership exercises"
+    },
+    life_skills: {
+        name: "Rehabilitation Life Skills Programme",
+        programme_type: "LIFE_SKILLS",
+        duration_weeks: 11,
+        program_audience: "YOUTH_14_18",
+        program_location: "ON_SITE",
+        capacity: 15,
+        description: "Comprehensive life skills programme for rehabilitation and reintegration:\n• Coping strategies and emotional regulation\n• Relapse prevention techniques\n• Social reintegration skills\n• Conflict resolution and anger management\n• Self-esteem and confidence building\n• Healthy relationship development\n• Decision-making and risk assessment\n• Community integration preparation\n\nSupports successful transition back to family and community life with sustained recovery.",
+        requirements: "• Active participation in rehabilitation programme\n• Commitment to recovery process\n• Willingness to engage in group therapy\n• Basic understanding of programme goals\n• Readiness for community reintegration planning"
+    },
+    integrated: {
+        name: "Integrated Recovery & Empowerment Programme",
+        programme_type: "CAPACITY_BUILDING",
+        duration_weeks: 20,
+        program_audience: "MIXED_AUDIENCE",
+        program_location: "ON_SITE",
+        capacity: 18,
+        description: "Comprehensive integrated programme combining multiple empowerment approaches:\n• Business and entrepreneurship skills\n• Positive parenting techniques\n• Leadership and capacity building\n• Life skills and rehabilitation support\n• Peer support and mentoring\n• Family involvement and therapy\n• Community partnership development\n• Long-term sustainability planning\n\nProvides holistic support for comprehensive rehabilitation and long-term success in family and community settings.",
+        requirements: "• Completion of initial rehabilitation phase\n• Family or guardian involvement\n• Commitment to long-term programme\n• Readiness for intensive skill development\n• Community reintegration planning in progress\n• Peer support participation willingness"
+    }
+};
+
+function loadTemplate(templateKey) {
+    const template = templates[templateKey];
+    if (!template) return;
+    
+    // Fill form fields with template data
+    document.getElementById('name').value = template.name;
+    document.getElementById('programme_type').value = template.programme_type;
+    document.getElementById('duration_weeks').value = template.duration_weeks;
+    document.getElementById('program_audience').value = template.program_audience;
+    document.getElementById('program_location').value = template.program_location;
+    document.getElementById('capacity').value = template.capacity;
+    document.getElementById('description').value = template.description;
+    document.getElementById('requirements').value = template.requirements;
+    
+    // Scroll to form
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+}
+
+function clearForm() {
+    document.querySelector('form').reset();
+    document.getElementById('capacity').value = 20; // Reset to default
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+}
+</script>
+{% endblock %}
