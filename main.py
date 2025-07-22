@@ -111,6 +111,8 @@ class Client(db.Model):
     # Relationship to empowerment programme enrollments
     empowerment_enrollments = db.relationship('ProgrammeEnrollment', backref='enrolled_client', lazy=True)
 
+    # Additional relationships are defined in ParentRecord and GrantRecord models via backref
+
 # AfterCare Model
 class AfterCare(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -200,6 +202,47 @@ class ProgrammeEnrollment(db.Model):
     certificate_issued = db.Column(db.Boolean, default=False)
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+# ParentRecord Model
+class ParentRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    parent_name = db.Column(db.String(200), nullable=False)
+    relationship = db.Column(db.String(50), nullable=False)  # Father, Mother, Guardian
+    contact_phone = db.Column(db.String(50))
+    contact_address = db.Column(db.Text)
+    involvement_level = db.Column(db.String(50))  # ACTIVE, MODERATE, MINIMAL, NO_CONTACT
+    last_contact_date = db.Column(db.Date)
+    notes = db.Column(db.Text)
+    emergency_contact = db.Column(db.Boolean, default=False)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationship to client
+    client = db.relationship('Client', backref='parent_records', lazy=True)
+
+# GrantRecord Model
+class GrantRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    grant_type = db.Column(db.String(50), nullable=False)  # TOOLS, CASH, EQUIPMENT, MATERIALS
+    item_description = db.Column(db.String(500), nullable=False)
+    quantity = db.Column(db.Integer, default=1)
+    estimated_value = db.Column(db.Float)
+    grant_date = db.Column(db.Date, nullable=False)
+    purpose = db.Column(db.String(200))  # Business startup, Skills training, etc.
+    condition = db.Column(db.String(50))  # NEW, USED, REFURBISHED
+    supplier_vendor = db.Column(db.String(200))
+    receipt_number = db.Column(db.String(100))
+    return_required = db.Column(db.Boolean, default=False)
+    return_date = db.Column(db.Date)
+    status = db.Column(db.String(30), default='ACTIVE')  # ACTIVE, RETURNED, LOST, DAMAGED
+    notes = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationship to client
+    client = db.relationship('Client', backref='grant_records', lazy=True)
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -1843,6 +1886,133 @@ def delete_user(user_id):
 
     return redirect(url_for('manage_users'))
 
+# Parent Records Management
+@app.route('/parent_records')
+@login_required
+def parent_records():
+    # Only Empowerment department can access parent records
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can access parent records.')
+        return redirect(url_for('dashboard'))
+
+    parent_records = ParentRecord.query.join(Client).filter(Client.status == 'ACTIVE').all()
+    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    return render_template('parent_records.html', parent_records=parent_records, active_clients=active_clients)
+
+@app.route('/add_parent_record/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_parent_record(client_id):
+    # Only Empowerment department can add parent records
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can add parent records.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+
+    if request.method == 'POST':
+        try:
+            last_contact_date = None
+            if request.form.get('last_contact_date'):
+                last_contact_date = datetime.strptime(request.form['last_contact_date'], '%Y-%m-%d').date()
+
+            parent_record = ParentRecord(
+                client_id=client_id,
+                parent_name=request.form['parent_name'],
+                relationship=request.form['relationship'],
+                contact_phone=request.form.get('contact_phone', ''),
+                contact_address=request.form.get('contact_address', ''),
+                involvement_level=request.form['involvement_level'],
+                last_contact_date=last_contact_date,
+                notes=request.form.get('notes', ''),
+                emergency_contact='emergency_contact' in request.form,
+                createdBy=current_user.id
+            )
+
+            db.session.add(parent_record)
+            db.session.commit()
+            flash('Parent record added successfully!')
+            return redirect(url_for('parent_records'))
+        except Exception as e:
+            flash(f'Error adding parent record: {str(e)}')
+
+    return render_template('add_parent_record.html', client=client)
+
+@app.route('/grants_tools')
+@login_required
+def grants_tools():
+    # Only Empowerment department can access grants and tools records
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can access grants and tools records.')
+        return redirect(url_for('dashboard'))
+
+    grant_records = GrantRecord.query.join(Client).order_by(GrantRecord.grant_date.desc()).all()
+    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    return render_template('grants_tools.html', grant_records=grant_records, active_clients=active_clients)
+
+@app.route('/add_grant/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_grant(client_id):
+    # Only Empowerment department can add grants
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can add grants.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+
+    if request.method == 'POST':
+        try:
+            grant_date = datetime.strptime(request.form['grant_date'], '%Y-%m-%d').date()
+            
+            return_date = None
+            if request.form.get('return_date'):
+                return_date = datetime.strptime(request.form['return_date'], '%Y-%m-%d').date()
+
+            grant_record = GrantRecord(
+                client_id=client_id,
+                grant_type=request.form['grant_type'],
+                item_description=request.form['item_description'],
+                quantity=int(request.form.get('quantity', 1)),
+                estimated_value=float(request.form.get('estimated_value', 0)) if request.form.get('estimated_value') else None,
+                grant_date=grant_date,
+                purpose=request.form.get('purpose', ''),
+                condition=request.form.get('condition', 'NEW'),
+                supplier_vendor=request.form.get('supplier_vendor', ''),
+                receipt_number=request.form.get('receipt_number', ''),
+                return_required='return_required' in request.form,
+                return_date=return_date,
+                status=request.form.get('status', 'ACTIVE'),
+                notes=request.form.get('notes', ''),
+                createdBy=current_user.id
+            )
+
+            db.session.add(grant_record)
+            db.session.commit()
+            flash('Grant/Tools record added successfully!')
+            return redirect(url_for('grants_tools'))
+        except Exception as e:
+            flash(f'Error adding grant record: {str(e)}')
+
+    return render_template('add_grant.html', client=client)
+
+@app.route('/client/<int:client_id>/empowerment_records')
+@login_required
+def client_empowerment_records(client_id):
+    # Only Empowerment department can view client empowerment records
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can view empowerment records.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+    parent_records = ParentRecord.query.filter_by(client_id=client_id).all()
+    grant_records = GrantRecord.query.filter_by(client_id=client_id).order_by(GrantRecord.grant_date.desc()).all()
+    enrollments = ProgrammeEnrollment.query.filter_by(client_id=client_id).join(EmpowermentProgramme).order_by(ProgrammeEnrollment.enrollment_date.desc()).all()
+    
+    return render_template('client_empowerment_records.html', 
+                         client=client, 
+                         parent_records=parent_records, 
+                         grant_records=grant_records, 
+                         enrollments=enrollments)
+
 @app.route('/delete_client/<int:client_id>', methods=['POST'])
 @login_required
 def delete_client(client_id):
@@ -1861,10 +2031,19 @@ def delete_client(client_id):
         HomeVisit.query.filter_by(client_id=client_id).delete()
 
         # Delete aftercare records
-        AfterCare.query.query.filter_by(client_id=client_id).delete()
+        AfterCare.query.filter_by(client_id=client_id).delete()
 
         # Delete student marks
         StudentMark.query.filter_by(client_id=client_id).delete()
+
+        # Delete parent records
+        ParentRecord.query.filter_by(client_id=client_id).delete()
+
+        # Delete grant records
+        GrantRecord.query.filter_by(client_id=client_id).delete()
+
+        # Delete programme enrollments
+        ProgrammeEnrollment.query.filter_by(client_id=client_id).delete()
 
         # Finally delete the client
         db.session.delete(client)

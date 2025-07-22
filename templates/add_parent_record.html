@@ -1,0 +1,129 @@
+
+{% extends "base.html" %}
+
+{% block title %}Add Parent Record - New Life Mwangaza{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <h1 class="text-2xl font-bold text-gray-800">Add Parent/Guardian Record</h1>
+        <p class="text-gray-600 text-sm mt-1">Add family contact information for {{ client.firstName }} {{ client.secondName }}</p>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
+        <form method="POST" class="space-y-6">
+            <!-- Parent Information -->
+            <div class="space-y-4">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                    Parent/Guardian Information
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="parent_name" class="block text-sm font-medium text-gray-700 mb-1">
+                            Parent/Guardian Name *
+                        </label>
+                        <input type="text" id="parent_name" name="parent_name" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="relationship" class="block text-sm font-medium text-gray-700 mb-1">
+                            Relationship *
+                        </label>
+                        <select id="relationship" name="relationship" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select relationship</option>
+                            <option value="FATHER">Father</option>
+                            <option value="MOTHER">Mother</option>
+                            <option value="GUARDIAN">Guardian</option>
+                            <option value="STEP_FATHER">Step Father</option>
+                            <option value="STEP_MOTHER">Step Mother</option>
+                            <option value="UNCLE">Uncle</option>
+                            <option value="AUNT">Aunt</option>
+                            <option value="GRANDMOTHER">Grandmother</option>
+                            <option value="GRANDFATHER">Grandfather</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="contact_phone" class="block text-sm font-medium text-gray-700 mb-1">
+                            Phone Number
+                        </label>
+                        <input type="tel" id="contact_phone" name="contact_phone"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label for="involvement_level" class="block text-sm font-medium text-gray-700 mb-1">
+                            Involvement Level *
+                        </label>
+                        <select id="involvement_level" name="involvement_level" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select level</option>
+                            <option value="ACTIVE">Active - Regular contact and involvement</option>
+                            <option value="MODERATE">Moderate - Occasional contact</option>
+                            <option value="MINIMAL">Minimal - Very little contact</option>
+                            <option value="NO_CONTACT">No Contact - Unreachable</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="contact_address" class="block text-sm font-medium text-gray-700 mb-1">
+                        Address
+                    </label>
+                    <textarea id="contact_address" name="contact_address" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Full residential address"></textarea>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="last_contact_date" class="block text-sm font-medium text-gray-700 mb-1">
+                            Last Contact Date
+                        </label>
+                        <input type="date" id="last_contact_date" name="last_contact_date"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div class="flex items-center pt-6">
+                        <input type="checkbox" id="emergency_contact" name="emergency_contact"
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="emergency_contact" class="ml-2 block text-sm text-gray-900">
+                            Emergency Contact
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+                        Additional Notes
+                    </label>
+                    <textarea id="notes" name="notes" rows="4"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              placeholder="Any additional information about the parent/guardian or family situation"></textarea>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                <a href="{{ url_for('parent_records') }}" class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    Cancel
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 border border-transparent rounded-md shadow-sm text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    Add Parent Record
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
