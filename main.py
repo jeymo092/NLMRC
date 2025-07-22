@@ -108,6 +108,9 @@ class Client(db.Model):
     # Relationship to student marks
     student_marks = db.relationship('StudentMark', backref='client', lazy=True)
 
+    # Relationship to empowerment programme enrollments
+    empowerment_enrollments = db.relationship('ProgrammeEnrollment', backref='enrolled_client', lazy=True)
+
 # AfterCare Model
 class AfterCare(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -159,6 +162,48 @@ class StudentMark(db.Model):
     notes = db.Column(db.Text)
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+# EmpowermentProgramme Model
+class EmpowermentProgramme(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    programme_type = db.Column(db.String(50), nullable=False)  # VOCATIONAL, LIFE_SKILLS, ENTREPRENEURSHIP
+    duration_weeks = db.Column(db.Integer, nullable=False)
+    min_age = db.Column(db.Integer, nullable=False, default=14)
+    max_age = db.Column(db.Integer, nullable=False, default=18)
+    capacity = db.Column(db.Integer, nullable=False, default=20)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+    status = db.Column(db.String(20), nullable=False, default='ACTIVE')  # ACTIVE, COMPLETED, CANCELLED
+    instructor = db.Column(db.String(200))
+    location = db.Column(db.String(200))
+    requirements = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationship to programme enrollments
+    enrollments = db.relationship('ProgrammeEnrollment', backref='programme', lazy=True)
+
+# ProgrammeEnrollment Model
+class ProgrammeEnrollment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    programme_id = db.Column(db.Integer, db.ForeignKey('empowerment_programme.id'), nullable=False)
+    enrollment_date = db.Column(db.Date, nullable=False)
+    completion_date = db.Column(db.Date)
+    status = db.Column(db.String(20), nullable=False, default='ENROLLED')  # ENROLLED, COMPLETED, DROPPED_OUT
+    progress_percentage = db.Column(db.Float, default=0.0)
+    final_grade = db.Column(db.String(10))  # A, B, C, D, F
+    attendance_percentage = db.Column(db.Float, default=0.0)
+    notes = db.Column(db.Text)
+    certificate_issued = db.Column(db.Boolean, default=False)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationships
+    client = db.relationship('Client', backref='programme_enrollments')
+    programme = db.relationship('EmpowermentProgramme', backref='participant_enrollments')
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -403,6 +448,12 @@ def dashboard():
         clients_over_18 = Client.query.filter(Client.age >= 18, Client.status == 'ACTIVE').count()
         clients_15_to_17 = Client.query.filter(Client.age >= 15, Client.age <= 17, Client.status == 'ACTIVE').count()
 
+        # Programme statistics
+        total_programmes = EmpowermentProgramme.query.count()
+        active_programmes = EmpowermentProgramme.query.filter_by(status='ACTIVE').count()
+        total_enrollments = ProgrammeEnrollment.query.filter_by(status='ENROLLED').count()
+        completed_enrollments = ProgrammeEnrollment.query.filter_by(status='COMPLETED').count()
+
         # Clients ready for programs
         vocational_ready = Client.query.filter(
             Client.age >= 16,
@@ -417,6 +468,10 @@ def dashboard():
         department_stats.update({
             'clients_over_18': clients_over_18,
             'clients_15_to_17': clients_15_to_17,
+            'total_programmes': total_programmes,
+            'active_programmes': active_programmes,
+            'total_enrollments': total_enrollments,
+            'completed_enrollments': completed_enrollments,
             'vocational_ready': vocational_ready,
             'life_skills_ready': life_skills_ready,
             'potential_graduates': completed_clients  # Those who completed programs
@@ -1490,6 +1545,191 @@ def clients_14_18():
 
     return render_template('clients_14_18.html', clients=clients_14_18, stats=stats)
 
+
+# Empowerment Programme Routes
+@app.route('/empowerment_programmes')
+@login_required
+def empowerment_programmes():
+    # Only Empowerment department can access this
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can access this section.')
+        return redirect(url_for('dashboard'))
+
+    programmes = EmpowermentProgramme.query.all()
+    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    return render_template('empowerment_programmes.html', programmes=programmes, active_clients=active_clients)
+
+@app.route('/add_programme', methods=['GET', 'POST'])
+@login_required
+def add_programme():
+    # Only Empowerment department can add programmes
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can add programmes.')
+        return redirect(url_for('dashboard'))
+
+    if request.method == 'POST':
+        try:
+            start_date = None
+            if request.form.get('start_date'):
+                start_date = datetime.strptime(request.form['start_date'], '%Y-%m-%d').date()
+
+            end_date = None
+            if request.form.get('end_date'):
+                end_date = datetime.strptime(request.form['end_date'], '%Y-%m-%d').date()
+
+            programme = EmpowermentProgramme(
+                name=request.form['name'],
+                description=request.form.get('description', ''),
+                programme_type=request.form['programme_type'],
+                duration_weeks=int(request.form['duration_weeks']),
+                min_age=int(request.form.get('min_age', 14)),
+                max_age=int(request.form.get('max_age', 18)),
+                capacity=int(request.form.get('capacity', 20)),
+                start_date=start_date,
+                end_date=end_date,
+                status=request.form.get('status', 'ACTIVE'),
+                instructor=request.form.get('instructor', ''),
+                location=request.form.get('location', ''),
+                requirements=request.form.get('requirements', ''),
+                createdBy=current_user.id
+            )
+
+            db.session.add(programme)
+            db.session.commit()
+            flash('Empowerment programme added successfully!')
+            return redirect(url_for('empowerment_programmes'))
+        except Exception as e:
+            flash(f'Error adding programme: {str(e)}')
+
+    return render_template('add_programme.html')
+
+@app.route('/enroll_client/<int:programme_id>', methods=['GET', 'POST'])
+@login_required
+def enroll_client(programme_id):
+    # Only Empowerment department can enroll clients
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can enroll clients.')
+        return redirect(url_for('dashboard'))
+
+    programme = EmpowermentProgramme.query.get_or_404(programme_id)
+
+    if request.method == 'POST':
+        try:
+            client_id = int(request.form['client_id'])
+            client = Client.query.get_or_404(client_id)
+
+            # Check if client is eligible (age and status)
+            if client.status != 'ACTIVE':
+                flash('Only active clients can be enrolled in programmes.')
+                return render_template('enroll_client.html', programme=programme)
+
+            if not (programme.min_age <= client.age <= programme.max_age):
+                flash(f'Client age ({client.age}) is not within programme age range ({programme.min_age}-{programme.max_age}).')
+                return render_template('enroll_client.html', programme=programme)
+
+            # Check if client is already enrolled
+            existing_enrollment = ProgrammeEnrollment.query.filter_by(
+                client_id=client_id, 
+                programme_id=programme_id,
+                status='ENROLLED'
+            ).first()
+
+            if existing_enrollment:
+                flash('Client is already enrolled in this programme.')
+                return render_template('enroll_client.html', programme=programme)
+
+            enrollment_date = datetime.strptime(request.form['enrollment_date'], '%Y-%m-%d').date()
+
+            enrollment = ProgrammeEnrollment(
+                client_id=client_id,
+                programme_id=programme_id,
+                enrollment_date=enrollment_date,
+                status='ENROLLED',
+                notes=request.form.get('notes', ''),
+                createdBy=current_user.id
+            )
+
+            db.session.add(enrollment)
+            db.session.commit()
+            flash(f'Client {client.firstName} {client.secondName} enrolled successfully!')
+            return redirect(url_for('programme_details', programme_id=programme_id))
+        except Exception as e:
+            flash(f'Error enrolling client: {str(e)}')
+
+    # Get eligible clients (active clients within age range)
+    eligible_clients = Client.query.filter(
+        Client.status == 'ACTIVE',
+        Client.age >= programme.min_age,
+        Client.age <= programme.max_age
+    ).all()
+
+    # Remove already enrolled clients
+    enrolled_client_ids = [e.client_id for e in ProgrammeEnrollment.query.filter_by(
+        programme_id=programme_id, status='ENROLLED'
+    ).all()]
+    
+    eligible_clients = [c for c in eligible_clients if c.id not in enrolled_client_ids]
+
+    return render_template('enroll_client.html', programme=programme, eligible_clients=eligible_clients)
+
+@app.route('/programme/<int:programme_id>')
+@login_required
+def programme_details(programme_id):
+    # Only Empowerment department can view programme details
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can view programme details.')
+        return redirect(url_for('dashboard'))
+
+    programme = EmpowermentProgramme.query.get_or_404(programme_id)
+    enrollments = ProgrammeEnrollment.query.filter_by(programme_id=programme_id).join(Client).order_by(Client.firstName).all()
+    
+    return render_template('programme_details.html', programme=programme, enrollments=enrollments)
+
+@app.route('/update_enrollment/<int:enrollment_id>', methods=['GET', 'POST'])
+@login_required
+def update_enrollment(enrollment_id):
+    # Only Empowerment department can update enrollments
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can update enrollments.')
+        return redirect(url_for('dashboard'))
+
+    enrollment = ProgrammeEnrollment.query.get_or_404(enrollment_id)
+
+    if request.method == 'POST':
+        try:
+            enrollment.status = request.form['status']
+            enrollment.progress_percentage = float(request.form.get('progress_percentage', 0))
+            enrollment.attendance_percentage = float(request.form.get('attendance_percentage', 0))
+            enrollment.final_grade = request.form.get('final_grade', '')
+            enrollment.notes = request.form.get('notes', '')
+            enrollment.certificate_issued = 'certificate_issued' in request.form
+
+            if request.form.get('completion_date'):
+                enrollment.completion_date = datetime.strptime(request.form['completion_date'], '%Y-%m-%d').date()
+
+            if enrollment.status == 'COMPLETED' and not enrollment.completion_date:
+                enrollment.completion_date = datetime.now().date()
+
+            db.session.commit()
+            flash('Enrollment updated successfully!')
+            return redirect(url_for('programme_details', programme_id=enrollment.programme_id))
+        except Exception as e:
+            flash(f'Error updating enrollment: {str(e)}')
+
+    return render_template('update_enrollment.html', enrollment=enrollment)
+
+@app.route('/client/<int:client_id>/programmes')
+@login_required
+def client_programmes(client_id):
+    # Only Empowerment department can view client programmes
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can view client programmes.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+    enrollments = ProgrammeEnrollment.query.filter_by(client_id=client_id).join(EmpowermentProgramme).order_by(ProgrammeEnrollment.enrollment_date.desc()).all()
+    
+    return render_template('client_programmes.html', client=client, enrollments=enrollments)
 
 # User Management Routes (Admin only)
 @app.route('/users')
