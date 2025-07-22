@@ -625,6 +625,31 @@
             opacity: 1;
             visibility: visible;
         }
+
+        /* Styles for collapsible sections */
+        .sidebar-header-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .toggle-icon {
+            width: 1rem;
+            height: 1rem;
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .sidebar-section {
+            overflow: hidden;
+            transition: max-height 0.3s ease, padding 0.3s ease;
+        }
+
+        .sidebar-section.collapsed {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -730,28 +755,34 @@
 
             {% if current_user.department == 'counselling' %}
             <!-- Counselling -->
-            <div class="sidebar-header">Counselling</div>
-
-            <a href="{{ url_for('home_visits') }}" class="sidebar-link">
-                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            <div class="sidebar-header sidebar-header-toggle" onclick="toggleSection('counselling-section')">
+                <span>Counselling</span>
+                <svg class="toggle-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
-                Home Visits
-            </a>
+            </div>
+            <div id="counselling-section" class="sidebar-section collapsed">
+                <a href="{{ url_for('home_visits') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Home Visits
+                </a>
 
-            <a href="{{ url_for('alumni') }}" class="sidebar-link">
-                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
-                </svg>
-                Alumni
-            </a>
+                <a href="{{ url_for('alumni') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                    </svg>
+                    Alumni
+                </a>
 
-            <a href="{{ url_for('aftercare') }}" class="sidebar-link">
-                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Aftercare Records
-            </a>
+                <a href="{{ url_for('aftercare') }}" class="sidebar-link">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Aftercare Records
+                </a>
+            </div>
             {% endif %}
 
             {% if current_user.department == 'education' %}
@@ -955,7 +986,6 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-            {% endwith %}
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -1046,6 +1076,33 @@
             sidebarLinks.forEach(link => {
                 if (link.getAttribute('href') === currentPath) {
                     link.classList.add('active');
+                }
+            });
+        });
+
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            section.classList.toggle('collapsed');
+
+            // Toggle the icon
+            const header = section.parentElement;
+            const icon = header.querySelector('.toggle-icon');
+            if (icon) {
+                icon.style.transform = section.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+            }
+        }
+
+        // Collapse all sections on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleableHeaders = document.querySelectorAll('.sidebar-header-toggle');
+            toggleableHeaders.forEach(header => {
+                const sectionId = header.getAttribute('onclick').match(/'(.*?)'/)[1];
+                const section = document.getElementById(sectionId);
+                section.classList.add('collapsed');
+
+                const icon = header.querySelector('.toggle-icon');
+                if (icon) {
+                    icon.style.transform = 'rotate(-90deg)';
                 }
             });
         });
