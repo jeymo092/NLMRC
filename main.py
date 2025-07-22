@@ -201,10 +201,6 @@ class ProgrammeEnrollment(db.Model):
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
 
-    # Relationships
-    client = db.relationship('Client', backref='programme_enrollments')
-    programme = db.relationship('EmpowermentProgramme', backref='participant_enrollments')
-
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
