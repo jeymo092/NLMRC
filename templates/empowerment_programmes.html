@@ -67,8 +67,8 @@
             <div class="bg-yellow-50 rounded-lg p-4">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-yellow-600 text-sm font-medium">Life Skills</p>
-                        <p class="text-yellow-800 text-xl font-bold">{{ programmes|selectattr('programme_type', 'equalto', 'LIFE_SKILLS')|list|length }}</p>
+                        <p class="text-yellow-600 text-sm font-medium">Rehabilitation</p>
+                        <p class="text-yellow-800 text-xl font-bold">{{ (programmes|selectattr('programme_type', 'equalto', 'LIFE_SKILLS')|list|length) + (programmes|selectattr('programme_type', 'equalto', 'BUSINESS_SKILLS')|list|length) + (programmes|selectattr('programme_type', 'equalto', 'POSITIVE_PARENTING')|list|length) + (programmes|selectattr('programme_type', 'equalto', 'CAPACITY_BUILDING')|list|length) }}</p>
                     </div>
                     <div class="bg-yellow-100 p-2 rounded-full">
                         <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,8 +115,14 @@
                                 {% if programme.programme_type == 'VOCATIONAL' %}bg-purple-100 text-purple-800
                                 {% elif programme.programme_type == 'LIFE_SKILLS' %}bg-yellow-100 text-yellow-800
                                 {% elif programme.programme_type == 'ENTREPRENEURSHIP' %}bg-orange-100 text-orange-800
+                                {% elif programme.programme_type == 'BUSINESS_SKILLS' %}bg-green-100 text-green-800
+                                {% elif programme.programme_type == 'POSITIVE_PARENTING' %}bg-pink-100 text-pink-800
+                                {% elif programme.programme_type == 'CAPACITY_BUILDING' %}bg-blue-100 text-blue-800
                                 {% else %}bg-gray-100 text-gray-800{% endif %}">
-                                {{ programme.programme_type.replace('_', ' ').title() }}
+                                {% if programme.programme_type == 'BUSINESS_SKILLS' %}Business & Entrepreneurship
+                                {% elif programme.programme_type == 'POSITIVE_PARENTING' %}Positive Parenting
+                                {% elif programme.programme_type == 'CAPACITY_BUILDING' %}Capacity Building
+                                {% else %}{{ programme.programme_type.replace('_', ' ').title() }}{% endif %}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ programme.duration_weeks }} weeks</td>

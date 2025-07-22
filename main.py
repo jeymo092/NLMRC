@@ -168,7 +168,7 @@ class EmpowermentProgramme(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
-    programme_type = db.Column(db.String(50), nullable=False)  # VOCATIONAL, LIFE_SKILLS, ENTREPRENEURSHIP
+    programme_type = db.Column(db.String(50), nullable=False)  # VOCATIONAL, LIFE_SKILLS, ENTREPRENEURSHIP, BUSINESS_SKILLS, POSITIVE_PARENTING, CAPACITY_BUILDING
     duration_weeks = db.Column(db.Integer, nullable=False)
     min_age = db.Column(db.Integer, nullable=False, default=14)
     max_age = db.Column(db.Integer, nullable=False, default=18)
@@ -1713,6 +1713,16 @@ def update_enrollment(enrollment_id):
             flash(f'Error updating enrollment: {str(e)}')
 
     return render_template('update_enrollment.html', enrollment=enrollment)
+
+@app.route('/programme_templates')
+@login_required
+def programme_templates():
+    # Only Empowerment department can view programme templates
+    if current_user.department != 'empowerment':
+        flash('Access denied. Only Empowerment department can view programme templates.')
+        return redirect(url_for('dashboard'))
+    
+    return render_template('programme_templates.html')
 
 @app.route('/client/<int:client_id>/programmes')
 @login_required
