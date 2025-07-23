@@ -245,6 +245,80 @@ class GrantRecord(db.Model):
     # Relationship to client
     client = db.relationship('Client', backref='grant_records', lazy=True)
 
+# TreatmentPlan Model
+class TreatmentPlan(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    plan_date = db.Column(db.Date, nullable=False)
+    presenting_issues = db.Column(db.Text, nullable=False)
+    treatment_goals = db.Column(db.Text, nullable=False)
+    interventions = db.Column(db.Text, nullable=False)
+    target_behaviors = db.Column(db.Text)
+    success_indicators = db.Column(db.Text)
+    estimated_duration = db.Column(db.String(100))  # e.g., "3 months", "6 sessions"
+    review_date = db.Column(db.Date)
+    status = db.Column(db.String(20), default='ACTIVE')  # ACTIVE, COMPLETED, REVISED
+    counselor_name = db.Column(db.String(200), nullable=False)
+    supervisor_approval = db.Column(db.Boolean, default=False)
+    notes = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationship to client
+    client = db.relationship('Client', backref='treatment_plans', lazy=True)
+
+# SoapNote Model
+class SoapNote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    session_date = db.Column(db.Date, nullable=False)
+    session_type = db.Column(db.String(50), nullable=False)  # INDIVIDUAL, GROUP, FAMILY
+    subjective = db.Column(db.Text, nullable=False)  # What client reports
+    objective = db.Column(db.Text, nullable=False)  # Observable behaviors/data
+    assessment = db.Column(db.Text, nullable=False)  # Clinical interpretation
+    plan = db.Column(db.Text, nullable=False)  # Next steps/interventions
+    session_duration = db.Column(db.Integer)  # Duration in minutes
+    mood_rating = db.Column(db.Integer)  # 1-10 scale
+    progress_rating = db.Column(db.Integer)  # 1-10 scale
+    attendance = db.Column(db.String(20), default='PRESENT')  # PRESENT, LATE, NO_SHOW
+    counselor_name = db.Column(db.String(200), nullable=False)
+    next_session_date = db.Column(db.Date)
+    crisis_indicators = db.Column(db.Boolean, default=False)
+    referrals_made = db.Column(db.Text)
+    homework_assigned = db.Column(db.Text)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationship to client
+    client = db.relationship('Client', backref='soap_notes', lazy=True)
+
+# ExitForm Model
+class ExitForm(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    exit_date = db.Column(db.Date, nullable=False)
+    reason_for_exit = db.Column(db.String(50), nullable=False)  # COMPLETED, REFERRED, DROPPED_OUT, MOVED, OTHER
+    goals_achieved = db.Column(db.Text)
+    remaining_concerns = db.Column(db.Text)
+    recommendations = db.Column(db.Text)
+    referrals_provided = db.Column(db.Text)
+    follow_up_needed = db.Column(db.Boolean, default=False)
+    follow_up_plan = db.Column(db.Text)
+    client_satisfaction = db.Column(db.Integer)  # 1-10 scale
+    counselor_assessment = db.Column(db.Text)
+    risk_level_at_exit = db.Column(db.String(20))  # LOW, MODERATE, HIGH
+    safety_plan_provided = db.Column(db.Boolean, default=False)
+    emergency_contacts_updated = db.Column(db.Boolean, default=False)
+    final_diagnosis = db.Column(db.String(200))
+    treatment_summary = db.Column(db.Text)
+    counselor_name = db.Column(db.String(200), nullable=False)
+    supervisor_signature = db.Column(db.Boolean, default=False)
+    createdAt = db.Column(db.DateTime, default=datetime.utcnow)
+    createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    # Relationship to client
+    client = db.relationship('Client', backref='exit_forms', lazy=True)
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -2119,6 +2193,11 @@ def delete_client(client_id):
         # Delete programme enrollments
         ProgrammeEnrollment.query.filter_by(client_id=client_id).delete()
 
+        # Delete counselling records
+        TreatmentPlan.query.filter_by(client_id=client_id).delete()
+        SoapNote.query.filter_by(client_id=client_id).delete()
+        ExitForm.query.filter_by(client_id=client_id).delete()
+
         # Finally delete the client
         db.session.delete(client)
         db.session.commit()
@@ -2129,6 +2208,210 @@ def delete_client(client_id):
         flash(f'Error deleting client: {str(e)}')
 
     return redirect(url_for('dashboard'))
+
+# Counselling Routes
+@app.route('/counselling')
+@login_required
+def counselling():
+    # Only Counselling department and Admin can access this
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can access this section.')
+        return redirect(url_for('dashboard'))
+
+    active_clients = Client.query.filter_by(status='ACTIVE').all()
+    treatment_plans = TreatmentPlan.query.join(Client).filter(Client.status == 'ACTIVE').all()
+    recent_soap_notes = SoapNote.query.join(Client).filter(Client.status == 'ACTIVE').order_by(SoapNote.session_date.desc()).limit(10).all()
+    
+    return render_template('counselling.html', 
+                         active_clients=active_clients, 
+                         treatment_plans=treatment_plans,
+                         recent_soap_notes=recent_soap_notes)
+
+@app.route('/add_treatment_plan/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_treatment_plan(client_id):
+    # Only Counselling department and Admin can add treatment plans
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can add treatment plans.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+
+    if request.method == 'POST':
+        try:
+            plan_date = datetime.strptime(request.form['plan_date'], '%Y-%m-%d').date()
+            review_date = None
+            if request.form.get('review_date'):
+                review_date = datetime.strptime(request.form['review_date'], '%Y-%m-%d').date()
+
+            treatment_plan = TreatmentPlan(
+                client_id=client_id,
+                plan_date=plan_date,
+                presenting_issues=request.form['presenting_issues'],
+                treatment_goals=request.form['treatment_goals'],
+                interventions=request.form['interventions'],
+                target_behaviors=request.form.get('target_behaviors', ''),
+                success_indicators=request.form.get('success_indicators', ''),
+                estimated_duration=request.form.get('estimated_duration', ''),
+                review_date=review_date,
+                status=request.form.get('status', 'ACTIVE'),
+                counselor_name=request.form['counselor_name'],
+                supervisor_approval='supervisor_approval' in request.form,
+                notes=request.form.get('notes', ''),
+                createdBy=current_user.id
+            )
+
+            db.session.add(treatment_plan)
+            db.session.commit()
+            flash('Treatment plan added successfully!')
+            return redirect(url_for('counselling'))
+        except Exception as e:
+            flash(f'Error adding treatment plan: {str(e)}')
+
+    return render_template('add_treatment_plan.html', client=client)
+
+@app.route('/add_soap_note/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_soap_note(client_id):
+    # Only Counselling department and Admin can add SOAP notes
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can add SOAP notes.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+
+    if request.method == 'POST':
+        try:
+            session_date = datetime.strptime(request.form['session_date'], '%Y-%m-%d').date()
+            next_session_date = None
+            if request.form.get('next_session_date'):
+                next_session_date = datetime.strptime(request.form['next_session_date'], '%Y-%m-%d').date()
+
+            soap_note = SoapNote(
+                client_id=client_id,
+                session_date=session_date,
+                session_type=request.form['session_type'],
+                subjective=request.form['subjective'],
+                objective=request.form['objective'],
+                assessment=request.form['assessment'],
+                plan=request.form['plan'],
+                session_duration=int(request.form.get('session_duration', 0)),
+                mood_rating=int(request.form.get('mood_rating', 5)),
+                progress_rating=int(request.form.get('progress_rating', 5)),
+                attendance=request.form.get('attendance', 'PRESENT'),
+                counselor_name=request.form['counselor_name'],
+                next_session_date=next_session_date,
+                crisis_indicators='crisis_indicators' in request.form,
+                referrals_made=request.form.get('referrals_made', ''),
+                homework_assigned=request.form.get('homework_assigned', ''),
+                createdBy=current_user.id
+            )
+
+            db.session.add(soap_note)
+            db.session.commit()
+            flash('SOAP note added successfully!')
+            return redirect(url_for('client_counselling_records', client_id=client_id))
+        except Exception as e:
+            flash(f'Error adding SOAP note: {str(e)}')
+
+    return render_template('add_soap_note.html', client=client)
+
+@app.route('/add_exit_form/<int:client_id>', methods=['GET', 'POST'])
+@login_required
+def add_exit_form(client_id):
+    # Only Counselling department and Admin can add exit forms
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can add exit forms.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+
+    if request.method == 'POST':
+        try:
+            exit_date = datetime.strptime(request.form['exit_date'], '%Y-%m-%d').date()
+
+            exit_form = ExitForm(
+                client_id=client_id,
+                exit_date=exit_date,
+                reason_for_exit=request.form['reason_for_exit'],
+                goals_achieved=request.form.get('goals_achieved', ''),
+                remaining_concerns=request.form.get('remaining_concerns', ''),
+                recommendations=request.form.get('recommendations', ''),
+                referrals_provided=request.form.get('referrals_provided', ''),
+                follow_up_needed='follow_up_needed' in request.form,
+                follow_up_plan=request.form.get('follow_up_plan', ''),
+                client_satisfaction=int(request.form.get('client_satisfaction', 5)),
+                counselor_assessment=request.form.get('counselor_assessment', ''),
+                risk_level_at_exit=request.form.get('risk_level_at_exit', 'LOW'),
+                safety_plan_provided='safety_plan_provided' in request.form,
+                emergency_contacts_updated='emergency_contacts_updated' in request.form,
+                final_diagnosis=request.form.get('final_diagnosis', ''),
+                treatment_summary=request.form.get('treatment_summary', ''),
+                counselor_name=request.form['counselor_name'],
+                supervisor_signature='supervisor_signature' in request.form,
+                createdBy=current_user.id
+            )
+
+            db.session.add(exit_form)
+            db.session.commit()
+            flash('Exit form added successfully!')
+            return redirect(url_for('counselling'))
+        except Exception as e:
+            flash(f'Error adding exit form: {str(e)}')
+
+    return render_template('add_exit_form.html', client=client)
+
+@app.route('/client/<int:client_id>/counselling_records')
+@login_required
+def client_counselling_records(client_id):
+    # Only Counselling department and Admin can view counselling records
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can view counselling records.')
+        return redirect(url_for('dashboard'))
+
+    client = Client.query.get_or_404(client_id)
+    treatment_plans = TreatmentPlan.query.filter_by(client_id=client_id).order_by(TreatmentPlan.plan_date.desc()).all()
+    soap_notes = SoapNote.query.filter_by(client_id=client_id).order_by(SoapNote.session_date.desc()).all()
+    exit_forms = ExitForm.query.filter_by(client_id=client_id).order_by(ExitForm.exit_date.desc()).all()
+
+    return render_template('client_counselling_records.html', 
+                         client=client, 
+                         treatment_plans=treatment_plans, 
+                         soap_notes=soap_notes,
+                         exit_forms=exit_forms)
+
+@app.route('/view_treatment_plan/<int:plan_id>')
+@login_required
+def view_treatment_plan(plan_id):
+    # Only Counselling department and Admin can view treatment plans
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can view treatment plans.')
+        return redirect(url_for('dashboard'))
+
+    treatment_plan = TreatmentPlan.query.get_or_404(plan_id)
+    return render_template('view_treatment_plan.html', treatment_plan=treatment_plan)
+
+@app.route('/view_soap_note/<int:note_id>')
+@login_required
+def view_soap_note(note_id):
+    # Only Counselling department and Admin can view SOAP notes
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can view SOAP notes.')
+        return redirect(url_for('dashboard'))
+
+    soap_note = SoapNote.query.get_or_404(note_id)
+    return render_template('view_soap_note.html', soap_note=soap_note)
+
+@app.route('/view_exit_form/<int:form_id>')
+@login_required
+def view_exit_form(form_id):
+    # Only Counselling department and Admin can view exit forms
+    if current_user.department not in ['counselling', 'admin']:
+        flash('Access denied. Only Counselling department and Admin can view exit forms.')
+        return redirect(url_for('dashboard'))
+
+    exit_form = ExitForm.query.get_or_404(form_id)
+    return render_template('view_exit_form.html', exit_form=exit_form)
 
 
 

@@ -1,0 +1,204 @@
+
+{% extends "base.html" %}
+
+{% block title %}Add SOAP Note{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Add SOAP Note</h1>
+                    <p class="mt-1 text-sm text-gray-500">Document counselling session for {{ client.firstName }} {{ client.secondName }}</p>
+                </div>
+                <a href="{{ url_for('client_counselling_records', client_id=client.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Records
+                </a>
+            </div>
+        </div>
+
+        <!-- Client Info -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Client Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <p class="text-sm text-gray-500">Name</p>
+                    <p class="text-sm font-medium text-gray-900">{{ client.firstName }} {{ client.secondName }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Age</p>
+                    <p class="text-sm font-medium text-gray-900">{{ client.age }} years</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Status</p>
+                    <p class="text-sm font-medium text-gray-900">{{ client.status.replace('_', ' ').title() }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SOAP Note Form -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <form method="POST" class="space-y-6">
+                <!-- Session Details -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="session_date" class="block text-sm font-medium text-gray-700">Session Date*</label>
+                        <input type="date" name="session_date" id="session_date" required 
+                               value="{{ moment().strftime('%Y-%m-%d') }}"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="session_type" class="block text-sm font-medium text-gray-700">Session Type*</label>
+                        <select name="session_type" id="session_type" required 
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="INDIVIDUAL">Individual</option>
+                            <option value="GROUP">Group</option>
+                            <option value="FAMILY">Family</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="session_duration" class="block text-sm font-medium text-gray-700">Duration (minutes)</label>
+                        <input type="number" name="session_duration" id="session_duration" min="1" max="300" 
+                               placeholder="45"
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <!-- SOAP Components -->
+                <div class="space-y-6">
+                    <!-- Subjective -->
+                    <div>
+                        <label for="subjective" class="block text-sm font-medium text-gray-700">
+                            Subjective (S)*
+                            <span class="text-gray-500 font-normal">- What the client reports</span>
+                        </label>
+                        <textarea name="subjective" id="subjective" rows="4" required
+                                  placeholder="Client's reported feelings, concerns, symptoms, and subjective experiences..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+
+                    <!-- Objective -->
+                    <div>
+                        <label for="objective" class="block text-sm font-medium text-gray-700">
+                            Objective (O)*
+                            <span class="text-gray-500 font-normal">- Observable data and behaviors</span>
+                        </label>
+                        <textarea name="objective" id="objective" rows="4" required
+                                  placeholder="Observable behaviors, appearance, mood, affect, speech patterns, etc..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+
+                    <!-- Assessment -->
+                    <div>
+                        <label for="assessment" class="block text-sm font-medium text-gray-700">
+                            Assessment (A)*
+                            <span class="text-gray-500 font-normal">- Clinical interpretation and analysis</span>
+                        </label>
+                        <textarea name="assessment" id="assessment" rows="4" required
+                                  placeholder="Clinical interpretation, progress toward goals, diagnosis considerations..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+
+                    <!-- Plan -->
+                    <div>
+                        <label for="plan" class="block text-sm font-medium text-gray-700">
+                            Plan (P)*
+                            <span class="text-gray-500 font-normal">- Next steps and interventions</span>
+                        </label>
+                        <textarea name="plan" id="plan" rows="4" required
+                                  placeholder="Treatment plan updates, interventions to continue, homework assignments..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- Ratings and Status -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label for="mood_rating" class="block text-sm font-medium text-gray-700">Mood Rating (1-10)</label>
+                        <select name="mood_rating" id="mood_rating" 
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            {% for i in range(1, 11) %}
+                            <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="progress_rating" class="block text-sm font-medium text-gray-700">Progress Rating (1-10)</label>
+                        <select name="progress_rating" id="progress_rating" 
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            {% for i in range(1, 11) %}
+                            <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="attendance" class="block text-sm font-medium text-gray-700">Attendance</label>
+                        <select name="attendance" id="attendance" 
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            <option value="PRESENT">Present</option>
+                            <option value="LATE">Late</option>
+                            <option value="NO_SHOW">No Show</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Counselor and Next Session -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="counselor_name" class="block text-sm font-medium text-gray-700">Counselor Name*</label>
+                        <input type="text" name="counselor_name" id="counselor_name" required 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="next_session_date" class="block text-sm font-medium text-gray-700">Next Session Date</label>
+                        <input type="date" name="next_session_date" id="next_session_date" 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="homework_assigned" class="block text-sm font-medium text-gray-700">Homework/Between-Session Tasks</label>
+                        <textarea name="homework_assigned" id="homework_assigned" rows="3"
+                                  placeholder="Tasks, exercises, or assignments given to the client..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="referrals_made" class="block text-sm font-medium text-gray-700">Referrals Made</label>
+                        <textarea name="referrals_made" id="referrals_made" rows="2"
+                                  placeholder="Any referrals to other services or professionals..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" name="crisis_indicators" id="crisis_indicators" 
+                               class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                        <label for="crisis_indicators" class="ml-2 block text-sm text-gray-900">
+                            Crisis indicators present (safety concerns, suicidal ideation, etc.)
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <a href="{{ url_for('client_counselling_records', client_id=client.id) }}" 
+                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Save SOAP Note
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
