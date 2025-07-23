@@ -1363,6 +1363,26 @@ def edit_home_visit(visit_id):
 
     return render_template('edit_home_visit.html', visit=visit, client=client)
 
+@app.route('/delete_home_visit/<int:visit_id>', methods=['POST'])
+@login_required
+def delete_home_visit(visit_id):
+    # Only Admin can delete home visit records
+    if current_user.department not in ['admin']:
+        flash('Access denied. Only Admin can delete home visit records.')
+        return redirect(url_for('home_visits'))
+
+    visit = HomeVisit.query.get_or_404(visit_id)
+
+    try:
+        client_name = f"{visit.client.firstName} {visit.client.secondName}"
+        db.session.delete(visit)
+        db.session.commit()
+        flash(f'Home visit record for {client_name} deleted successfully!')
+    except Exception as e:
+        flash(f'Error deleting home visit record: {str(e)}')
+
+    return redirect(url_for('home_visits'))
+
 @app.route('/api/clients')
 @login_required
 def api_clients():
