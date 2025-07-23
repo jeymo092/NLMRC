@@ -1,0 +1,144 @@
+
+{% extends "base.html" %}
+
+{% block title %}SOAP Note - {{ soap_note.client.firstName }} {{ soap_note.client.secondName }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">SOAP Note</h1>
+                    <p class="mt-1 text-sm text-gray-500">{{ soap_note.client.firstName }} {{ soap_note.client.secondName }} - {{ soap_note.session_date.strftime('%B %d, %Y') }}</p>
+                </div>
+                <a href="{{ url_for('client_counselling_records', client_id=soap_note.client.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Records
+                </a>
+            </div>
+        </div>
+
+        <!-- SOAP Note Details -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="space-y-6">
+                <!-- Session Info -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Session Date</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ soap_note.session_date.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Session Type</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ soap_note.session_type.replace('_', ' ').title() }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Duration</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ soap_note.session_duration }} minutes</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Counselor</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ soap_note.counselor_name }}</p>
+                    </div>
+                </div>
+
+                <!-- SOAP Components -->
+                <div class="space-y-6">
+                    <!-- Subjective -->
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-blue-900 mb-2">Subjective</h3>
+                        <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ soap_note.subjective }}</p>
+                    </div>
+
+                    <!-- Objective -->
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-green-900 mb-2">Objective</h3>
+                        <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ soap_note.objective }}</p>
+                    </div>
+
+                    <!-- Assessment -->
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-yellow-900 mb-2">Assessment</h3>
+                        <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ soap_note.assessment }}</p>
+                    </div>
+
+                    <!-- Plan -->
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <h3 class="text-lg font-medium text-purple-900 mb-2">Plan</h3>
+                        <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ soap_note.plan }}</p>
+                    </div>
+                </div>
+
+                <!-- Ratings and Status -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Mood Rating</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ soap_note.mood_rating }}/10</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Progress Rating</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ soap_note.progress_rating }}/10</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Attendance</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if soap_note.attendance == 'PRESENT' %}bg-green-100 text-green-800
+                            {% elif soap_note.attendance == 'LATE' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ soap_note.attendance.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                {% if soap_note.referrals_made %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Referrals Made</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ soap_note.referrals_made }}</p>
+                </div>
+                {% endif %}
+
+                {% if soap_note.homework_assigned %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Homework/Tasks Assigned</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ soap_note.homework_assigned }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Crisis Indicators -->
+                {% if soap_note.crisis_indicators %}
+                <div class="bg-red-50 border border-red-200 rounded-md p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Crisis Indicators Present</h3>
+                            <p class="mt-1 text-sm text-red-700">This session included crisis indicators that require attention.</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Next Session -->
+                {% if soap_note.next_session_date %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Next Session Scheduled</h3>
+                    <p class="mt-1 text-sm text-gray-900">{{ soap_note.next_session_date.strftime('%B %d, %Y') }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Created Info -->
+                <div class="pt-4 border-t border-gray-200">
+                    <p class="text-xs text-gray-500">Created on {{ soap_note.createdAt.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+
+{% extends "base.html" %}
+
+{% block title %}Treatment Plan - {{ treatment_plan.client.firstName }} {{ treatment_plan.client.secondName }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Treatment Plan</h1>
+                    <p class="mt-1 text-sm text-gray-500">{{ treatment_plan.client.firstName }} {{ treatment_plan.client.secondName }} - {{ treatment_plan.plan_date.strftime('%B %d, %Y') }}</p>
+                </div>
+                <a href="{{ url_for('client_counselling_records', client_id=treatment_plan.client.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    <svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Records
+                </a>
+            </div>
+        </div>
+
+        <!-- Treatment Plan Details -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="space-y-6">
+                <!-- Plan Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Plan Date</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ treatment_plan.plan_date.strftime('%B %d, %Y') }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Counselor</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ treatment_plan.counselor_name }}</p>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Status</h3>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if treatment_plan.status == 'ACTIVE' %}bg-green-100 text-green-800
+                            {% elif treatment_plan.status == 'COMPLETED' %}bg-blue-100 text-blue-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ treatment_plan.status.replace('_', ' ').title() }}
+                        </span>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Review Date</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ treatment_plan.review_date.strftime('%B %d, %Y') if treatment_plan.review_date else 'Not set' }}</p>
+                    </div>
+                </div>
+
+                <!-- Presenting Issues -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Presenting Issues</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ treatment_plan.presenting_issues }}</p>
+                </div>
+
+                <!-- Treatment Goals -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Treatment Goals</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ treatment_plan.treatment_goals }}</p>
+                </div>
+
+                <!-- Interventions -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Planned Interventions</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ treatment_plan.interventions }}</p>
+                </div>
+
+                {% if treatment_plan.target_behaviors %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Target Behaviors</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ treatment_plan.target_behaviors }}</p>
+                </div>
+                {% endif %}
+
+                {% if treatment_plan.success_indicators %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Success Indicators</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ treatment_plan.success_indicators }}</p>
+                </div>
+                {% endif %}
+
+                {% if treatment_plan.estimated_duration %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Estimated Duration</h3>
+                    <p class="mt-1 text-sm text-gray-900">{{ treatment_plan.estimated_duration }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Supervisor Approval -->
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Supervisor Approval</h3>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if treatment_plan.supervisor_approval %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {% if treatment_plan.supervisor_approval %}Approved{% else %}Pending{% endif %}
+                    </span>
+                </div>
+
+                {% if treatment_plan.notes %}
+                <div>
+                    <h3 class="text-sm font-medium text-gray-500">Additional Notes</h3>
+                    <p class="mt-1 text-sm text-gray-900 whitespace-pre-wrap">{{ treatment_plan.notes }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Created Info -->
+                <div class="pt-4 border-t border-gray-200">
+                    <p class="text-xs text-gray-500">Created on {{ treatment_plan.createdAt.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
