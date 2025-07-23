@@ -568,10 +568,7 @@ def register_client():
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
             age = int(request.form['age'])
 
-            # Validate age range (14-18 years)
-            if age < 14 or age > 18:
-                flash(f'Client age must be between 14 and 18 years. Current age: {age} years.')
-                return render_template('register_client.html')
+            # Age validation removed - no restrictions
 
             client = Client(
                 firstName=request.form['firstName'],
@@ -626,10 +623,7 @@ def edit_client(client_id):
             dob = datetime.strptime(request.form['dateOfBirth'], '%Y-%m-%d').date()
             age = int(request.form['age'])
 
-            # Validate age range (14-18 years)
-            if age < 14 or age > 18:
-                flash(f'Client age must be between 14 and 18 years. Current age: {age} years.')
-                return render_template('edit_client.html', client=client)
+            # Age validation removed - no restrictions
 
             # Update client information
             client.firstName = request.form['firstName']
