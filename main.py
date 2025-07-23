@@ -225,6 +225,7 @@ class ParentRecord(db.Model):
 class GrantRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    grant_name = db.Column(db.String(200), nullable=False)  # Name of the grant/tool
     grant_type = db.Column(db.String(50), nullable=False)  # TOOLS, CASH, EQUIPMENT, MATERIALS
     item_description = db.Column(db.String(500), nullable=False)
     quantity = db.Column(db.Integer, default=1)
@@ -1996,8 +1997,8 @@ def grants_tools():
         return redirect(url_for('dashboard'))
 
     grant_records = GrantRecord.query.join(Client).order_by(GrantRecord.grant_date.desc()).all()
-    active_clients = Client.query.all()
-    return render_template('grants_tools.html', grant_records=grant_records, active_clients=active_clients)
+    all_clients = Client.query.order_by(Client.status.desc(), Client.firstName, Client.secondName).all()  # Show alumni and active clients
+    return render_template('grants_tools.html', grant_records=grant_records, all_clients=all_clients)
 
 @app.route('/add_grant/<int:client_id>', methods=['GET', 'POST'])
 @login_required
@@ -2021,6 +2022,7 @@ def add_grant(client_id):
 
             grant_record = GrantRecord(
                 client_id=client_id,
+                grant_name=request.form['grant_name'],
                 grant_type=request.form['grant_type'],
                 item_description=request.form['item_description'],
                 quantity=int(request.form.get('quantity', 1)),
