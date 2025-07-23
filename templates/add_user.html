@@ -20,8 +20,8 @@
                 <select name="department" id="department" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     <option value="">Select Department</option>
-                    {% for dept in departments %}
-                    <option value="{{ dept }}">{{ dept.replace('_', ' ').title() }}</option>
+                    {% for dept_value, dept_label in departments %}
+                    <option value="{{ dept_value }}">{{ dept_label }}</option>
                     {% endfor %}
                 </select>
             </div>

@@ -1832,6 +1832,15 @@ def add_user():
         flash('Access denied. Only Admin can add users.')
         return redirect(url_for('dashboard'))
 
+    # Define departments list
+    departments = [
+        ('admin', 'Administration'),
+        ('socialworkers', 'Social Workers'),
+        ('counselling', 'Counselling'),
+        ('education', 'Education'),
+        ('empowerment', 'Empowerment')
+    ]
+
     if request.method == 'POST':
         try:
             username = request.form['username']
@@ -1841,7 +1850,7 @@ def add_user():
             # Check if username already exists
             if User.query.filter_by(username=username).first():
                 flash('Username already exists. Please choose a different username.')
-                return render_template('add_user.html')
+                return render_template('add_user.html', departments=departments)
 
             user = User(username=username, department=department)
             user.set_password(password)
@@ -1853,7 +1862,6 @@ def add_user():
         except Exception as e:
             flash(f'Error creating user: {str(e)}')
 
-    departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
     return render_template('add_user.html', departments=departments)
 
 @app.route('/edit_user/<int:user_id>', methods=['GET', 'POST'])
@@ -1866,6 +1874,15 @@ def edit_user(user_id):
 
     user = User.query.get_or_404(user_id)
 
+    # Define departments list
+    departments = [
+        ('admin', 'Administration'),
+        ('socialworkers', 'Social Workers'),
+        ('counselling', 'Counselling'),
+        ('education', 'Education'),
+        ('empowerment', 'Empowerment')
+    ]
+
     if request.method == 'POST':
         try:
             username = request.form['username']
@@ -1875,7 +1892,7 @@ def edit_user(user_id):
             existing_user = User.query.filter_by(username=username).first()
             if existing_user and existing_user.id != user_id:
                 flash('Username already exists. Please choose a different username.')
-                return render_template('edit_user.html', user=user)
+                return render_template('edit_user.html', user=user, departments=departments)
 
             user.username = username
             user.department = department
@@ -1890,7 +1907,6 @@ def edit_user(user_id):
         except Exception as e:
             flash(f'Error updating user: {str(e)}')
 
-    departments = ['admin', 'socialworkers', 'counselling', 'education', 'empowerment']
     return render_template('edit_user.html', user=user, departments=departments)
 
 @app.route('/delete_user/<int:user_id>', methods=['POST'])
