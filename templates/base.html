@@ -763,7 +763,7 @@
 
             <a href="{{ url_for('home_visits') }}" class="sidebar-link">
                 <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2vAnalysis: The primary goal is to ensure the sidebar's department sections are collapsible by default, which involves adding the `sidebar-header-toggle` class to the appropriate headers and closing some sections in the sidebar. This will make the UI more user-friendly.10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                 </svg>
                 Home Visits
             </a>
@@ -1022,6 +1022,7 @@
                         </div>
                     {% endfor %}
                 {% endif %}
+            {% endwith %}
             {% block content %}{% endblock %}
         </div>
     </div>
@@ -1119,7 +1120,6 @@
         function toggleSection(sectionId) {
             const section = document.getElementById(sectionId);
             section.classList.toggle('collapsed');
-
             // Toggle the icon
             const header = section.parentElement;
             const icon = header.querySelector('.toggle-icon');
