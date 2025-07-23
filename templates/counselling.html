@@ -92,7 +92,7 @@
                     <div class="ml-5 w-0 flex-1">
                         <dl>
                             <dt class="text-sm font-medium text-gray-500 truncate">This Week</dt>
-                            <dd class="text-lg font-semibold text-gray-900">{{ recent_soap_notes|selectattr('session_date', 'ge', (moment() - timedelta(days=7)).date())|list|length }}</dd>
+                            <dd class="text-lg font-semibold text-gray-900">{{ recent_soap_notes|length }}</dd>
                         </dl>
                     </div>
                 </div>
