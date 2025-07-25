@@ -2419,25 +2419,35 @@ def backup_database():
         # Get the absolute path to the database file
         db_path = os.path.abspath('mwangaza.db')
         
-        # Check if database exists, if not create it
-        if not os.path.exists(db_path):
-            print("🔧 Database file not found, creating new database...")
+        # Ensure database exists and is properly initialized
+        if not os.path.exists(db_path) or os.path.getsize(db_path) == 0:
+            print("🔧 Database file missing or empty, creating new database...")
             try:
-                # Create database tables
-                db.create_all()
-                # Ensure admin user exists
-                if not User.query.first():
-                    create_admin_user()
-                db.session.commit()
-                print(f"✅ Database created at: {db_path}")
+                # Remove empty file if it exists
+                if os.path.exists(db_path) and os.path.getsize(db_path) == 0:
+                    os.remove(db_path)
+                
+                # Create fresh database with all tables
+                with app.app_context():
+                    db.create_all()
+                    
+                    # Ensure admin user exists
+                    admin_exists = User.query.filter_by(department='admin').first()
+                    if not admin_exists:
+                        create_admin_user()
+                    
+                    db.session.commit()
+                
+                print(f"✅ New database created at: {db_path}")
+                
             except Exception as init_error:
                 print(f"❌ Database creation error: {init_error}")
-                # If we can't create the database normally, create a minimal one
+                # Create minimal database directly with SQLite
                 try:
                     conn = sqlite3.connect(db_path)
                     cursor = conn.cursor()
                     
-                    # Create minimal tables needed for backup
+                    # Create essential tables
                     cursor.execute('''
                         CREATE TABLE IF NOT EXISTS user (
                             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -2465,7 +2475,7 @@ def backup_database():
                         )
                     ''')
                     
-                    # Insert minimal admin user
+                    # Insert admin user
                     from werkzeug.security import generate_password_hash
                     admin_hash = generate_password_hash('admin123')
                     cursor.execute('''
@@ -2476,18 +2486,27 @@ def backup_database():
                     conn.commit()
                     conn.close()
                     print("✅ Minimal database created successfully")
+                    
                 except Exception as minimal_error:
-                    flash(f'Could not create database: {str(minimal_error)}')
+                    flash(f'Database initialization failed: {str(minimal_error)}')
                     return redirect(url_for('manage_users'))
         
-        # Check if file exists and is readable
+        # Verify database file exists and is accessible
         if not os.path.exists(db_path):
-            flash('Database file could not be created! Please try restarting the application.')
+            flash('Database file could not be created! Please contact administrator.')
             return redirect(url_for('manage_users'))
         
-        # Check file permissions
-        if not os.access(db_path, os.R_OK):
-            flash('Cannot read database file. Permission denied.')
+        # Check file permissions and fix if needed
+        try:
+            if not os.access(db_path, os.R_OK):
+                os.chmod(db_path, 0o666)  # Give read/write permissions
+                print("🔧 Fixed database file permissions")
+                
+            if not os.access(db_path, os.R_OK):
+                flash('Cannot read database file. Permission denied.')
+                return redirect(url_for('manage_users'))
+        except Exception as perm_error:
+            flash(f'Permission error: {str(perm_error)}')
             return redirect(url_for('manage_users'))
         
         # Check file permissions on the database
@@ -3234,38 +3253,79 @@ def export_client_academic_pdf(client_id):
 
 def create_admin_user():
     """Create initial admin user if none exists"""
-    admin_exists = User.query.filter_by(department='admin').first()
-    if not admin_exists:
-        admin_user = User(
-            username='admin',
-            full_name='System Administrator',
-            department='admin'
-        )
-        admin_user.set_password('admin123')
-        db.session.add(admin_user)
-        db.session.commit()
-        print("Initial admin user created: admin/admin123")
+    try:
+        admin_exists = User.query.filter_by(department='admin').first()
+        if not admin_exists:
+            admin_user = User(
+                username='admin',
+                full_name='System Administrator',
+                department='admin'
+            )
+            admin_user.set_password('admin123')
+            db.session.add(admin_user)
+            db.session.commit()
+            print("✅ Initial admin user created: admin/admin123")
+        else:
+            print("✅ Admin user already exists")
+    except Exception as e:
+        print(f"⚠️ Error creating admin user: {e}")
+
+def ensure_database_exists():
+    """Ensure database file exists and is properly initialized"""
+    import sqlite3
+    
+    db_path = os.path.abspath('mwangaza.db')
+    
+    try:
+        # Check if database file exists
+        if not os.path.exists(db_path):
+            print(f"🔧 Creating new database at: {db_path}")
+            
+        # Create/connect to database
+        conn = sqlite3.connect(db_path)
+        conn.close()
+        
+        # Ensure all tables are created
+        db.create_all()
+        
+        # Verify database file exists and has correct permissions
+        if os.path.exists(db_path):
+            file_size = os.path.getsize(db_path)
+            print(f"✅ Database file verified: {db_path} ({file_size} bytes)")
+            
+            # Make sure file is readable and writable
+            if not os.access(db_path, os.R_OK | os.W_OK):
+                os.chmod(db_path, 0o666)  # Give read/write permissions
+                print("🔧 Fixed database file permissions")
+                
+            return True
+        else:
+            print(f"❌ Database file could not be created at: {db_path}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Database creation error: {e}")
+        return False
 
 if __name__ == '__main__':
     with app.app_context():
         try:
-            # Simple database initialization
-            print("🔧 Initializing database...")
+            print("🔧 Initializing New Life Mwangaza database...")
             
-            # Create all tables (this is safe to run multiple times)
-            db.create_all()
-            
-            # Ensure admin user exists
-            create_admin_user()
-            
-            print("✅ SQLite database tables created successfully!")
-            print("🗄️  Database file: mwangaza.db")
+            # Ensure database exists and is accessible
+            if ensure_database_exists():
+                # Create admin user
+                create_admin_user()
+                print("✅ Database initialization completed successfully!")
+            else:
+                print("⚠️  Database initialization failed, but continuing...")
                 
         except Exception as e:
             print(f"❌ Database initialization error: {e}")
-            # Continue running even if there are database issues
-            print("⚠️  Application will continue, but some features may not work properly.")
+            print("⚠️  Application will continue, but database features may not work.")
 
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
+    
+    print(f"🚀 Starting Flask server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=debug)
