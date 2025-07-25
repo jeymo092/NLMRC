@@ -2217,10 +2217,15 @@ def backup_database():
         flash('Access denied. Only Admin can backup the database.')
         return redirect(url_for('dashboard'))
 
-    import shutil
+    import shutil, os
     from flask import send_file
     
     try:
+        # Check if database file exists
+        if not os.path.exists('mwangaza.db'):
+            flash('Database file not found!')
+            return redirect(url_for('manage_users'))
+        
         # Create a backup copy
         backup_filename = f"mwangaza_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         shutil.copy2('mwangaza.db', backup_filename)
@@ -2228,7 +2233,7 @@ def backup_database():
         return send_file(backup_filename, as_attachment=True, download_name=backup_filename)
     except Exception as e:
         flash(f'Error creating database backup: {str(e)}')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('manage_users'))
 
 # Counselling Routes
 @app.route('/counselling')
