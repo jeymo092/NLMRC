@@ -2221,21 +2221,36 @@ def backup_database():
     from flask import send_file
     
     try:
+        # Get the absolute path to the database file
+        db_path = os.path.abspath('mwangaza.db')
+        
         # Check if database file exists
-        if not os.path.exists('mwangaza.db'):
-            # Try to create the database first
-            db.create_all()
-            if not os.path.exists('mwangaza.db'):
-                flash('Database file not found and could not be created! Please restart the application.')
+        if not os.path.exists(db_path):
+            # Force database creation with current app context
+            with app.app_context():
+                db.create_all()
+                
+            # Check again after creation attempt
+            if not os.path.exists(db_path):
+                flash('Database file could not be created! The database may not be properly initialized.')
                 return redirect(url_for('manage_users'))
             else:
                 flash('Database file was missing but has been recreated.')
         
-        # Create a backup copy
+        # Create a backup copy with absolute path
         backup_filename = f"mwangaza_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-        shutil.copy2('mwangaza.db', backup_filename)
+        backup_path = os.path.abspath(backup_filename)
         
-        return send_file(backup_filename, as_attachment=True, download_name=backup_filename)
+        shutil.copy2(db_path, backup_path)
+        
+        # Verify the backup was created
+        if not os.path.exists(backup_path):
+            flash('Backup file could not be created!')
+            return redirect(url_for('manage_users'))
+        
+        flash(f'Database backup created successfully: {backup_filename}')
+        return send_file(backup_path, as_attachment=True, download_name=backup_filename)
+        
     except Exception as e:
         flash(f'Error creating database backup: {str(e)}')
         return redirect(url_for('manage_users'))
