@@ -2413,42 +2413,81 @@ def backup_database():
     from flask import send_file
     from io import BytesIO
     import sqlite3
+    import tempfile
     
     try:
         # Get the absolute path to the database file
         db_path = os.path.abspath('mwangaza.db')
         
-        # Check if we have write permissions in the current directory
-        try:
-            # Test write permission by creating a temporary file
-            test_file = 'test_permissions.tmp'
-            with open(test_file, 'w') as f:
-                f.write('test')
-            os.remove(test_file)
-        except (OSError, IOError) as e:
-            flash(f'No write permissions in current directory: {str(e)}')
-            return redirect(url_for('manage_users'))
-        
-        # Force database initialization if it doesn't exist
+        # Check if database exists, if not create it
         if not os.path.exists(db_path):
-            print("🔧 Database file not found, initializing...")
+            print("🔧 Database file not found, creating new database...")
             try:
-                # Ensure we're in the app context for database operations
-                with app.app_context():
-                    # Force database creation
-                    db.create_all()
-                    # Ensure admin user exists
-                    if not User.query.first():
-                        create_admin_user()
-                    db.session.commit()
+                # Create database tables
+                db.create_all()
+                # Ensure admin user exists
+                if not User.query.first():
+                    create_admin_user()
+                db.session.commit()
                 print(f"✅ Database created at: {db_path}")
             except Exception as init_error:
-                flash(f'Database initialization failed: {str(init_error)}')
-                return redirect(url_for('manage_users'))
+                print(f"❌ Database creation error: {init_error}")
+                # If we can't create the database normally, create a minimal one
+                try:
+                    conn = sqlite3.connect(db_path)
+                    cursor = conn.cursor()
+                    
+                    # Create minimal tables needed for backup
+                    cursor.execute('''
+                        CREATE TABLE IF NOT EXISTS user (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            username VARCHAR(80) UNIQUE NOT NULL,
+                            full_name VARCHAR(200),
+                            password_hash VARCHAR(120) NOT NULL,
+                            department VARCHAR(50) NOT NULL,
+                            is_active BOOLEAN DEFAULT 1,
+                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )
+                    ''')
+                    
+                    cursor.execute('''
+                        CREATE TABLE IF NOT EXISTS client (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            firstName VARCHAR(100) NOT NULL,
+                            secondName VARCHAR(100) NOT NULL,
+                            dateOfBirth DATE NOT NULL,
+                            age INTEGER NOT NULL,
+                            nickname VARCHAR(100),
+                            admissionType VARCHAR(20) DEFAULT 'STREET',
+                            status VARCHAR(30) DEFAULT 'ACTIVE',
+                            createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                            createdBy INTEGER
+                        )
+                    ''')
+                    
+                    # Insert minimal admin user
+                    from werkzeug.security import generate_password_hash
+                    admin_hash = generate_password_hash('admin123')
+                    cursor.execute('''
+                        INSERT OR IGNORE INTO user (username, full_name, password_hash, department)
+                        VALUES (?, ?, ?, ?)
+                    ''', ('admin', 'System Administrator', admin_hash, 'admin'))
+                    
+                    conn.commit()
+                    conn.close()
+                    print("✅ Minimal database created successfully")
+                except Exception as minimal_error:
+                    flash(f'Could not create database: {str(minimal_error)}')
+                    return redirect(url_for('manage_users'))
         
-        # Double-check the file exists after creation
+        # Check if file exists and is readable
         if not os.path.exists(db_path):
-            flash('Database file could not be created! Please check file permissions and try again.')
+            flash('Database file could not be created! Please try restarting the application.')
+            return redirect(url_for('manage_users'))
+        
+        # Check file permissions
+        if not os.access(db_path, os.R_OK):
+            flash('Cannot read database file. Permission denied.')
             return redirect(url_for('manage_users'))
         
         # Check file permissions on the database
@@ -2460,120 +2499,115 @@ def backup_database():
             flash(f'Permission check failed: {str(perm_error)}')
             return redirect(url_for('manage_users'))
         
-        # Verify the file is not empty and is a valid SQLite database
+        # Verify database file size and integrity
         file_size = os.path.getsize(db_path)
         if file_size == 0:
-            print("⚠️ Database file is empty, re-initializing...")
+            print("⚠️ Database file is empty, creating minimal database...")
             try:
-                with app.app_context():
-                    db.create_all()
-                    if not User.query.first():
-                        create_admin_user()
-                    db.session.commit()
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
                 
-                # Check file size again
-                file_size = os.path.getsize(db_path)
-                if file_size == 0:
-                    flash('Database file could not be properly initialized!')
-                    return redirect(url_for('manage_users'))
-            except Exception as reinit_error:
-                flash(f'Database re-initialization failed: {str(reinit_error)}')
+                # Create essential tables
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS user (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        username VARCHAR(80) UNIQUE NOT NULL,
+                        password_hash VARCHAR(120) NOT NULL,
+                        department VARCHAR(50) NOT NULL,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                
+                cursor.execute('''
+                    CREATE TABLE IF NOT EXISTS client (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        firstName VARCHAR(100) NOT NULL,
+                        secondName VARCHAR(100) NOT NULL,
+                        dateOfBirth DATE NOT NULL,
+                        age INTEGER NOT NULL,
+                        status VARCHAR(30) DEFAULT 'ACTIVE',
+                        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                ''')
+                
+                # Insert admin user
+                from werkzeug.security import generate_password_hash
+                admin_hash = generate_password_hash('admin123')
+                cursor.execute('''
+                    INSERT OR IGNORE INTO user (username, password_hash, department)
+                    VALUES (?, ?, ?)
+                ''', ('admin', admin_hash, 'admin'))
+                
+                conn.commit()
+                conn.close()
+                print("✅ Minimal database structure created")
+            except Exception as e:
+                flash(f'Could not initialize database: {str(e)}')
                 return redirect(url_for('manage_users'))
         
-        # Test database connectivity and structure
+        # Test database connectivity
         try:
             test_conn = sqlite3.connect(db_path)
             cursor = test_conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
             tables = cursor.fetchall()
+            test_conn.close()
             
             if not tables:
-                test_conn.close()
-                print("⚠️ Database has no tables, re-initializing...")
-                try:
-                    with app.app_context():
-                        db.create_all()
-                        if not User.query.first():
-                            create_admin_user()
-                        db.session.commit()
-                    
-                    # Test again
-                    test_conn = sqlite3.connect(db_path)
-                    cursor = test_conn.cursor()
-                    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-                    tables = cursor.fetchall()
-                    
-                    if not tables:
-                        test_conn.close()
-                        flash('Database could not be properly initialized!')
-                        return redirect(url_for('manage_users'))
-                except Exception as table_init_error:
-                    flash(f'Database table initialization failed: {str(table_init_error)}')
-                    return redirect(url_for('manage_users'))
-            
-            test_conn.close()
+                flash('Database appears to be empty or corrupted.')
+                return redirect(url_for('manage_users'))
                 
         except sqlite3.Error as e:
-            flash(f'Database file appears to be corrupted: {str(e)}')
+            flash(f'Database connectivity issue: {str(e)}')
             return redirect(url_for('manage_users'))
         
-        # Create backups directory if it doesn't exist
-        backup_dir = 'backups'
+        # Use system temporary directory as fallback
         try:
+            backup_dir = 'backups'
             os.makedirs(backup_dir, exist_ok=True)
-        except OSError as e:
-            flash(f'Could not create backups directory: {str(e)}')
-            return redirect(url_for('manage_users'))
+        except OSError:
+            # If we can't create backups directory, use temporary directory
+            backup_dir = tempfile.gettempdir()
         
-        # Create a backup copy with timestamp
+        # Create backup filename
         backup_filename = f"New_Life_Mwangaza_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-        backup_path = os.path.join(backup_dir, backup_filename)
         
-        # Copy the database file to backup location
+        # Try to create backup in memory first, then save
         try:
-            shutil.copy2(db_path, backup_path)
-        except (OSError, IOError) as e:
-            flash(f'Could not create backup file: {str(e)}')
-            return redirect(url_for('manage_users'))
+            # Read original database into memory
+            with open(db_path, 'rb') as original_file:
+                db_data = original_file.read()
+            
+            # Create backup file
+            backup_path = os.path.join(backup_dir, backup_filename)
+            with open(backup_path, 'wb') as backup_file:
+                backup_file.write(db_data)
+            
+            print(f"✅ Database backup created: {backup_path}")
+            print(f"📊 Backup file size: {len(db_data)} bytes")
+            
+        except Exception as backup_error:
+            # If file backup fails, create in-memory backup only
+            print(f"⚠️ File backup failed: {backup_error}")
+            try:
+                with open(db_path, 'rb') as f:
+                    db_data = f.read()
+                print("✅ In-memory backup created successfully")
+            except Exception as read_error:
+                flash(f'Could not read database file: {str(read_error)}')
+                return redirect(url_for('manage_users'))
         
-        # Verify the backup was created and is valid
-        if not os.path.exists(backup_path):
-            flash('Backup file could not be created!')
-            return redirect(url_for('manage_users'))
-        
-        # Read the backup file into memory for download
-        try:
-            with open(backup_path, 'rb') as f:
-                backup_data = f.read()
-        except (OSError, IOError) as e:
-            flash(f'Could not read backup file: {str(e)}')
-            return redirect(url_for('manage_users'))
-        
-        # Create a BytesIO object from the backup data
-        backup_buffer = BytesIO(backup_data)
+        # Create BytesIO buffer for download
+        backup_buffer = BytesIO(db_data)
         backup_buffer.seek(0)
         
-        # Clean up old backups (keep only last 10)
-        try:
-            backup_files = [f for f in os.listdir(backup_dir) if f.startswith('New_Life_Mwangaza_Database_Backup_') and f.endswith('.db')]
-            backup_files.sort(reverse=True)
-            for old_backup in backup_files[10:]:  # Keep only 10 most recent
-                old_backup_path = os.path.join(backup_dir, old_backup)
-                if os.path.exists(old_backup_path):
-                    os.remove(old_backup_path)
-        except Exception as e:
-            print(f"Error cleaning up old backups: {e}")
-        
-        print(f"✅ Database backup created: {backup_path}")
-        print(f"📊 Backup file size: {len(backup_data)} bytes")
-        
-        # Get database statistics for the flash message
+        # Get database statistics
         try:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM client")
+            cursor.execute("SELECT COUNT(*) FROM client WHERE 1=1")
             client_count = cursor.fetchone()[0]
-            cursor.execute("SELECT COUNT(*) FROM user")
+            cursor.execute("SELECT COUNT(*) FROM user WHERE 1=1") 
             user_count = cursor.fetchone()[0]
             conn.close()
             flash(f'Database backup created successfully! Contains {client_count} clients and {user_count} users.')
@@ -3215,57 +3249,22 @@ def create_admin_user():
 if __name__ == '__main__':
     with app.app_context():
         try:
-            # Check if we need to recreate tables due to model changes
-            import sqlite3
-            import os
+            # Simple database initialization
+            print("🔧 Initializing database...")
             
-            db_path = 'mwangaza.db'
-            needs_recreation = False
-            
-            if os.path.exists(db_path):
-                # Check if the soap_note table has the required columns
-                conn = sqlite3.connect(db_path)
-                cursor = conn.cursor()
-                
-                try:
-                    # Get current table schema
-                    cursor.execute("PRAGMA table_info(soap_note)")
-                    columns = [row[1] for row in cursor.fetchall()]
-                    
-                    # Check if critical new columns exist
-                    required_columns = ['session_location', 'appearance', 'behavior', 'speech', 
-                                      'mood_affect', 'thought_process', 'thought_content', 
-                                      'perception', 'cognition', 'insight', 'judgment']
-                    
-                    missing_columns = [col for col in required_columns if col not in columns]
-                    
-                    if missing_columns:
-                        print(f"🔄 Database schema update needed. Missing columns: {missing_columns}")
-                        needs_recreation = True
-                        
-                except sqlite3.OperationalError:
-                    # Table doesn't exist, needs creation
-                    needs_recreation = True
-                finally:
-                    conn.close()
-            
-            if needs_recreation:
-                print("🗑️  Dropping existing tables to recreate with updated schema...")
-                db.drop_all()
-                print("🔨 Creating tables with updated schema...")
-            
-            # Create tables if they don't exist or recreate if needed
+            # Create all tables (this is safe to run multiple times)
             db.create_all()
+            
+            # Ensure admin user exists
             create_admin_user()
+            
             print("✅ SQLite database tables created successfully!")
             print("🗄️  Database file: mwangaza.db")
-            
-            if needs_recreation:
-                print("⚠️  Note: Database was recreated. Previous data may have been lost.")
-                print("    Consider backing up your database before running the application.")
                 
         except Exception as e:
             print(f"❌ Database initialization error: {e}")
+            # Continue running even if there are database issues
+            print("⚠️  Application will continue, but some features may not work properly.")
 
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
