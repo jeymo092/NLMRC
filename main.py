@@ -2575,7 +2575,7 @@ def add_exit_form(client_id):
         except Exception as e:
             flash(f'Error adding exit form: {str(e)}')
 
-    return render_template('add_exit_form.html', client=client)
+    return render_template('add_exit_form.html', client=client, datetime=datetime)
 
 @app.route('/client/<int:client_id>/counselling_records')
 @login_required
