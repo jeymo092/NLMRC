@@ -2418,36 +2418,66 @@ def backup_database():
         # Get the absolute path to the database file
         db_path = os.path.abspath('mwangaza.db')
         
+        # Check if we have write permissions in the current directory
+        try:
+            # Test write permission by creating a temporary file
+            test_file = 'test_permissions.tmp'
+            with open(test_file, 'w') as f:
+                f.write('test')
+            os.remove(test_file)
+        except (OSError, IOError) as e:
+            flash(f'No write permissions in current directory: {str(e)}')
+            return redirect(url_for('manage_users'))
+        
         # Force database initialization if it doesn't exist
         if not os.path.exists(db_path):
             print("🔧 Database file not found, initializing...")
-            # Force database creation with current app context
-            db.create_all()
-            # Ensure admin user exists
-            if not User.query.first():
-                create_admin_user()
-            db.session.commit()
-            print(f"✅ Database created at: {db_path}")
+            try:
+                # Ensure we're in the app context for database operations
+                with app.app_context():
+                    # Force database creation
+                    db.create_all()
+                    # Ensure admin user exists
+                    if not User.query.first():
+                        create_admin_user()
+                    db.session.commit()
+                print(f"✅ Database created at: {db_path}")
+            except Exception as init_error:
+                flash(f'Database initialization failed: {str(init_error)}')
+                return redirect(url_for('manage_users'))
         
         # Double-check the file exists after creation
         if not os.path.exists(db_path):
             flash('Database file could not be created! Please check file permissions and try again.')
             return redirect(url_for('manage_users'))
         
+        # Check file permissions on the database
+        try:
+            if not os.access(db_path, os.R_OK):
+                flash('Cannot read database file. Permission denied.')
+                return redirect(url_for('manage_users'))
+        except Exception as perm_error:
+            flash(f'Permission check failed: {str(perm_error)}')
+            return redirect(url_for('manage_users'))
+        
         # Verify the file is not empty and is a valid SQLite database
         file_size = os.path.getsize(db_path)
         if file_size == 0:
             print("⚠️ Database file is empty, re-initializing...")
-            # Re-initialize if file is empty
-            db.create_all()
-            if not User.query.first():
-                create_admin_user()
-            db.session.commit()
-            
-            # Check file size again
-            file_size = os.path.getsize(db_path)
-            if file_size == 0:
-                flash('Database file could not be properly initialized!')
+            try:
+                with app.app_context():
+                    db.create_all()
+                    if not User.query.first():
+                        create_admin_user()
+                    db.session.commit()
+                
+                # Check file size again
+                file_size = os.path.getsize(db_path)
+                if file_size == 0:
+                    flash('Database file could not be properly initialized!')
+                    return redirect(url_for('manage_users'))
+            except Exception as reinit_error:
+                flash(f'Database re-initialization failed: {str(reinit_error)}')
                 return redirect(url_for('manage_users'))
         
         # Test database connectivity and structure
@@ -2460,21 +2490,25 @@ def backup_database():
             if not tables:
                 test_conn.close()
                 print("⚠️ Database has no tables, re-initializing...")
-                # Re-initialize empty database
-                db.create_all()
-                if not User.query.first():
-                    create_admin_user()
-                db.session.commit()
-                
-                # Test again
-                test_conn = sqlite3.connect(db_path)
-                cursor = test_conn.cursor()
-                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-                tables = cursor.fetchall()
-                
-                if not tables:
-                    test_conn.close()
-                    flash('Database could not be properly initialized!')
+                try:
+                    with app.app_context():
+                        db.create_all()
+                        if not User.query.first():
+                            create_admin_user()
+                        db.session.commit()
+                    
+                    # Test again
+                    test_conn = sqlite3.connect(db_path)
+                    cursor = test_conn.cursor()
+                    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                    tables = cursor.fetchall()
+                    
+                    if not tables:
+                        test_conn.close()
+                        flash('Database could not be properly initialized!')
+                        return redirect(url_for('manage_users'))
+                except Exception as table_init_error:
+                    flash(f'Database table initialization failed: {str(table_init_error)}')
                     return redirect(url_for('manage_users'))
             
             test_conn.close()
@@ -2485,14 +2519,22 @@ def backup_database():
         
         # Create backups directory if it doesn't exist
         backup_dir = 'backups'
-        os.makedirs(backup_dir, exist_ok=True)
+        try:
+            os.makedirs(backup_dir, exist_ok=True)
+        except OSError as e:
+            flash(f'Could not create backups directory: {str(e)}')
+            return redirect(url_for('manage_users'))
         
         # Create a backup copy with timestamp
         backup_filename = f"New_Life_Mwangaza_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         backup_path = os.path.join(backup_dir, backup_filename)
         
         # Copy the database file to backup location
-        shutil.copy2(db_path, backup_path)
+        try:
+            shutil.copy2(db_path, backup_path)
+        except (OSError, IOError) as e:
+            flash(f'Could not create backup file: {str(e)}')
+            return redirect(url_for('manage_users'))
         
         # Verify the backup was created and is valid
         if not os.path.exists(backup_path):
@@ -2500,8 +2542,12 @@ def backup_database():
             return redirect(url_for('manage_users'))
         
         # Read the backup file into memory for download
-        with open(backup_path, 'rb') as f:
-            backup_data = f.read()
+        try:
+            with open(backup_path, 'rb') as f:
+                backup_data = f.read()
+        except (OSError, IOError) as e:
+            flash(f'Could not read backup file: {str(e)}')
+            return redirect(url_for('manage_users'))
         
         # Create a BytesIO object from the backup data
         backup_buffer = BytesIO(backup_data)
