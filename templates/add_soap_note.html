@@ -1,10 +1,11 @@
+
 {% extends "base.html" %}
 
 {% block title %}Add SOAP Note{% endblock %}
 
 {% block content %}
 <div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Header -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <div class="flex items-center justify-between">
@@ -42,85 +43,264 @@
 
         <!-- SOAP Note Form -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <form method="POST" class="space-y-6">
+            <form method="POST" class="space-y-8">
                 <!-- Session Details -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label for="session_date" class="block text-sm font-medium text-gray-700">Session Date*</label>
-                        <input type="date" name="session_date" id="session_date" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="session_type" class="block text-sm font-medium text-gray-700">Session Type*</label>
-                        <select name="session_type" id="session_type" required 
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="INDIVIDUAL">Individual</option>
-                            <option value="GROUP">Group</option>
-                            <option value="FAMILY">Family</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="session_duration" class="block text-sm font-medium text-gray-700">Duration (minutes)</label>
-                        <input type="number" name="session_duration" id="session_duration" min="15" max="180"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-medium text-blue-900 mb-4">Session Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div>
+                            <label for="session_date" class="block text-sm font-medium text-gray-700">Session Date*</label>
+                            <input type="date" name="session_date" id="session_date" required
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="session_type" class="block text-sm font-medium text-gray-700">Session Type*</label>
+                            <select name="session_type" id="session_type" required 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="INDIVIDUAL">Individual</option>
+                                <option value="GROUP">Group</option>
+                                <option value="FAMILY">Family</option>
+                                <option value="CRISIS">Crisis Intervention</option>
+                                <option value="ASSESSMENT">Assessment</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="session_duration" class="block text-sm font-medium text-gray-700">Duration (minutes)</label>
+                            <input type="number" name="session_duration" id="session_duration" min="15" max="180"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="session_location" class="block text-sm font-medium text-gray-700">Location</label>
+                            <input type="text" name="session_location" id="session_location" placeholder="Office, Home, etc."
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
                     </div>
                 </div>
 
                 <!-- SOAP Components -->
                 <div class="space-y-6">
                     <!-- Subjective -->
-                    <div>
-                        <label for="subjective" class="block text-sm font-medium text-gray-700">Subjective (What the client reports)*</label>
+                    <div class="bg-green-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-medium text-green-900 mb-4">Subjective (What the client reports)*</h3>
                         <textarea name="subjective" id="subjective" rows="4" required
-                                  placeholder="Client's reported symptoms, feelings, concerns, and experiences..."
+                                  placeholder="Client's reported symptoms, feelings, concerns, experiences, and main complaints..."
                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
                     </div>
 
                     <!-- Objective -->
-                    <div>
-                        <label for="objective" class="block text-sm font-medium text-gray-700">Objective (Observable behaviors and data)*</label>
+                    <div class="bg-yellow-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-medium text-yellow-900 mb-4">Objective (Observable behaviors and Mental Status Exam)*</h3>
                         <textarea name="objective" id="objective" rows="4" required
                                   placeholder="Observable behaviors, appearance, mood, speech, and measurable data..."
-                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                  class="mb-4 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        
+                        <!-- Mental Status Exam -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="appearance" class="block text-sm font-medium text-gray-700">Appearance</label>
+                                <textarea name="appearance" id="appearance" rows="2" placeholder="Grooming, dress, hygiene..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="behavior" class="block text-sm font-medium text-gray-700">Behavior</label>
+                                <textarea name="behavior" id="behavior" rows="2" placeholder="Cooperation, eye contact, psychomotor activity..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="speech" class="block text-sm font-medium text-gray-700">Speech</label>
+                                <textarea name="speech" id="speech" rows="2" placeholder="Rate, volume, articulation, fluency..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="mood_affect" class="block text-sm font-medium text-gray-700">Mood & Affect</label>
+                                <textarea name="mood_affect" id="mood_affect" rows="2" placeholder="Stated mood and observed affect..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="thought_process" class="block text-sm font-medium text-gray-700">Thought Process</label>
+                                <textarea name="thought_process" id="thought_process" rows="2" placeholder="Organization, coherence, goal-directed..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="thought_content" class="block text-sm font-medium text-gray-700">Thought Content</label>
+                                <textarea name="thought_content" id="thought_content" rows="2" placeholder="Delusions, obsessions, preoccupations..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="perception" class="block text-sm font-medium text-gray-700">Perception</label>
+                                <textarea name="perception" id="perception" rows="2" placeholder="Hallucinations, illusions..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="cognition" class="block text-sm font-medium text-gray-700">Cognition</label>
+                                <textarea name="cognition" id="cognition" rows="2" placeholder="Memory, concentration, orientation..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label for="insight" class="block text-sm font-medium text-gray-700">Insight</label>
+                                <select name="insight" id="insight" 
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select...</option>
+                                    <option value="POOR">Poor</option>
+                                    <option value="LIMITED">Limited</option>
+                                    <option value="FAIR">Fair</option>
+                                    <option value="GOOD">Good</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="judgment" class="block text-sm font-medium text-gray-700">Judgment</label>
+                                <select name="judgment" id="judgment" 
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select...</option>
+                                    <option value="POOR">Poor</option>
+                                    <option value="LIMITED">Limited</option>
+                                    <option value="FAIR">Fair</option>
+                                    <option value="GOOD">Good</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Assessment -->
-                    <div>
-                        <label for="assessment" class="block text-sm font-medium text-gray-700">Assessment (Clinical interpretation)*</label>
+                    <div class="bg-purple-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-medium text-purple-900 mb-4">Assessment (Clinical interpretation)*</h3>
                         <textarea name="assessment" id="assessment" rows="4" required
-                                  placeholder="Clinical interpretation, progress toward goals, and professional analysis..."
+                                  placeholder="Clinical interpretation, progress toward goals, diagnosis considerations..."
                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        
+                        <div class="mt-4">
+                            <label for="treatment_goals_addressed" class="block text-sm font-medium text-gray-700">Treatment Goals Addressed</label>
+                            <textarea name="treatment_goals_addressed" id="treatment_goals_addressed" rows="2"
+                                      placeholder="Which treatment goals were addressed in this session..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
                     </div>
 
                     <!-- Plan -->
-                    <div>
-                        <label for="plan" class="block text-sm font-medium text-gray-700">Plan (Next steps and interventions)*</label>
+                    <div class="bg-red-50 p-6 rounded-lg">
+                        <h3 class="text-lg font-medium text-red-900 mb-4">Plan (Next steps and interventions)*</h3>
                         <textarea name="plan" id="plan" rows="4" required
                                   placeholder="Treatment plan updates, interventions, homework, and next session plans..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                                <label for="interventions_used" class="block text-sm font-medium text-gray-700">Interventions Used</label>
+                                <textarea name="interventions_used" id="interventions_used" rows="2"
+                                          placeholder="CBT, DBT, motivational interviewing, etc..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label for="client_response" class="block text-sm font-medium text-gray-700">Client Response</label>
+                                <textarea name="client_response" id="client_response" rows="2"
+                                          placeholder="How client responded to interventions..."
+                                          class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clinical Ratings -->
+                <div class="bg-indigo-50 p-6 rounded-lg">
+                    <h3 class="text-lg font-medium text-indigo-900 mb-4">Clinical Ratings</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                        <div>
+                            <label for="mood_rating" class="block text-sm font-medium text-gray-700">Mood (1-10)</label>
+                            <select name="mood_rating" id="mood_rating" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                {% for i in range(1, 11) %}
+                                <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="anxiety_level" class="block text-sm font-medium text-gray-700">Anxiety (1-10)</label>
+                            <select name="anxiety_level" id="anxiety_level" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                {% for i in range(1, 11) %}
+                                <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="depression_level" class="block text-sm font-medium text-gray-700">Depression (1-10)</label>
+                            <select name="depression_level" id="depression_level" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                {% for i in range(1, 11) %}
+                                <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="progress_rating" class="block text-sm font-medium text-gray-700">Progress (1-10)</label>
+                            <select name="progress_rating" id="progress_rating" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                {% for i in range(1, 11) %}
+                                <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="functioning_level" class="block text-sm font-medium text-gray-700">Functioning</label>
+                            <select name="functioning_level" id="functioning_level" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Select...</option>
+                                <option value="HIGH">High</option>
+                                <option value="MODERATE">Moderate</option>
+                                <option value="LOW">Low</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Assessment -->
+                <div class="bg-red-50 p-6 rounded-lg border-2 border-red-200">
+                    <h3 class="text-lg font-medium text-red-900 mb-4">Risk Assessment</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="suicide_risk" class="block text-sm font-medium text-gray-700">Suicide Risk</label>
+                            <select name="suicide_risk" id="suicide_risk" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="NONE">None</option>
+                                <option value="LOW">Low</option>
+                                <option value="MODERATE">Moderate</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="homicide_risk" class="block text-sm font-medium text-gray-700">Homicide Risk</label>
+                            <select name="homicide_risk" id="homicide_risk" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="NONE">None</option>
+                                <option value="LOW">Low</option>
+                                <option value="MODERATE">Moderate</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="self_harm_risk" class="block text-sm font-medium text-gray-700">Self-Harm Risk</label>
+                            <select name="self_harm_risk" id="self_harm_risk" 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="NONE">None</option>
+                                <option value="LOW">Low</option>
+                                <option value="MODERATE">Moderate</option>
+                                <option value="HIGH">High</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label for="substance_use" class="block text-sm font-medium text-gray-700">Substance Use</label>
+                        <textarea name="substance_use" id="substance_use" rows="2"
+                                  placeholder="Current substance use, changes since last session..."
                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
                     </div>
                 </div>
 
-                <!-- Ratings and Status -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <label for="mood_rating" class="block text-sm font-medium text-gray-700">Mood Rating (1-10)</label>
-                        <select name="mood_rating" id="mood_rating" 
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            {% for i in range(1, 11) %}
-                            <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="progress_rating" class="block text-sm font-medium text-gray-700">Progress Rating (1-10)</label>
-                        <select name="progress_rating" id="progress_rating" 
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            {% for i in range(1, 11) %}
-                            <option value="{{ i }}" {% if i == 5 %}selected{% endif %}>{{ i }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
+                <!-- Session Status and Additional Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="attendance" class="block text-sm font-medium text-gray-700">Attendance</label>
                         <select name="attendance" id="attendance" 
@@ -130,9 +310,46 @@
                             <option value="NO_SHOW">No Show</option>
                         </select>
                     </div>
+                    <div>
+                        <label for="next_session_date" class="block text-sm font-medium text-gray-700">Next Session Date</label>
+                        <input type="date" name="next_session_date" id="next_session_date" 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    </div>
                 </div>
 
-                <!-- Additional Information -->
+                <!-- Homework and Follow-up -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="homework_review" class="block text-sm font-medium text-gray-700">Previous Homework Review</label>
+                        <textarea name="homework_review" id="homework_review" rows="2"
+                                  placeholder="Review of homework from previous session..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="homework_assigned" class="block text-sm font-medium text-gray-700">New Homework/Tasks Assigned</label>
+                        <textarea name="homework_assigned" id="homework_assigned" rows="2"
+                                  placeholder="Homework, exercises, or tasks assigned to client..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- Barriers and Strengths -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="barriers_to_progress" class="block text-sm font-medium text-gray-700">Barriers to Progress</label>
+                        <textarea name="barriers_to_progress" id="barriers_to_progress" rows="2"
+                                  placeholder="Identified barriers to treatment progress..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                    <div>
+                        <label for="strengths_utilized" class="block text-sm font-medium text-gray-700">Strengths Utilized</label>
+                        <textarea name="strengths_utilized" id="strengths_utilized" rows="2"
+                                  placeholder="Client strengths utilized in session..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- Referrals and Professional Information -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label for="referrals_made" class="block text-sm font-medium text-gray-700">Referrals Made</label>
@@ -141,15 +358,14 @@
                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
                     </div>
                     <div>
-                        <label for="homework_assigned" class="block text-sm font-medium text-gray-700">Homework/Tasks Assigned</label>
-                        <textarea name="homework_assigned" id="homework_assigned" rows="2"
-                                  placeholder="Homework, exercises, or tasks assigned to client..."
-                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        <label for="counselor_name" class="block text-sm font-medium text-gray-700">Counselor Name*</label>
+                        <input type="text" name="counselor_name" id="counselor_name" required 
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
 
-                <!-- Crisis and Next Session -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Checkboxes -->
+                <div class="flex flex-wrap gap-6">
                     <div class="flex items-center">
                         <input type="checkbox" name="crisis_indicators" id="crisis_indicators" 
                                class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
@@ -157,18 +373,13 @@
                             Crisis indicators present
                         </label>
                     </div>
-                    <div>
-                        <label for="next_session_date" class="block text-sm font-medium text-gray-700">Next Session Date</label>
-                        <input type="date" name="next_session_date" id="next_session_date" 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <div class="flex items-center">
+                        <input type="checkbox" name="supervisor_consultation" id="supervisor_consultation" 
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="supervisor_consultation" class="ml-2 block text-sm text-gray-900">
+                            Supervisor consultation obtained
+                        </label>
                     </div>
-                </div>
-
-                <!-- Counselor Info -->
-                <div>
-                    <label for="counselor_name" class="block text-sm font-medium text-gray-700">Counselor Name*</label>
-                    <input type="text" name="counselor_name" id="counselor_name" required 
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <!-- Submit Button -->
@@ -186,4 +397,9 @@
         </div>
     </div>
 </div>
+
+<script>
+// Set today's date as default
+document.getElementById('session_date').valueAsDate = new Date();
+</script>
 {% endblock %}

@@ -273,19 +273,61 @@ class SoapNote(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
     session_date = db.Column(db.Date, nullable=False)
     session_type = db.Column(db.String(50), nullable=False)  # INDIVIDUAL, GROUP, FAMILY
+    session_location = db.Column(db.String(100))  # Location of session
+    
+    # SOAP Components
     subjective = db.Column(db.Text, nullable=False)  # What client reports
     objective = db.Column(db.Text, nullable=False)  # Observable behaviors/data
     assessment = db.Column(db.Text, nullable=False)  # Clinical interpretation
     plan = db.Column(db.Text, nullable=False)  # Next steps/interventions
+    
+    # Session Details
     session_duration = db.Column(db.Integer)  # Duration in minutes
-    mood_rating = db.Column(db.Integer)  # 1-10 scale
-    progress_rating = db.Column(db.Integer)  # 1-10 scale
     attendance = db.Column(db.String(20), default='PRESENT')  # PRESENT, LATE, NO_SHOW
+    
+    # Clinical Ratings
+    mood_rating = db.Column(db.Integer)  # 1-10 scale
+    anxiety_level = db.Column(db.Integer)  # 1-10 scale
+    depression_level = db.Column(db.Integer)  # 1-10 scale
+    progress_rating = db.Column(db.Integer)  # 1-10 scale
+    functioning_level = db.Column(db.String(20))  # HIGH, MODERATE, LOW
+    
+    # Mental Status Exam
+    appearance = db.Column(db.Text)  # Physical appearance, grooming
+    behavior = db.Column(db.Text)  # Observable behaviors
+    speech = db.Column(db.Text)  # Speech patterns, volume, rate
+    mood_affect = db.Column(db.Text)  # Client's stated mood and observed affect
+    thought_process = db.Column(db.Text)  # Organization of thoughts
+    thought_content = db.Column(db.Text)  # Content of thoughts, delusions, etc.
+    perception = db.Column(db.Text)  # Hallucinations, illusions
+    cognition = db.Column(db.Text)  # Memory, concentration, orientation
+    insight = db.Column(db.String(20))  # POOR, LIMITED, FAIR, GOOD
+    judgment = db.Column(db.String(20))  # POOR, LIMITED, FAIR, GOOD
+    
+    # Risk Assessment
+    suicide_risk = db.Column(db.String(20))  # NONE, LOW, MODERATE, HIGH
+    homicide_risk = db.Column(db.String(20))  # NONE, LOW, MODERATE, HIGH
+    self_harm_risk = db.Column(db.String(20))  # NONE, LOW, MODERATE, HIGH
+    substance_use = db.Column(db.Text)  # Current substance use
+    
+    # Session Content
+    interventions_used = db.Column(db.Text)  # Therapeutic interventions used
+    client_response = db.Column(db.Text)  # How client responded to interventions
+    homework_assigned = db.Column(db.Text)
+    homework_review = db.Column(db.Text)  # Review of previous homework
+    
+    # Professional Information
     counselor_name = db.Column(db.String(200), nullable=False)
+    supervisor_consultation = db.Column(db.Boolean, default=False)
     next_session_date = db.Column(db.Date)
     crisis_indicators = db.Column(db.Boolean, default=False)
     referrals_made = db.Column(db.Text)
-    homework_assigned = db.Column(db.Text)
+    
+    # Follow-up
+    treatment_goals_addressed = db.Column(db.Text)
+    barriers_to_progress = db.Column(db.Text)
+    strengths_utilized = db.Column(db.Text)
+    
     createdAt = db.Column(db.DateTime, default=datetime.utcnow)
     createdBy = db.Column(db.Integer, db.ForeignKey('user.id'))
 
@@ -2507,19 +2549,57 @@ def add_soap_note(client_id):
                 client_id=client_id,
                 session_date=session_date,
                 session_type=request.form['session_type'],
+                session_location=request.form.get('session_location', ''),
                 subjective=request.form['subjective'],
                 objective=request.form['objective'],
                 assessment=request.form['assessment'],
                 plan=request.form['plan'],
                 session_duration=int(request.form.get('session_duration', 0)),
-                mood_rating=int(request.form.get('mood_rating', 5)),
-                progress_rating=int(request.form.get('progress_rating', 5)),
                 attendance=request.form.get('attendance', 'PRESENT'),
+                
+                # Clinical Ratings
+                mood_rating=int(request.form.get('mood_rating', 5)),
+                anxiety_level=int(request.form.get('anxiety_level', 5)),
+                depression_level=int(request.form.get('depression_level', 5)),
+                progress_rating=int(request.form.get('progress_rating', 5)),
+                functioning_level=request.form.get('functioning_level', ''),
+                
+                # Mental Status Exam
+                appearance=request.form.get('appearance', ''),
+                behavior=request.form.get('behavior', ''),
+                speech=request.form.get('speech', ''),
+                mood_affect=request.form.get('mood_affect', ''),
+                thought_process=request.form.get('thought_process', ''),
+                thought_content=request.form.get('thought_content', ''),
+                perception=request.form.get('perception', ''),
+                cognition=request.form.get('cognition', ''),
+                insight=request.form.get('insight', ''),
+                judgment=request.form.get('judgment', ''),
+                
+                # Risk Assessment
+                suicide_risk=request.form.get('suicide_risk', 'NONE'),
+                homicide_risk=request.form.get('homicide_risk', 'NONE'),
+                self_harm_risk=request.form.get('self_harm_risk', 'NONE'),
+                substance_use=request.form.get('substance_use', ''),
+                
+                # Session Content
+                interventions_used=request.form.get('interventions_used', ''),
+                client_response=request.form.get('client_response', ''),
+                homework_assigned=request.form.get('homework_assigned', ''),
+                homework_review=request.form.get('homework_review', ''),
+                
+                # Professional Information
                 counselor_name=request.form['counselor_name'],
+                supervisor_consultation='supervisor_consultation' in request.form,
                 next_session_date=next_session_date,
                 crisis_indicators='crisis_indicators' in request.form,
                 referrals_made=request.form.get('referrals_made', ''),
-                homework_assigned=request.form.get('homework_assigned', ''),
+                
+                # Follow-up
+                treatment_goals_addressed=request.form.get('treatment_goals_addressed', ''),
+                barriers_to_progress=request.form.get('barriers_to_progress', ''),
+                strengths_utilized=request.form.get('strengths_utilized', ''),
+                
                 createdBy=current_user.id
             )
 
