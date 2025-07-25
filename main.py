@@ -2223,8 +2223,13 @@ def backup_database():
     try:
         # Check if database file exists
         if not os.path.exists('mwangaza.db'):
-            flash('Database file not found!')
-            return redirect(url_for('manage_users'))
+            # Try to create the database first
+            db.create_all()
+            if not os.path.exists('mwangaza.db'):
+                flash('Database file not found and could not be created! Please restart the application.')
+                return redirect(url_for('manage_users'))
+            else:
+                flash('Database file was missing but has been recreated.')
         
         # Create a backup copy
         backup_filename = f"mwangaza_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
