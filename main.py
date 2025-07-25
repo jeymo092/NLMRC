@@ -2209,6 +2209,27 @@ def delete_client(client_id):
 
     return redirect(url_for('dashboard'))
 
+@app.route('/backup_database')
+@login_required
+def backup_database():
+    # Only Admin can backup database
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can backup the database.')
+        return redirect(url_for('dashboard'))
+
+    import shutil
+    from flask import send_file
+    
+    try:
+        # Create a backup copy
+        backup_filename = f"mwangaza_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+        shutil.copy2('mwangaza.db', backup_filename)
+        
+        return send_file(backup_filename, as_attachment=True, download_name=backup_filename)
+    except Exception as e:
+        flash(f'Error creating database backup: {str(e)}')
+        return redirect(url_for('dashboard'))
+
 # Counselling Routes
 @app.route('/counselling')
 @login_required
