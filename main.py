@@ -2409,7 +2409,6 @@ def backup_database():
         flash('Access denied. Only Admin can backup the database.')
         return redirect(url_for('manage_users'))
 
-    import shutil, os
     from flask import send_file
     from io import BytesIO
     import sqlite3
@@ -2490,24 +2489,15 @@ def backup_database():
             flash(f'Database connectivity issue: {str(e)}')
             return redirect(url_for('manage_users'))
         
-        # Create backup directory
-        backup_dir = 'backups'
-        os.makedirs(backup_dir, exist_ok=True)
-        
         # Generate backup filename
         backup_filename = f"New_Life_Mwangaza_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         
-        # Read database file
+        # Read database file into memory
         try:
             with open(db_path, 'rb') as db_file:
                 db_data = db_file.read()
                 
-            # Save local backup copy
-            backup_path = os.path.join(backup_dir, backup_filename)
-            with open(backup_path, 'wb') as backup_file:
-                backup_file.write(db_data)
-                
-            print(f"✅ Database backup created: {backup_path}")
+            print(f"✅ Database backup prepared for download: {backup_filename}")
             print(f"📊 Backup size: {len(db_data)} bytes")
             print(f"📊 Contains: {user_count} users, {client_count} clients")
             
@@ -2515,13 +2505,13 @@ def backup_database():
             flash(f'Could not read database file: {str(read_error)}')
             return redirect(url_for('manage_users'))
         
-        # Create download response
+        # Create in-memory file buffer for download
         backup_buffer = BytesIO(db_data)
         backup_buffer.seek(0)
         
         print(f"🔗 Serving backup file for download: {backup_filename}")
         
-        # Return the file for download
+        # Return the file for direct download without saving to system
         return send_file(
             backup_buffer,
             as_attachment=True,
