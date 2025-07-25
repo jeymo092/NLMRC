@@ -668,6 +668,23 @@ def register_client():
 
             db.session.add(client)
             db.session.commit()
+            
+            # Auto-create parent record if parent/guardian information is provided
+            if client.parentGuardianName:
+                parent_record = ParentRecord(
+                    client_id=client.id,
+                    parent_name=client.parentGuardianName,
+                    relationship='GUARDIAN',  # Default to guardian, can be updated later
+                    contact_phone=client.parentGuardianContact or '',
+                    contact_address=client.parentGuardianLocation or '',
+                    involvement_level='MODERATE',  # Default level
+                    emergency_contact=True,  # Assume primary contact is emergency contact
+                    notes=f'Auto-created from client registration on {datetime.now().strftime("%Y-%m-%d")}',
+                    createdBy=current_user.id
+                )
+                db.session.add(parent_record)
+                db.session.commit()
+            
             flash('Client registered successfully!')
             return redirect(url_for('dashboard'))
         except Exception as e:
