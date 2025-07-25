@@ -10,7 +10,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Add Exit Form</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Client Exit Form</h1>
                     <p class="mt-1 text-sm text-gray-500">Complete exit documentation for {{ client.firstName }} {{ client.secondName }}</p>
                 </div>
                 <a href="{{ url_for('client_counselling_records', client_id=client.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
@@ -43,158 +43,326 @@
 
         <!-- Exit Form -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <form method="POST" class="space-y-6">
-                <!-- Exit Details -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="exit_date" class="block text-sm font-medium text-gray-700">Exit Date*</label>
-                        <input type="date" name="exit_date" id="exit_date" required 
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <div>
-                        <label for="reason_for_exit" class="block text-sm font-medium text-gray-700">Reason for Exit*</label>
-                        <select name="reason_for_exit" id="reason_for_exit" required 
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="COMPLETED">Treatment Completed</option>
-                            <option value="REFERRED">Referred to Other Services</option>
-                            <option value="DROPPED_OUT">Dropped Out</option>
-                            <option value="MOVED">Client Moved</option>
-                            <option value="OTHER">Other</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Goals and Outcomes -->
-                <div>
-                    <label for="goals_achieved" class="block text-sm font-medium text-gray-700">Goals Achieved</label>
-                    <textarea name="goals_achieved" id="goals_achieved" rows="4"
-                              placeholder="Describe which treatment goals were achieved and to what extent..."
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                </div>
-
-                <div>
-                    <label for="remaining_concerns" class="block text-sm font-medium text-gray-700">Remaining Concerns</label>
-                    <textarea name="remaining_concerns" id="remaining_concerns" rows="3"
-                              placeholder="Any ongoing issues or concerns that still need attention..."
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                </div>
-
-                <!-- Recommendations and Referrals -->
-                <div>
-                    <label for="recommendations" class="block text-sm font-medium text-gray-700">Recommendations</label>
-                    <textarea name="recommendations" id="recommendations" rows="3"
-                              placeholder="Recommendations for continued care, self-care, or future treatment..."
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                </div>
-
-                <div>
-                    <label for="referrals_provided" class="block text-sm font-medium text-gray-700">Referrals Provided</label>
-                    <textarea name="referrals_provided" id="referrals_provided" rows="3"
-                              placeholder="Details of any referrals made to other services or professionals..."
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                </div>
-
-                <!-- Follow-up -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="flex items-center">
-                        <input type="checkbox" name="follow_up_needed" id="follow_up_needed" 
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="follow_up_needed" class="ml-2 block text-sm text-gray-900">
-                            Follow-up needed
-                        </label>
-                    </div>
-                    <div>
-                        <label for="client_satisfaction" class="block text-sm font-medium text-gray-700">Client Satisfaction (1-10)</label>
-                        <select name="client_satisfaction" id="client_satisfaction" 
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            {% for i in range(1, 11) %}
-                            <option value="{{ i }}" {% if i == 8 %}selected{% endif %}>{{ i }}</option>
-                            {% endfor %}
-                        </select>
+            <form method="POST" class="space-y-8">
+                
+                <!-- Section 1: Exit Details -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Exit Details</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="exit_date" class="block text-sm font-medium text-gray-700">Exit Date*</label>
+                            <input type="date" name="exit_date" id="exit_date" required 
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="reason_for_exit" class="block text-sm font-medium text-gray-700">Reason for Exit*</label>
+                            <select name="reason_for_exit" id="reason_for_exit" required 
+                                    class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">Select reason...</option>
+                                <option value="COMPLETED">Treatment Successfully Completed</option>
+                                <option value="REFERRED">Referred to Other Services</option>
+                                <option value="DROPPED_OUT">Client Dropped Out</option>
+                                <option value="MOVED">Client Relocated/Moved</option>
+                                <option value="FAMILY_REQUEST">Family Request</option>
+                                <option value="MEDICAL_REASONS">Medical Reasons</option>
+                                <option value="BEHAVIORAL_ISSUES">Behavioral Issues</option>
+                                <option value="OTHER">Other (Specify in comments)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label for="follow_up_plan" class="block text-sm font-medium text-gray-700">Follow-up Plan</label>
-                    <textarea name="follow_up_plan" id="follow_up_plan" rows="3"
-                              placeholder="If follow-up is needed, describe the plan and timeline..."
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                </div>
+                <!-- Section 2: Treatment Outcomes -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Treatment Outcomes</h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="goals_achieved" class="block text-sm font-medium text-gray-700">Treatment Goals Achieved</label>
+                            <textarea name="goals_achieved" id="goals_achieved" rows="4"
+                                      placeholder="Describe which treatment goals were achieved and to what extent. Include specific outcomes, improvements, and milestones reached..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
 
-                <!-- Clinical Assessment -->
-                <div>
-                    <label for="counselor_assessment" class="block text-sm font-medium text-gray-700">Counselor's Final Assessment</label>
-                    <textarea name="counselor_assessment" id="counselor_assessment" rows="4"
-                              placeholder="Clinical assessment of client's progress and current status..."
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
-                </div>
+                        <div>
+                            <label for="remaining_concerns" class="block text-sm font-medium text-gray-700">Remaining Concerns</label>
+                            <textarea name="remaining_concerns" id="remaining_concerns" rows="3"
+                                      placeholder="Any ongoing issues, concerns, or areas that still need attention or monitoring..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="risk_level_at_exit" class="block text-sm font-medium text-gray-700">Risk Level at Exit</label>
-                        <select name="risk_level_at_exit" id="risk_level_at_exit" 
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                            <option value="LOW">Low</option>
-                            <option value="MODERATE">Moderate</option>
-                            <option value="HIGH">High</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="final_diagnosis" class="block text-sm font-medium text-gray-700">Final Diagnosis</label>
-                        <input type="text" name="final_diagnosis" id="final_diagnosis" 
-                               placeholder="Final clinical diagnosis if applicable"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                </div>
-
-                <!-- Safety and Documentation -->
-                <div class="space-y-4">
-                    <div class="flex items-center">
-                        <input type="checkbox" name="safety_plan_provided" id="safety_plan_provided" 
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="safety_plan_provided" class="ml-2 block text-sm text-gray-900">
-                            Safety plan provided to client
-                        </label>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" name="emergency_contacts_updated" id="emergency_contacts_updated" 
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="emergency_contacts_updated" class="ml-2 block text-sm text-gray-900">
-                            Emergency contacts updated
-                        </label>
-                    </div>
-                    <div class="flex items-center">
-                        <input type="checkbox" name="supervisor_signature" id="supervisor_signature" 
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                        <label for="supervisor_signature" class="ml-2 block text-sm text-gray-900">
-                            Supervisor signature obtained
-                        </label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="treatment_completion" class="block text-sm font-medium text-gray-700">Treatment Completion Status</label>
+                                <select name="treatment_completion" id="treatment_completion" 
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="FULLY_COMPLETED">Fully Completed (100%)</option>
+                                    <option value="MOSTLY_COMPLETED">Mostly Completed (75-99%)</option>
+                                    <option value="PARTIALLY_COMPLETED">Partially Completed (50-74%)</option>
+                                    <option value="MINIMALLY_COMPLETED">Minimally Completed (25-49%)</option>
+                                    <option value="NOT_COMPLETED">Not Completed (&lt;25%)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="client_satisfaction" class="block text-sm font-medium text-gray-700">Client Satisfaction Rating</label>
+                                <select name="client_satisfaction" id="client_satisfaction" 
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Not assessed</option>
+                                    {% for i in range(1, 11) %}
+                                    <option value="{{ i }}" {% if i == 8 %}selected{% endif %}>{{ i }} - {% if i <= 3 %}Very Poor{% elif i <= 5 %}Poor{% elif i <= 7 %}Good{% elif i <= 9 %}Very Good{% else %}Excellent{% endif %}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Treatment Summary -->
-                <div>
-                    <label for="treatment_summary" class="block text-sm font-medium text-gray-700">Treatment Summary</label>
-                    <textarea name="treatment_summary" id="treatment_summary" rows="4"
-                              placeholder="Overall summary of the treatment provided and outcomes achieved..."
-                              class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <!-- Section 3: Clinical Assessment -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Clinical Assessment</h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="counselor_assessment" class="block text-sm font-medium text-gray-700">Counselor's Final Assessment</label>
+                            <textarea name="counselor_assessment" id="counselor_assessment" rows="4"
+                                      placeholder="Comprehensive clinical assessment of client's progress, current mental health status, coping mechanisms, and overall functioning..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="risk_level_at_exit" class="block text-sm font-medium text-gray-700">Risk Level at Exit*</label>
+                                <select name="risk_level_at_exit" id="risk_level_at_exit" required
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="LOW">Low Risk - Stable and functioning well</option>
+                                    <option value="MODERATE">Moderate Risk - Some concerns but manageable</option>
+                                    <option value="HIGH">High Risk - Ongoing significant concerns</option>
+                                    <option value="CRITICAL">Critical Risk - Immediate intervention needed</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="final_diagnosis" class="block text-sm font-medium text-gray-700">Final Clinical Diagnosis</label>
+                                <input type="text" name="final_diagnosis" id="final_diagnosis" 
+                                       placeholder="DSM-5 diagnosis or clinical impression"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="treatment_summary" class="block text-sm font-medium text-gray-700">Treatment Summary</label>
+                            <textarea name="treatment_summary" id="treatment_summary" rows="4"
+                                      placeholder="Overall summary of treatment provided, therapeutic interventions used, client's response to treatment, and key outcomes achieved..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Counselor Info -->
-                <div>
-                    <label for="counselor_name" class="block text-sm font-medium text-gray-700">Counselor Name*</label>
-                    <input type="text" name="counselor_name" id="counselor_name" required 
-                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                <!-- Section 4: Recommendations and Referrals -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Recommendations and Referrals</h3>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="recommendations" class="block text-sm font-medium text-gray-700">Clinical Recommendations</label>
+                            <textarea name="recommendations" id="recommendations" rows="4"
+                                      placeholder="Recommendations for continued care, self-care strategies, lifestyle changes, medication compliance, etc..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+
+                        <div>
+                            <label for="referrals_provided" class="block text-sm font-medium text-gray-700">Referrals Made</label>
+                            <textarea name="referrals_provided" id="referrals_provided" rows="3"
+                                      placeholder="Details of referrals to other professionals, services, or programs (include contact information and reason for referral)..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+
+                        <div class="space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Referral Types (Check all that apply)</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="psychiatrist" id="ref_psychiatrist" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_psychiatrist" class="ml-2 block text-sm text-gray-900">Psychiatrist</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="psychologist" id="ref_psychologist" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_psychologist" class="ml-2 block text-sm text-gray-900">Psychologist</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="social_services" id="ref_social" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_social" class="ml-2 block text-sm text-gray-900">Social Services</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="medical_doctor" id="ref_medical" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_medical" class="ml-2 block text-sm text-gray-900">Medical Doctor</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="educational_support" id="ref_education" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_education" class="ml-2 block text-sm text-gray-900">Educational Support</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="vocational_training" id="ref_vocational" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_vocational" class="ml-2 block text-sm text-gray-900">Vocational Training</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="support_groups" id="ref_support" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_support" class="ml-2 block text-sm text-gray-900">Support Groups</label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="referral_types" value="other_organizations" id="ref_other" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="ref_other" class="ml-2 block text-sm text-gray-900">Other Organizations</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Follow-up Planning -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Follow-up Planning</h3>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-center">
+                            <input type="checkbox" name="follow_up_needed" id="follow_up_needed" 
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                            <label for="follow_up_needed" class="ml-2 block text-sm font-medium text-gray-900">
+                                Follow-up contact required
+                            </label>
+                        </div>
+
+                        <div>
+                            <label for="follow_up_plan" class="block text-sm font-medium text-gray-700">Follow-up Plan Details</label>
+                            <textarea name="follow_up_plan" id="follow_up_plan" rows="3"
+                                      placeholder="If follow-up is needed, describe the plan, timeline, frequency, and responsible party..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="follow_up_frequency" class="block text-sm font-medium text-gray-700">Follow-up Frequency</label>
+                                <select name="follow_up_frequency" id="follow_up_frequency" 
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Not applicable</option>
+                                    <option value="WEEKLY">Weekly</option>
+                                    <option value="BIWEEKLY">Bi-weekly</option>
+                                    <option value="MONTHLY">Monthly</option>
+                                    <option value="QUARTERLY">Quarterly</option>
+                                    <option value="AS_NEEDED">As needed</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="follow_up_duration" class="block text-sm font-medium text-gray-700">Follow-up Duration</label>
+                                <select name="follow_up_duration" id="follow_up_duration" 
+                                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Not applicable</option>
+                                    <option value="1_MONTH">1 Month</option>
+                                    <option value="3_MONTHS">3 Months</option>
+                                    <option value="6_MONTHS">6 Months</option>
+                                    <option value="1_YEAR">1 Year</option>
+                                    <option value="ONGOING">Ongoing</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 6: Safety and Documentation -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Safety Planning and Documentation</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="space-y-3">
+                            <label class="block text-sm font-medium text-gray-700">Safety Measures Completed</label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="safety_plan_provided" id="safety_plan_provided" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="safety_plan_provided" class="ml-2 block text-sm text-gray-900">
+                                        Safety plan provided to client
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="emergency_contacts_updated" id="emergency_contacts_updated" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="emergency_contacts_updated" class="ml-2 block text-sm text-gray-900">
+                                        Emergency contacts verified and updated
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="crisis_resources_provided" id="crisis_resources_provided" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="crisis_resources_provided" class="ml-2 block text-sm text-gray-900">
+                                        Crisis intervention resources provided
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="medication_instructions" id="medication_instructions" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="medication_instructions" class="ml-2 block text-sm text-gray-900">
+                                        Medication instructions reviewed
+                                    </label>
+                                </div>
+                                <div class="flex items-center">
+                                    <input type="checkbox" name="supervisor_signature" id="supervisor_signature" 
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                    <label for="supervisor_signature" class="ml-2 block text-sm text-gray-900">
+                                        Supervisor review and signature obtained
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="safety_concerns" class="block text-sm font-medium text-gray-700">Current Safety Concerns</label>
+                            <textarea name="safety_concerns" id="safety_concerns" rows="3"
+                                      placeholder="Any ongoing safety concerns, risk factors, or warning signs that should be monitored..."
+                                      class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 7: Counselor Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Counselor Information</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="counselor_name" class="block text-sm font-medium text-gray-700">Primary Counselor Name*</label>
+                            <input type="text" name="counselor_name" id="counselor_name" required 
+                                   placeholder="Full name of primary counselor"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="counselor_title" class="block text-sm font-medium text-gray-700">Title/Credentials</label>
+                            <input type="text" name="counselor_title" id="counselor_title" 
+                                   placeholder="e.g., LCSW, MA, PhD"
+                                   class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <label for="additional_notes" class="block text-sm font-medium text-gray-700">Additional Notes/Comments</label>
+                        <textarea name="additional_notes" id="additional_notes" rows="3"
+                                  placeholder="Any additional information, special considerations, or notes relevant to this case..."
+                                  class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                    </div>
                 </div>
 
                 <!-- Submit Button -->
-                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                <div class="flex justify-end space-x-3 pt-6">
                     <a href="{{ url_for('client_counselling_records', client_id=client.id) }}" 
-                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                       class="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
                         Cancel
                     </a>
                     <button type="submit" 
-                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            class="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                         Complete Exit Form
                     </button>
                 </div>
@@ -208,6 +376,35 @@
     document.addEventListener('DOMContentLoaded', function() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('exit_date').value = today;
+        
+        // Toggle follow-up plan visibility based on checkbox
+        const followUpCheckbox = document.getElementById('follow_up_needed');
+        const followUpPlan = document.getElementById('follow_up_plan');
+        const followUpFrequency = document.getElementById('follow_up_frequency');
+        const followUpDuration = document.getElementById('follow_up_duration');
+        
+        followUpCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                followUpPlan.disabled = false;
+                followUpFrequency.disabled = false;
+                followUpDuration.disabled = false;
+                followUpPlan.focus();
+            } else {
+                followUpPlan.disabled = true;
+                followUpFrequency.disabled = true;
+                followUpDuration.disabled = true;
+                followUpPlan.value = '';
+                followUpFrequency.value = '';
+                followUpDuration.value = '';
+            }
+        });
+        
+        // Initially disable follow-up fields if checkbox is not checked
+        if (!followUpCheckbox.checked) {
+            followUpPlan.disabled = true;
+            followUpFrequency.disabled = true;
+            followUpDuration.disabled = true;
+        }
     });
 </script>
 {% endblock %}
