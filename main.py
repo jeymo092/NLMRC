@@ -2412,38 +2412,72 @@ def backup_database():
     import shutil, os
     from flask import send_file
     from io import BytesIO
+    import sqlite3
     
     try:
         # Get the absolute path to the database file
         db_path = os.path.abspath('mwangaza.db')
         
-        # Check if database file exists
+        # Force database initialization if it doesn't exist
         if not os.path.exists(db_path):
+            print("🔧 Database file not found, initializing...")
             # Force database creation with current app context
-            with app.app_context():
-                db.create_all()
-                # Add some test data to ensure database is properly initialized
-                if not User.query.first():
-                    create_admin_user()
-                db.session.commit()
-                
-            # Check again after creation attempt
-            if not os.path.exists(db_path):
-                flash('Database file could not be created! The database may not be properly initialized.')
+            db.create_all()
+            # Ensure admin user exists
+            if not User.query.first():
+                create_admin_user()
+            db.session.commit()
+            print(f"✅ Database created at: {db_path}")
+        
+        # Double-check the file exists after creation
+        if not os.path.exists(db_path):
+            flash('Database file could not be created! Please check file permissions and try again.')
+            return redirect(url_for('manage_users'))
+        
+        # Verify the file is not empty and is a valid SQLite database
+        file_size = os.path.getsize(db_path)
+        if file_size == 0:
+            print("⚠️ Database file is empty, re-initializing...")
+            # Re-initialize if file is empty
+            db.create_all()
+            if not User.query.first():
+                create_admin_user()
+            db.session.commit()
+            
+            # Check file size again
+            file_size = os.path.getsize(db_path)
+            if file_size == 0:
+                flash('Database file could not be properly initialized!')
                 return redirect(url_for('manage_users'))
         
-        # Verify database file is not empty and is a valid SQLite database
+        # Test database connectivity and structure
         try:
-            import sqlite3
             test_conn = sqlite3.connect(db_path)
             cursor = test_conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
             tables = cursor.fetchall()
-            test_conn.close()
             
             if not tables:
-                flash('Database file exists but appears to be empty or corrupted.')
-                return redirect(url_for('manage_users'))
+                test_conn.close()
+                print("⚠️ Database has no tables, re-initializing...")
+                # Re-initialize empty database
+                db.create_all()
+                if not User.query.first():
+                    create_admin_user()
+                db.session.commit()
+                
+                # Test again
+                test_conn = sqlite3.connect(db_path)
+                cursor = test_conn.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                tables = cursor.fetchall()
+                
+                if not tables:
+                    test_conn.close()
+                    flash('Database could not be properly initialized!')
+                    return redirect(url_for('manage_users'))
+            
+            test_conn.close()
                 
         except sqlite3.Error as e:
             flash(f'Database file appears to be corrupted: {str(e)}')
