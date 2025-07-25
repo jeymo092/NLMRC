@@ -2209,16 +2209,121 @@ def delete_client(client_id):
 
     return redirect(url_for('dashboard'))
 
+@app.route('/import_database', methods=['GET', 'POST'])
+@login_required
+def import_database():
+    # Only Admin can import database
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can import database.')
+        return redirect(url_for('manage_users'))
+
+    if request.method == 'POST':
+        import shutil, os
+        from werkzeug.utils import secure_filename
+        
+        try:
+            # Check if file was uploaded
+            if 'database_file' not in request.files:
+                flash('No file selected for upload.')
+                return redirect(url_for('import_database'))
+            
+            file = request.files['database_file']
+            
+            if file.filename == '':
+                flash('No file selected for upload.')
+                return redirect(url_for('import_database'))
+            
+            # Validate file extension
+            if not file.filename.lower().endswith('.db'):
+                flash('Invalid file type. Please upload a .db file.')
+                return redirect(url_for('import_database'))
+            
+            # Secure the filename
+            filename = secure_filename(file.filename)
+            
+            # Create temporary upload path
+            temp_upload_path = os.path.abspath(f'temp_import_{filename}')
+            
+            # Save uploaded file temporarily
+            file.save(temp_upload_path)
+            
+            # Validate it's a valid SQLite database
+            import sqlite3
+            try:
+                test_conn = sqlite3.connect(temp_upload_path)
+                # Try to read basic info from the database
+                cursor = test_conn.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                tables = cursor.fetchall()
+                test_conn.close()
+                
+                # Check if it has the expected New Life Mwangaza tables
+                expected_tables = ['user', 'client', 'home_visit', 'after_care']
+                table_names = [table[0] for table in tables]
+                
+                if not any(table in table_names for table in expected_tables):
+                    flash('This does not appear to be a valid New Life Mwangaza database backup.')
+                    os.remove(temp_upload_path)
+                    return redirect(url_for('import_database'))
+                    
+            except sqlite3.Error as e:
+                flash(f'Invalid SQLite database file: {str(e)}')
+                if os.path.exists(temp_upload_path):
+                    os.remove(temp_upload_path)
+                return redirect(url_for('import_database'))
+            
+            # Create backup of current database before replacement
+            current_db_path = os.path.abspath('mwangaza.db')
+            if os.path.exists(current_db_path):
+                backup_dir = 'backups'
+                os.makedirs(backup_dir, exist_ok=True)
+                pre_import_backup = os.path.join(backup_dir, f'pre_import_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db')
+                shutil.copy2(current_db_path, pre_import_backup)
+                print(f"📦 Created pre-import backup: {pre_import_backup}")
+            
+            # Replace current database with uploaded one
+            shutil.move(temp_upload_path, current_db_path)
+            
+            # Verify the import was successful
+            try:
+                test_conn = sqlite3.connect(current_db_path)
+                cursor = test_conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM user")
+                user_count = cursor.fetchone()[0]
+                cursor.execute("SELECT COUNT(*) FROM client")
+                client_count = cursor.fetchone()[0]
+                test_conn.close()
+                
+                flash(f'✅ Database imported successfully! Found {user_count} users and {client_count} clients.')
+                print(f"✅ Database import successful: {user_count} users, {client_count} clients")
+                
+                # You may need to restart the application for changes to take full effect
+                flash('Note: You may need to refresh the page or restart the application to see all changes.')
+                
+            except Exception as e:
+                flash(f'Database imported but there may be issues: {str(e)}')
+            
+            return redirect(url_for('manage_users'))
+            
+        except Exception as e:
+            # Clean up temporary file if it exists
+            if 'temp_upload_path' in locals() and os.path.exists(temp_upload_path):
+                os.remove(temp_upload_path)
+            flash(f'Error importing database: {str(e)}')
+            return redirect(url_for('import_database'))
+    
+    return render_template('import_database.html')
+
 @app.route('/backup_database')
 @login_required
 def backup_database():
     # Only Admin can backup database
     if current_user.department != 'admin':
         flash('Access denied. Only Admin can backup the database.')
-        return redirect(url_for('dashboard'))
+        return redirect(url_for('manage_users'))
 
     import shutil, os
-    from flask import send_file
+    from flask import send_file, after_this_request
     
     try:
         # Get the absolute path to the database file
@@ -2237,10 +2342,15 @@ def backup_database():
             else:
                 flash('Database file was missing but has been recreated.')
         
-        # Create a backup copy with absolute path
-        backup_filename = f"mwangaza_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-        backup_path = os.path.abspath(backup_filename)
+        # Create backups directory if it doesn't exist
+        backup_dir = 'backups'
+        os.makedirs(backup_dir, exist_ok=True)
         
+        # Create a backup copy with timestamp
+        backup_filename = f"New_Life_Mwangaza_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+        backup_path = os.path.join(backup_dir, backup_filename)
+        
+        # Copy the database file to backup location
         shutil.copy2(db_path, backup_path)
         
         # Verify the backup was created
@@ -2248,8 +2358,51 @@ def backup_database():
             flash('Backup file could not be created!')
             return redirect(url_for('manage_users'))
         
-        flash(f'Database backup created successfully: {backup_filename}')
-        return send_file(backup_path, as_attachment=True, download_name=backup_filename)
+        # Function to clean up the backup file after download
+        @after_this_request
+        def cleanup_backup(response):
+            try:
+                # Keep the backup in the backups folder but create a temporary copy for download
+                temp_backup_path = os.path.abspath(backup_filename)
+                if os.path.exists(temp_backup_path):
+                    os.remove(temp_backup_path)
+            except Exception as e:
+                print(f"Error cleaning up temporary backup file: {e}")
+            return response
+        
+        # Create a temporary copy for download (in root directory for easy access)
+        temp_download_path = os.path.abspath(backup_filename)
+        shutil.copy2(backup_path, temp_download_path)
+        
+        # Clean up old backups (keep only last 10)
+        try:
+            backup_files = [f for f in os.listdir(backup_dir) if f.startswith('New_Life_Mwangaza_Database_Backup_') and f.endswith('.db')]
+            backup_files.sort(reverse=True)
+            for old_backup in backup_files[10:]:  # Keep only 10 most recent
+                old_backup_path = os.path.join(backup_dir, old_backup)
+                if os.path.exists(old_backup_path):
+                    os.remove(old_backup_path)
+        except Exception as e:
+            print(f"Error cleaning up old backups: {e}")
+        
+        # Add metadata comment to the database file for identification
+        try:
+            import sqlite3
+            temp_conn = sqlite3.connect(temp_download_path)
+            temp_conn.execute("PRAGMA user_version = 1")  # Mark as New Life Mwangaza backup
+            temp_conn.close()
+        except Exception as e:
+            print(f"Error adding metadata to backup: {e}")
+        
+        print(f"✅ Database backup created: {backup_path}")
+        flash(f'Database backup created successfully! Download will start automatically.')
+        
+        return send_file(
+            temp_download_path, 
+            as_attachment=True, 
+            download_name=backup_filename,
+            mimetype='application/x-sqlite3'
+        )
         
     except Exception as e:
         flash(f'Error creating database backup: {str(e)}')
