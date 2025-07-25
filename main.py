@@ -2423,30 +2423,29 @@ def backup_database():
             print("🔧 Initializing database for backup...")
             
             # Force database initialization using SQLAlchemy
-            with app.app_context():
-                try:
-                    # Create all tables
-                    db.create_all()
-                    
-                    # Ensure admin user exists
-                    admin_user = User.query.filter_by(username='admin').first()
-                    if not admin_user:
-                        admin_user = User(
-                            username='admin',
-                            full_name='System Administrator', 
-                            department='admin'
-                        )
-                        admin_user.set_password('admin123')
-                        db.session.add(admin_user)
-                        db.session.commit()
-                        print("✅ Admin user created")
-                    
-                    print(f"✅ Database initialized at: {db_path}")
-                    
-                except Exception as init_error:
-                    print(f"❌ SQLAlchemy initialization failed: {init_error}")
-                    flash('Database initialization failed. Please try again.')
-                    return redirect(url_for('manage_users'))
+            try:
+                # Create all tables
+                db.create_all()
+                
+                # Ensure admin user exists
+                admin_user = User.query.filter_by(username='admin').first()
+                if not admin_user:
+                    admin_user = User(
+                        username='admin',
+                        full_name='System Administrator', 
+                        department='admin'
+                    )
+                    admin_user.set_password('admin123')
+                    db.session.add(admin_user)
+                    db.session.commit()
+                    print("✅ Admin user created")
+                
+                print(f"✅ Database initialized at: {db_path}")
+                
+            except Exception as init_error:
+                print(f"❌ SQLAlchemy initialization failed: {init_error}")
+                flash('Database initialization failed. Please try again.')
+                return redirect(url_for('manage_users'))
         
         # Verify the database file now exists with content
         if not os.path.exists(db_path):
@@ -2510,6 +2509,7 @@ def backup_database():
                 
             print(f"✅ Database backup created: {backup_path}")
             print(f"📊 Backup size: {len(db_data)} bytes")
+            print(f"📊 Contains: {user_count} users, {client_count} clients")
             
         except Exception as read_error:
             flash(f'Could not read database file: {str(read_error)}')
@@ -2519,9 +2519,9 @@ def backup_database():
         backup_buffer = BytesIO(db_data)
         backup_buffer.seek(0)
         
-        # Show success message with statistics
-        flash(f'✅ Database backup created successfully! Contains {user_count} users and {client_count} clients. File size: {len(db_data):,} bytes.')
+        print(f"🔗 Serving backup file for download: {backup_filename}")
         
+        # Return the file for download
         return send_file(
             backup_buffer,
             as_attachment=True,
