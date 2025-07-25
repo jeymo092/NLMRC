@@ -1,0 +1,90 @@
+OperationalError
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: soap_note.session_location
+[SQL: SELECT soap_note.id AS soap_note_id, soap_note.client_id AS soap_note_client_id, soap_note.session_date AS soap_note_session_date, soap_note.session_type AS soap_note_session_type, soap_note.session_location AS soap_note_session_location, soap_note.subjective AS soap_note_subjective, soap_note.objective AS soap_note_objective, soap_note.assessment AS soap_note_assessment, soap_note."plan" AS soap_note_plan, soap_note.session_duration AS soap_note_session_duration, soap_note.attendance AS soap_note_attendance, soap_note.mood_rating AS soap_note_mood_rating, soap_note.anxiety_level AS soap_note_anxiety_level, soap_note.depression_level AS soap_note_depression_level, soap_note.progress_rating AS soap_note_progress_rating, soap_note.functioning_level AS soap_note_functioning_level, soap_note.appearance AS soap_note_appearance, soap_note.behavior AS soap_note_behavior, soap_note.speech AS soap_note_speech, soap_note.mood_affect AS soap_note_mood_affect, soap_note.thought_process AS soap_note_thought_process, soap_note.thought_content AS soap_note_thought_content, soap_note.perception AS soap_note_perception, soap_note.cognition AS soap_note_cognition, soap_note.insight AS soap_note_insight, soap_note.judgment AS soap_note_judgment, soap_note.suicide_risk AS soap_note_suicide_risk, soap_note.homicide_risk AS soap_note_homicide_risk, soap_note.self_harm_risk AS soap_note_self_harm_risk, soap_note.substance_use AS soap_note_substance_use, soap_note.interventions_used AS soap_note_interventions_used, soap_note.client_response AS soap_note_client_response, soap_note.homework_assigned AS soap_note_homework_assigned, soap_note.homework_review AS soap_note_homework_review, soap_note.counselor_name AS soap_note_counselor_name, soap_note.supervisor_consultation AS soap_note_supervisor_consultation, soap_note.next_session_date AS soap_note_next_session_date, soap_note.crisis_indicators AS soap_note_crisis_indicators, soap_note.referrals_made AS soap_note_referrals_made, soap_note.treatment_goals_addressed AS soap_note_treatment_goals_addressed, soap_note.barriers_to_progress AS soap_note_barriers_to_progress, soap_note.strengths_utilized AS soap_note_strengths_utilized, soap_note."createdAt" AS "soap_note_createdAt", soap_note."createdBy" AS "soap_note_createdBy" 
+FROM soap_note JOIN client ON client.id = soap_note.client_id 
+WHERE client.status = ? ORDER BY soap_note.session_date DESC
+ LIMIT ? OFFSET ?]
+[parameters: ('ACTIVE', 10, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+
+Traceback (most recent call last)
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+self.dialect.do_execute(
+^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The above exception was the direct cause of the following exception:
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1536, in __call__
+return self.wsgi_app(environ, start_response)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1514, in wsgi_app
+response = self.handle_exception(e)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 1511, in wsgi_app
+response = self.full_dispatch_request()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 919, in full_dispatch_request
+rv = self.handle_user_exception(e)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 917, in full_dispatch_request
+rv = self.dispatch_request()
+     ^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask/app.py", line 902, in dispatch_request
+return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/flask_login/utils.py", line 290, in decorated_view
+return current_app.ensure_sync(func)(*args, **kwargs)
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/main.py", line 2481, in counselling
+recent_soap_notes = SoapNote.query.join(Client).filter(Client.status == 'ACTIVE').order_by(SoapNote.session_date.desc()).limit(10).all()
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2704, in all
+return self._iter().all()  # type: ignore
+       ^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/query.py", line 2857, in _iter
+result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                              
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2365, in execute
+return self._execute_internal(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/session.py", line 2251, in _execute_internal
+result: Result[Any] = compile_state_cls.orm_execute_statement(
+                      
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/orm/context.py", line 306, in orm_execute_statement
+result = conn.execute(
+         
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1415, in execute
+return meth(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/sql/elements.py", line 523, in _execute_on_connection
+return connection._execute_clauseelement(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1637, in _execute_clauseelement
+ret = self._execute_context(
+      
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1842, in _execute_context
+return self._exec_single_context(
+       
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1982, in _exec_single_context
+self._handle_dbapi_exception(
+^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 2351, in _handle_dbapi_exception
+raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/base.py", line 1963, in _exec_single_context
+self.dialect.do_execute(
+^
+File "/home/runner/workspace/.pythonlibs/lib/python3.11/site-packages/sqlalchemy/engine/default.py", line 943, in do_execute
+cursor.execute(statement, parameters)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlalchemy.exc.OperationalError: (sqlite3.OperationalError) no such column: soap_note.session_location
+[SQL: SELECT soap_note.id AS soap_note_id, soap_note.client_id AS soap_note_client_id, soap_note.session_date AS soap_note_session_date, soap_note.session_type AS soap_note_session_type, soap_note.session_location AS soap_note_session_location, soap_note.subjective AS soap_note_subjective, soap_note.objective AS soap_note_objective, soap_note.assessment AS soap_note_assessment, soap_note."plan" AS soap_note_plan, soap_note.session_duration AS soap_note_session_duration, soap_note.attendance AS soap_note_attendance, soap_note.mood_rating AS soap_note_mood_rating, soap_note.anxiety_level AS soap_note_anxiety_level, soap_note.depression_level AS soap_note_depression_level, soap_note.progress_rating AS soap_note_progress_rating, soap_note.functioning_level AS soap_note_functioning_level, soap_note.appearance AS soap_note_appearance, soap_note.behavior AS soap_note_behavior, soap_note.speech AS soap_note_speech, soap_note.mood_affect AS soap_note_mood_affect, soap_note.thought_process AS soap_note_thought_process, soap_note.thought_content AS soap_note_thought_content, soap_note.perception AS soap_note_perception, soap_note.cognition AS soap_note_cognition, soap_note.insight AS soap_note_insight, soap_note.judgment AS soap_note_judgment, soap_note.suicide_risk AS soap_note_suicide_risk, soap_note.homicide_risk AS soap_note_homicide_risk, soap_note.self_harm_risk AS soap_note_self_harm_risk, soap_note.substance_use AS soap_note_substance_use, soap_note.interventions_used AS soap_note_interventions_used, soap_note.client_response AS soap_note_client_response, soap_note.homework_assigned AS soap_note_homework_assigned, soap_note.homework_review AS soap_note_homework_review, soap_note.counselor_name AS soap_note_counselor_name, soap_note.supervisor_consultation AS soap_note_supervisor_consultation, soap_note.next_session_date AS soap_note_next_session_date, soap_note.crisis_indicators AS soap_note_crisis_indicators, soap_note.referrals_made AS soap_note_referrals_made, soap_note.treatment_goals_addressed AS soap_note_treatment_goals_addressed, soap_note.barriers_to_progress AS soap_note_barriers_to_progress, soap_note.strengths_utilized AS soap_note_strengths_utilized, soap_note."createdAt" AS "soap_note_createdAt", soap_note."createdBy" AS "soap_note_createdBy"
+FROM soap_note JOIN client ON client.id = soap_note.client_id
+WHERE client.status = ? ORDER BY soap_note.session_date DESC
+LIMIT ? OFFSET ?]
+[parameters: ('ACTIVE', 10, 0)]
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+The debugger caught an exception in your WSGI application. You can now look at the traceback which led to the error.
+To switch between the interactive traceback and the plaintext one, you can click on the "Traceback" headline. From the text traceback you can also create a paste of it.
+
