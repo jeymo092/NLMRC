@@ -3090,11 +3090,55 @@ def create_admin_user():
 if __name__ == '__main__':
     with app.app_context():
         try:
-            # Create tables if they don't exist
+            # Check if we need to recreate tables due to model changes
+            import sqlite3
+            import os
+            
+            db_path = 'mwangaza.db'
+            needs_recreation = False
+            
+            if os.path.exists(db_path):
+                # Check if the soap_note table has the required columns
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                
+                try:
+                    # Get current table schema
+                    cursor.execute("PRAGMA table_info(soap_note)")
+                    columns = [row[1] for row in cursor.fetchall()]
+                    
+                    # Check if critical new columns exist
+                    required_columns = ['session_location', 'appearance', 'behavior', 'speech', 
+                                      'mood_affect', 'thought_process', 'thought_content', 
+                                      'perception', 'cognition', 'insight', 'judgment']
+                    
+                    missing_columns = [col for col in required_columns if col not in columns]
+                    
+                    if missing_columns:
+                        print(f"🔄 Database schema update needed. Missing columns: {missing_columns}")
+                        needs_recreation = True
+                        
+                except sqlite3.OperationalError:
+                    # Table doesn't exist, needs creation
+                    needs_recreation = True
+                finally:
+                    conn.close()
+            
+            if needs_recreation:
+                print("🗑️  Dropping existing tables to recreate with updated schema...")
+                db.drop_all()
+                print("🔨 Creating tables with updated schema...")
+            
+            # Create tables if they don't exist or recreate if needed
             db.create_all()
             create_admin_user()
             print("✅ SQLite database tables created successfully!")
             print("🗄️  Database file: mwangaza.db")
+            
+            if needs_recreation:
+                print("⚠️  Note: Database was recreated. Previous data may have been lost.")
+                print("    Consider backing up your database before running the application.")
+                
         except Exception as e:
             print(f"❌ Database initialization error: {e}")
 
