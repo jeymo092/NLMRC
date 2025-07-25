@@ -2300,11 +2300,19 @@ def import_database():
             # Secure the filename
             filename = secure_filename(file.filename)
             
-            # Create temporary upload path
-            temp_upload_path = os.path.abspath(f'temp_import_{filename}')
+            # Create temporary upload path with unique name to avoid conflicts
+            import time
+            temp_upload_path = os.path.abspath(f'temp_import_{int(time.time())}_{filename}')
             
             # Save uploaded file temporarily
             file.save(temp_upload_path)
+            
+            # Check file size to ensure it's not empty
+            file_size = os.path.getsize(temp_upload_path)
+            if file_size == 0:
+                flash('Uploaded file is empty.')
+                os.remove(temp_upload_path)
+                return redirect(url_for('import_database'))
             
             # Validate it's a valid SQLite database
             import sqlite3
@@ -2314,16 +2322,32 @@ def import_database():
                 cursor = test_conn.cursor()
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
                 tables = cursor.fetchall()
-                test_conn.close()
                 
                 # Check if it has the expected New Life Mwangaza tables
-                expected_tables = ['user', 'client', 'home_visit', 'after_care']
+                expected_tables = ['user', 'client']  # Minimum required tables
                 table_names = [table[0] for table in tables]
                 
-                if not any(table in table_names for table in expected_tables):
-                    flash('This does not appear to be a valid New Life Mwangaza database backup.')
+                if not all(table in table_names for table in expected_tables):
+                    missing_tables = [table for table in expected_tables if table not in table_names]
+                    flash(f'This does not appear to be a valid New Life Mwangaza database backup. Missing tables: {", ".join(missing_tables)}')
+                    test_conn.close()
                     os.remove(temp_upload_path)
                     return redirect(url_for('import_database'))
+                
+                # Try to count records to ensure database has data structure
+                try:
+                    cursor.execute("SELECT COUNT(*) FROM user")
+                    user_count = cursor.fetchone()[0]
+                    cursor.execute("SELECT COUNT(*) FROM client")
+                    client_count = cursor.fetchone()[0]
+                    print(f"📊 Import file contains: {user_count} users, {client_count} clients")
+                except Exception as count_error:
+                    flash(f'Database structure appears invalid: {str(count_error)}')
+                    test_conn.close()
+                    os.remove(temp_upload_path)
+                    return redirect(url_for('import_database'))
+                
+                test_conn.close()
                     
             except sqlite3.Error as e:
                 flash(f'Invalid SQLite database file: {str(e)}')
@@ -2341,6 +2365,8 @@ def import_database():
                 print(f"📦 Created pre-import backup: {pre_import_backup}")
             
             # Replace current database with uploaded one
+            if os.path.exists(current_db_path):
+                os.remove(current_db_path)  # Remove old database first
             shutil.move(temp_upload_path, current_db_path)
             
             # Verify the import was successful
@@ -2356,19 +2382,21 @@ def import_database():
                 flash(f'✅ Database imported successfully! Found {user_count} users and {client_count} clients.')
                 print(f"✅ Database import successful: {user_count} users, {client_count} clients")
                 
-                # You may need to restart the application for changes to take full effect
-                flash('Note: You may need to refresh the page or restart the application to see all changes.')
+                # Clear the current user session to force re-login with new database
+                flash('Database imported successfully! Please log in again to continue.')
+                logout_user()
+                return redirect(url_for('login'))
                 
             except Exception as e:
                 flash(f'Database imported but there may be issues: {str(e)}')
-            
-            return redirect(url_for('manage_users'))
+                return redirect(url_for('manage_users'))
             
         except Exception as e:
             # Clean up temporary file if it exists
             if 'temp_upload_path' in locals() and os.path.exists(temp_upload_path):
                 os.remove(temp_upload_path)
             flash(f'Error importing database: {str(e)}')
+            print(f"❌ Database import error: {e}")
             return redirect(url_for('import_database'))
     
     return render_template('import_database.html')
@@ -2382,7 +2410,8 @@ def backup_database():
         return redirect(url_for('manage_users'))
 
     import shutil, os
-    from flask import send_file, after_this_request
+    from flask import send_file
+    from io import BytesIO
     
     try:
         # Get the absolute path to the database file
@@ -2393,13 +2422,32 @@ def backup_database():
             # Force database creation with current app context
             with app.app_context():
                 db.create_all()
+                # Add some test data to ensure database is properly initialized
+                if not User.query.first():
+                    create_admin_user()
+                db.session.commit()
                 
             # Check again after creation attempt
             if not os.path.exists(db_path):
                 flash('Database file could not be created! The database may not be properly initialized.')
                 return redirect(url_for('manage_users'))
-            else:
-                flash('Database file was missing but has been recreated.')
+        
+        # Verify database file is not empty and is a valid SQLite database
+        try:
+            import sqlite3
+            test_conn = sqlite3.connect(db_path)
+            cursor = test_conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            tables = cursor.fetchall()
+            test_conn.close()
+            
+            if not tables:
+                flash('Database file exists but appears to be empty or corrupted.')
+                return redirect(url_for('manage_users'))
+                
+        except sqlite3.Error as e:
+            flash(f'Database file appears to be corrupted: {str(e)}')
+            return redirect(url_for('manage_users'))
         
         # Create backups directory if it doesn't exist
         backup_dir = 'backups'
@@ -2412,26 +2460,18 @@ def backup_database():
         # Copy the database file to backup location
         shutil.copy2(db_path, backup_path)
         
-        # Verify the backup was created
+        # Verify the backup was created and is valid
         if not os.path.exists(backup_path):
             flash('Backup file could not be created!')
             return redirect(url_for('manage_users'))
         
-        # Function to clean up the backup file after download
-        @after_this_request
-        def cleanup_backup(response):
-            try:
-                # Keep the backup in the backups folder but create a temporary copy for download
-                temp_backup_path = os.path.abspath(backup_filename)
-                if os.path.exists(temp_backup_path):
-                    os.remove(temp_backup_path)
-            except Exception as e:
-                print(f"Error cleaning up temporary backup file: {e}")
-            return response
+        # Read the backup file into memory for download
+        with open(backup_path, 'rb') as f:
+            backup_data = f.read()
         
-        # Create a temporary copy for download (in root directory for easy access)
-        temp_download_path = os.path.abspath(backup_filename)
-        shutil.copy2(backup_path, temp_download_path)
+        # Create a BytesIO object from the backup data
+        backup_buffer = BytesIO(backup_data)
+        backup_buffer.seek(0)
         
         # Clean up old backups (keep only last 10)
         try:
@@ -2444,27 +2484,32 @@ def backup_database():
         except Exception as e:
             print(f"Error cleaning up old backups: {e}")
         
-        # Add metadata comment to the database file for identification
-        try:
-            import sqlite3
-            temp_conn = sqlite3.connect(temp_download_path)
-            temp_conn.execute("PRAGMA user_version = 1")  # Mark as New Life Mwangaza backup
-            temp_conn.close()
-        except Exception as e:
-            print(f"Error adding metadata to backup: {e}")
-        
         print(f"✅ Database backup created: {backup_path}")
-        flash(f'Database backup created successfully! Download will start automatically.')
+        print(f"📊 Backup file size: {len(backup_data)} bytes")
+        
+        # Get database statistics for the flash message
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM client")
+            client_count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM user")
+            user_count = cursor.fetchone()[0]
+            conn.close()
+            flash(f'Database backup created successfully! Contains {client_count} clients and {user_count} users.')
+        except:
+            flash('Database backup created successfully!')
         
         return send_file(
-            temp_download_path, 
-            as_attachment=True, 
+            backup_buffer,
+            as_attachment=True,
             download_name=backup_filename,
             mimetype='application/x-sqlite3'
         )
         
     except Exception as e:
         flash(f'Error creating database backup: {str(e)}')
+        print(f"❌ Database backup error: {e}")
         return redirect(url_for('manage_users'))
 
 # Counselling Routes
