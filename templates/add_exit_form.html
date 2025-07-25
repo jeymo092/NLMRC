@@ -49,7 +49,6 @@
                     <div>
                         <label for="exit_date" class="block text-sm font-medium text-gray-700">Exit Date*</label>
                         <input type="date" name="exit_date" id="exit_date" required 
-                               value="{{ datetime.now().strftime('%Y-%m-%d') }}"
                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
@@ -203,4 +202,12 @@
         </div>
     </div>
 </div>
+
+<script>
+    // Set today's date as default for exit date
+    document.addEventListener('DOMContentLoaded', function() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('exit_date').value = today;
+    });
+</script>
 {% endblock %}
