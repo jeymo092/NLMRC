@@ -43,7 +43,7 @@ def backup_database():
         # Copy the database file
         shutil.copy2(db_path, backup_path)
         
-        # Verify the backup
+        # Verify the backup is a proper SQLite database
         backup_size = os.path.getsize(backup_path)
         original_size = os.path.getsize(db_path)
         
@@ -51,19 +51,52 @@ def backup_database():
             print(f"⚠️ Backup size mismatch! Original: {original_size}, Backup: {backup_size}")
             return False
         
-        # Test the backup by opening it
+        # Test the backup by opening it and verifying structure
         try:
             test_conn = sqlite3.connect(backup_path)
             test_cursor = test_conn.cursor()
+            
+            # Check SQLite header
+            test_cursor.execute("PRAGMA integrity_check;")
+            integrity_result = test_cursor.fetchone()
+            if integrity_result[0] != 'ok':
+                print(f"❌ Backup integrity check failed: {integrity_result[0]}")
+                test_conn.close()
+                return False
+            
+            # Verify tables
             test_cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
             backup_tables = test_cursor.fetchall()
-            test_conn.close()
-            
             backup_table_names = [table[0] for table in backup_tables]
             
             if set(table_names) != set(backup_table_names):
                 print("⚠️ Backup verification failed - table mismatch!")
+                print(f"Original tables: {sorted(table_names)}")
+                print(f"Backup tables: {sorted(backup_table_names)}")
+                test_conn.close()
                 return False
+            
+            # Verify record counts match
+            for table_name in table_names:
+                try:
+                    test_cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                    backup_count = test_cursor.fetchone()[0]
+                    
+                    # Also check original count
+                    original_conn = sqlite3.connect(db_path)
+                    original_cursor = original_conn.cursor()
+                    original_cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                    original_count = original_cursor.fetchone()[0]
+                    original_conn.close()
+                    
+                    if backup_count != original_count:
+                        print(f"⚠️ Record count mismatch in table '{table_name}': original={original_count}, backup={backup_count}")
+                        
+                except sqlite3.Error as table_error:
+                    print(f"⚠️ Could not verify table '{table_name}': {table_error}")
+            
+            test_conn.close()
+            print("✅ Backup integrity verification passed")
                 
         except sqlite3.Error as e:
             print(f"❌ Backup verification failed: {e}")

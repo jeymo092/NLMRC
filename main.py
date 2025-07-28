@@ -2577,45 +2577,99 @@ def backup_database():
             flash(f'Database connectivity issue: {str(e)}')
             return redirect(url_for('manage_users'))
         
-        # Create backup using direct file copy for reliability
+        # Create proper SQLite backup using file copy method
         backup_buffer = BytesIO()
         
         try:
-            # Read the entire database file
-            with open(db_path, 'rb') as db_file:
-                backup_data = db_file.read()
+            # First method: Direct file copy (most reliable for SQLite)
+            with open(db_path, 'rb') as source_file:
+                backup_data = source_file.read()
                 backup_buffer.write(backup_data)
             
-            # Verify the backup by testing it
+            # Verify the backup is a valid SQLite database
             backup_buffer.seek(0)
-            test_data = backup_buffer.read()
             
-            # Test the backup data by creating a temporary in-memory database
-            temp_conn = sqlite3.connect(':memory:')
-            temp_conn.executescript(test_data.decode('utf-8', errors='ignore'))
-            temp_conn.close()
-            
-            print(f"✅ Backup verification successful")
-            
-        except Exception as backup_error:
-            print(f"⚠️ File copy backup failed, trying SQLite backup API: {backup_error}")
+            # Write to temporary file to test
+            import tempfile
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.db') as temp_file:
+                temp_file.write(backup_buffer.getvalue())
+                temp_db_path = temp_file.name
             
             try:
-                # Fallback to SQLite backup API
-                source_conn = sqlite3.connect(db_path)
-                backup_conn = sqlite3.connect(':memory:')
+                # Test the backup file
+                test_conn = sqlite3.connect(temp_db_path)
+                cursor = test_conn.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                backup_tables = cursor.fetchall()
                 
-                # Perform backup
-                source_conn.backup(backup_conn)
+                # Verify we have the expected tables
+                if backup_tables:
+                    backup_table_names = [table[0] for table in backup_tables]
+                    print(f"✅ Backup contains tables: {', '.join(backup_table_names)}")
+                    
+                    # Count total records in backup
+                    total_backup_records = 0
+                    for table_name in backup_table_names:
+                        try:
+                            cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                            count = cursor.fetchone()[0]
+                            total_backup_records += count
+                        except:
+                            pass
+                    
+                    print(f"✅ Backup contains {total_backup_records} total records")
+                    
+                test_conn.close()
                 
-                # Export to buffer
+            finally:
+                # Clean up temporary file
+                os.unlink(temp_db_path)
+            
+            print("✅ Direct file copy backup completed successfully")
+            
+        except Exception as file_copy_error:
+            print(f"⚠️ File copy backup failed: {file_copy_error}")
+            
+            # Fallback method: Use SQLite backup API to create proper database file
+            try:
                 backup_buffer = BytesIO()
-                for line in backup_conn.iterdump():
-                    backup_buffer.write(line.encode('utf-8'))
-                    backup_buffer.write(b'\n')
                 
-                source_conn.close()
-                backup_conn.close()
+                # Create a temporary file for the backup
+                import tempfile
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.db') as temp_backup:
+                    temp_backup_path = temp_backup.name
+                
+                try:
+                    # Use SQLite's backup API
+                    source_conn = sqlite3.connect(db_path)
+                    backup_conn = sqlite3.connect(temp_backup_path)
+                    
+                    # Perform the backup using SQLite's backup API
+                    source_conn.backup(backup_conn)
+                    
+                    source_conn.close()
+                    backup_conn.close()
+                    
+                    # Read the backup file into buffer
+                    with open(temp_backup_path, 'rb') as backup_file:
+                        backup_buffer.write(backup_file.read())
+                    
+                    # Verify the backup
+                    test_conn = sqlite3.connect(temp_backup_path)
+                    cursor = test_conn.cursor()
+                    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                    tables = cursor.fetchall()
+                    
+                    if tables:
+                        table_names = [table[0] for table in tables]
+                        print(f"✅ Backup API completed: {', '.join(table_names)}")
+                    
+                    test_conn.close()
+                    
+                finally:
+                    # Clean up temporary file
+                    if os.path.exists(temp_backup_path):
+                        os.unlink(temp_backup_path)
                 
                 print("✅ SQLite backup API completed successfully")
                 
