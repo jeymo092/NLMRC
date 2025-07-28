@@ -425,8 +425,21 @@ def login():
             return render_template('login.html')
 
         try:
-            # Find user by username
-            user = User.query.filter_by(username=username).first()
+            # Find user by username with error handling for import issues
+            try:
+                user = User.query.filter_by(username=username).first()
+            except Exception as query_error:
+                print(f"⚠️ User query error: {query_error}")
+                # Try to refresh database connection
+                try:
+                    db.session.close()
+                    db.engine.dispose()
+                    user = User.query.filter_by(username=username).first()
+                    print("🔄 Database connection refreshed for login")
+                except Exception as refresh_error:
+                    print(f"⚠️ Database refresh failed: {refresh_error}")
+                    flash('Database connection error. Please try again or contact administrator.')
+                    return render_template('login.html')
             
             if user and user.check_password(password):
                 # Check if user's department matches selected department
@@ -2680,10 +2693,7 @@ def import_database():
                 try:
                     # Force complete database reconnection
                     with app.app_context():
-                        # Recreate metadata from new database
-                        db.metadata.reflect(bind=db.engine)
-                        
-                        # Test raw database access
+                        # Test raw database access first
                         import sqlite3
                         conn = sqlite3.connect('mwangaza.db')
                         cursor = conn.cursor()
@@ -2695,47 +2705,79 @@ def import_database():
                         
                         print(f"🔍 Direct SQLite verification: {actual_user_count} users, {actual_client_count} clients")
                         
-                        # Force SQLAlchemy to see the new data
-                        db.session.expire_all()
-                        db.session.commit()
+                        # Close all existing connections and clear metadata
+                        db.session.close()
+                        db.engine.dispose()
+                        db.metadata.clear()
                         
-                        # Verify ORM can now see the data
+                        # Wait a moment for connections to fully close
+                        import time
+                        time.sleep(0.5)
+                        
+                        # Create new engine with fresh connection
+                        from sqlalchemy import create_engine
+                        from sqlalchemy.orm import sessionmaker
+                        
+                        # Create a completely new session to test data access
+                        new_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+                        Session = sessionmaker(bind=new_engine)
+                        test_session = Session()
+                        
                         try:
-                            orm_client_count = Client.query.count()
-                            orm_user_count = User.query.count()
-                            print(f"🔍 Final ORM verification: {orm_user_count} users, {orm_client_count} clients")
+                            # Test with raw SQL first to ensure database is accessible
+                            result = test_session.execute(db.text("SELECT COUNT(*) FROM user"))
+                            test_user_count = result.scalar()
                             
-                            if orm_client_count != actual_client_count:
-                                print("⚠️ ORM still not synchronized, forcing table recreation...")
-                                # Last resort: drop and recreate all tables
-                                db.drop_all()
-                                db.create_all()
+                            result = test_session.execute(db.text("SELECT COUNT(*) FROM client"))
+                            test_client_count = result.scalar()
+                            
+                            print(f"🔍 Fresh session SQL verification: {test_user_count} users, {test_client_count} clients")
+                            
+                            if test_user_count > 0:
+                                # Data is accessible, update the main engine
+                                db.engine = new_engine
                                 
-                                # Re-import the data by copying from backup
-                                import shutil
-                                backup_db = temp_upload_path if temp_upload_path and os.path.exists(temp_upload_path) else current_db_path
-                                if backup_db != current_db_path:
-                                    shutil.copy2(backup_db, current_db_path)
+                                # Test ORM access with new engine
+                                orm_user_count = User.query.count()
+                                orm_client_count = Client.query.count()
+                                print(f"🔍 ORM verification with new engine: {orm_user_count} users, {orm_client_count} clients")
                                 
-                                # Final verification
-                                final_client_count = Client.query.count()
-                                print(f"🔍 After table recreation: {final_client_count} clients")
-                        
-                        except Exception as orm_error:
-                            print(f"⚠️ ORM verification error: {orm_error}")
+                                if orm_user_count > 0:
+                                    print("✅ Database synchronization successful!")
+                                else:
+                                    print("⚠️ ORM still not seeing data, but raw SQL works")
+                            else:
+                                print("⚠️ No data found in fresh connection")
+                                
+                        except Exception as test_error:
+                            print(f"⚠️ Fresh session test error: {test_error}")
+                        finally:
+                            test_session.close()
+                            if 'new_engine' in locals():
+                                new_engine.dispose()
                 
                 except Exception as restart_error:
                     print(f"⚠️ Application restart simulation error: {restart_error}")
                 
-                # Ensure user loader is properly registered
-                ensure_user_loader()
+                # Ensure user loader is properly registered with fresh database
+                try:
+                    with app.app_context():
+                        # Force reload user loader with new database
+                        login_manager._user_callback = None
+                        login_manager.user_loader(load_user)
+                        
+                        # Test user loader with imported data
+                        test_user = User.query.first()
+                        if test_user:
+                            print(f"✅ User loader working with imported data: {test_user.username}")
+                        else:
+                            print("⚠️ User loader test: No users found")
+                        
+                except Exception as loader_error:
+                    print(f"⚠️ User loader setup error: {loader_error}")
                 
                 # Clear the current user session to force re-login with new database
                 logout_user()
-                
-                # Add a small delay to ensure all connections are properly reset
-                import time
-                time.sleep(1.0)
                 
                 flash('✅ Database imported successfully! All data has been synchronized. Please log in again to continue.')
                 return redirect(url_for('login'))
