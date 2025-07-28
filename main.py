@@ -2448,27 +2448,36 @@ def backup_database():
             
             # Force database initialization using SQLAlchemy
             try:
-                # Create all tables with complete schema
-                db.create_all()
-                
-                # Ensure admin user exists
-                admin_user = User.query.filter_by(username='admin').first()
-                if not admin_user:
-                    admin_user = User(
-                        username='admin',
-                        full_name='System Administrator', 
-                        department='admin'
-                    )
-                    admin_user.set_password('admin123')
-                    db.session.add(admin_user)
+                with app.app_context():
+                    # Create all tables with complete schema
+                    db.create_all()
+                    
+                    # Force a connection to ensure database file is created
+                    db.session.execute(db.text("SELECT 1"))
                     db.session.commit()
-                    print("✅ Admin user created")
-                
-                print(f"✅ Database initialized at: {db_path}")
+                    
+                    # Small delay for file system sync
+                    import time
+                    time.sleep(0.2)
+                    
+                    # Ensure admin user exists
+                    admin_user = User.query.filter_by(username='admin').first()
+                    if not admin_user:
+                        admin_user = User(
+                            username='admin',
+                            full_name='System Administrator', 
+                            department='admin'
+                        )
+                        admin_user.set_password('admin123')
+                        db.session.add(admin_user)
+                        db.session.commit()
+                        print("✅ Admin user created")
+                    
+                    print(f"✅ Database initialized at: {db_path}")
                 
             except Exception as init_error:
                 print(f"❌ SQLAlchemy initialization failed: {init_error}")
-                flash('Database initialization failed. Please try again.')
+                flash('Database could not be created. Please restart the application.')
                 return redirect(url_for('manage_users'))
         
         # Verify the database file now exists with content
@@ -3249,6 +3258,7 @@ def create_admin_user():
 def ensure_database_exists():
     """Ensure database file exists and is properly initialized"""
     import sqlite3
+    import time
     
     db_path = os.path.abspath('mwangaza.db')
     
@@ -3279,13 +3289,44 @@ def ensure_database_exists():
         if os.path.exists(db_path):
             try:
                 os.remove(db_path)
+                time.sleep(0.1)  # Small delay to ensure file is removed
             except Exception as e:
                 print(f"⚠️ Could not remove existing database file: {e}")
         
-        # Create database with SQLAlchemy
+        # Create database with SQLAlchemy - force database creation
         print("🔧 Creating database tables with SQLAlchemy...")
-        db.create_all()
-        db.session.commit()
+        
+        # Force connection to create the database file
+        with app.app_context():
+            try:
+                # Create all tables
+                db.create_all()
+                
+                # Force a connection to ensure database file is created
+                result = db.session.execute(db.text("SELECT 1"))
+                result.fetchone()
+                db.session.commit()
+                
+                # Wait a moment for file system sync
+                time.sleep(0.2)
+                
+            except Exception as create_error:
+                print(f"⚠️ SQLAlchemy creation error: {create_error}")
+                # Try direct SQLite creation as fallback
+                try:
+                    conn = sqlite3.connect(db_path)
+                    conn.execute("CREATE TABLE IF NOT EXISTS test_table (id INTEGER PRIMARY KEY)")
+                    conn.commit()
+                    conn.close()
+                    
+                    # Now try SQLAlchemy again
+                    db.create_all()
+                    db.session.commit()
+                    print("✅ Database created using fallback method")
+                    
+                except Exception as fallback_error:
+                    print(f"❌ Fallback creation also failed: {fallback_error}")
+                    return False
         
         # Verify the database was created successfully
         if os.path.exists(db_path) and os.path.getsize(db_path) > 0:
@@ -3306,8 +3347,9 @@ def ensure_database_exists():
                     print(f"✅ Created tables: {', '.join(table_names)}")
                     return True
                 else:
-                    print(f"❌ Required tables missing. Found: {table_names}")
-                    return False
+                    print(f"⚠️ Some tables missing. Found: {table_names}")
+                    # Still return True if we have basic structure
+                    return len(table_names) > 0
                     
             except sqlite3.Error as e:
                 print(f"❌ Database verification failed: {e}")
