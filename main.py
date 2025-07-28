@@ -2537,7 +2537,7 @@ def backup_database():
             with app.app_context():
                 # Get all tables using SQLAlchemy
                 result = db.session.execute(db.text("SELECT name FROM sqlite_master WHERE type='table';"))
-                tables = [row[0] for row in result.fetchall()]
+                tables = result.fetchall()
                 
                 if not tables:
                     flash('Database appears to be empty. Please add some data first.')
@@ -2657,6 +2657,46 @@ def backup_database():
         flash(f'Error creating database backup: {str(e)}')
         print(f"❌ Database backup error: {e}")
         return redirect(url_for('manage_users'))
+
+@app.route('/database_status')
+@login_required
+def database_status():
+    # Only Admin can view database status
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can view database status.')
+        return redirect(url_for('manage_users'))
+    
+    try:
+        with app.app_context():
+            # Get all tables and their record counts
+            result = db.session.execute(db.text("SELECT name FROM sqlite_master WHERE type='table';"))
+            tables = result.fetchall()
+            
+            table_info = []
+            total_records = 0
+            
+            for table in tables:
+                table_name = table[0]
+                try:
+                    count_result = db.session.execute(db.text(f"SELECT COUNT(*) FROM `{table_name}`"))
+                    count = count_result.scalar()
+                    total_records += count
+                    table_info.append({'name': table_name, 'count': count})
+                except Exception as e:
+                    table_info.append({'name': table_name, 'count': f'Error: {e}'})
+            
+            return f"""
+            <h2>Database Status</h2>
+            <p><strong>Total Tables:</strong> {len(tables)}</p>
+            <p><strong>Total Records:</strong> {total_records}</p>
+            <table border="1" style="border-collapse: collapse; margin: 20px 0;">
+                <tr><th style="padding: 8px;">Table Name</th><th style="padding: 8px;">Record Count</th></tr>
+                {''.join([f'<tr><td style="padding: 8px;">{info["name"]}</td><td style="padding: 8px;">{info["count"]}</td></tr>' for info in table_info])}
+            </table>
+            <a href="{url_for('manage_users')}">Back to User Management</a>
+            """
+    except Exception as e:
+        return f"Database status error: {str(e)}"
 
 @app.route('/reset_database')
 @login_required
