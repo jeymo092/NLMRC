@@ -2451,21 +2451,83 @@ def import_database():
                 flash(f'Failed to replace database file: {str(replace_error)}')
                 return redirect(url_for('import_database'))
             
-            # Verify the import was successful
+            # Comprehensive verification of imported data
             try:
                 test_conn = sqlite3.connect(current_db_path)
                 cursor = test_conn.cursor()
                 
-                cursor.execute("SELECT COUNT(*) FROM user")
-                user_count = cursor.fetchone()[0]
-                cursor.execute("SELECT COUNT(*) FROM client")
-                client_count = cursor.fetchone()[0]
+                # Get all tables in the imported database
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                imported_tables = [row[0] for row in cursor.fetchall()]
+                
+                print(f"📋 Imported database contains {len(imported_tables)} tables: {', '.join(sorted(imported_tables))}")
+                
+                # Verify each table has been imported with data
+                import_summary = {}
+                total_imported_records = 0
+                
+                for table_name in imported_tables:
+                    try:
+                        cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                        count = cursor.fetchone()[0]
+                        import_summary[table_name] = count
+                        total_imported_records += count
+                        
+                        if count > 0:
+                            print(f"✅ Table '{table_name}': {count} records imported")
+                        else:
+                            print(f"ℹ️ Table '{table_name}': empty (no records)")
+                            
+                    except sqlite3.Error as table_error:
+                        print(f"⚠️ Could not verify table '{table_name}': {table_error}")
+                        import_summary[table_name] = f"Error: {table_error}"
                 
                 test_conn.close()
                 
-                print(f"✅ Database import verification successful: {user_count} users, {client_count} clients")
+                # Create detailed summary message
+                user_count = import_summary.get('user', 0)
+                client_count = import_summary.get('client', 0)
+                home_visit_count = import_summary.get('home_visit', 0)
+                aftercare_count = import_summary.get('after_care', 0)
+                marks_count = import_summary.get('student_mark', 0)
+                programme_count = import_summary.get('empowerment_programme', 0)
+                soap_notes_count = import_summary.get('soap_note', 0)
                 
-                flash(f'✅ Database imported successfully! Found {user_count} users and {client_count} clients.')
+                print(f"📊 Import Summary:")
+                print(f"   👥 Users: {user_count}")
+                print(f"   🏠 Clients: {client_count}")
+                print(f"   📝 Home Visits: {home_visit_count}")
+                print(f"   🎓 Aftercare Records: {aftercare_count}")
+                print(f"   📚 Student Marks: {marks_count}")
+                print(f"   💡 Programmes: {programme_count}")
+                print(f"   📋 SOAP Notes: {soap_notes_count}")
+                print(f"   📈 Total Records: {total_imported_records}")
+                
+                # Build success message
+                success_details = []
+                if user_count > 0:
+                    success_details.append(f"{user_count} users")
+                if client_count > 0:
+                    success_details.append(f"{client_count} clients")
+                if home_visit_count > 0:
+                    success_details.append(f"{home_visit_count} home visits")
+                if aftercare_count > 0:
+                    success_details.append(f"{aftercare_count} aftercare records")
+                if marks_count > 0:
+                    success_details.append(f"{marks_count} academic records")
+                if programme_count > 0:
+                    success_details.append(f"{programme_count} programmes")
+                if soap_notes_count > 0:
+                    success_details.append(f"{soap_notes_count} counselling notes")
+                
+                if success_details:
+                    success_message = f'✅ Database imported successfully! Imported: {", ".join(success_details)}. Total: {total_imported_records} records.'
+                else:
+                    success_message = f'✅ Database structure imported successfully! {len(imported_tables)} tables created.'
+                
+                print(f"✅ Database import verification completed: {total_imported_records} total records imported")
+                
+                flash(success_message)
                 
                 # Clear the current user session to force re-login with new database
                 logout_user()
@@ -2675,28 +2737,121 @@ def database_status():
             table_info = []
             total_records = 0
             
+            # Define table descriptions for better understanding
+            table_descriptions = {
+                'user': 'System users and login accounts',
+                'client': 'Client records and basic information',
+                'home_visit': 'Home visit records and reports',
+                'after_care': 'Aftercare tracking for graduated clients',
+                'student_mark': 'Academic records and test scores',
+                'empowerment_programme': 'Life skills and vocational programmes',
+                'programme_enrollment': 'Client enrollments in programmes',
+                'soap_note': 'Counselling session notes (SOAP format)',
+                'treatment_plan': 'Client treatment and intervention plans',
+                'exit_form': 'Client exit and discharge forms',
+                'subject': 'Academic subjects for testing',
+                'parent_record': 'Parent and guardian contact information',
+                'grant_record': 'Tools and grants provided to clients'
+            }
+            
             for table in tables:
                 table_name = table[0]
                 try:
                     count_result = db.session.execute(db.text(f"SELECT COUNT(*) FROM `{table_name}`"))
                     count = count_result.scalar()
                     total_records += count
-                    table_info.append({'name': table_name, 'count': count})
+                    
+                    # Get sample data for verification
+                    sample_query = db.session.execute(db.text(f"SELECT * FROM `{table_name}` LIMIT 1"))
+                    has_data = sample_query.fetchone() is not None
+                    
+                    table_info.append({
+                        'name': table_name,
+                        'count': count,
+                        'description': table_descriptions.get(table_name, 'Database table'),
+                        'has_data': has_data,
+                        'status': '✅ Active' if count > 0 else '⚪ Empty'
+                    })
                 except Exception as e:
-                    table_info.append({'name': table_name, 'count': f'Error: {e}'})
+                    table_info.append({
+                        'name': table_name,
+                        'count': f'Error: {e}',
+                        'description': table_descriptions.get(table_name, 'Database table'),
+                        'has_data': False,
+                        'status': '❌ Error'
+                    })
+            
+            # Sort tables by record count (descending)
+            table_info.sort(key=lambda x: x['count'] if isinstance(x['count'], int) else 0, reverse=True)
             
             return f"""
-            <h2>Database Status</h2>
-            <p><strong>Total Tables:</strong> {len(tables)}</p>
-            <p><strong>Total Records:</strong> {total_records}</p>
-            <table border="1" style="border-collapse: collapse; margin: 20px 0;">
-                <tr><th style="padding: 8px;">Table Name</th><th style="padding: 8px;">Record Count</th></tr>
-                {''.join([f'<tr><td style="padding: 8px;">{info["name"]}</td><td style="padding: 8px;">{info["count"]}</td></tr>' for info in table_info])}
-            </table>
-            <a href="{url_for('manage_users')}">Back to User Management</a>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Database Status - New Life Mwangaza</title>
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }}
+                    .container {{ max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                    h2 {{ color: #2563eb; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }}
+                    .summary {{ background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; }}
+                    table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                    th {{ background: #374151; color: white; padding: 12px; text-align: left; }}
+                    td {{ padding: 10px; border-bottom: 1px solid #e5e7eb; }}
+                    tr:nth-child(even) {{ background: #f9fafb; }}
+                    .status {{ font-weight: bold; }}
+                    .empty {{ color: #6b7280; }}
+                    .active {{ color: #059669; }}
+                    .error {{ color: #dc2626; }}
+                    .back-link {{ display: inline-block; margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 4px; }}
+                    .back-link:hover {{ background: #1d4ed8; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <h2>📊 Database Status Report</h2>
+                    
+                    <div class="summary">
+                        <p><strong>📋 Total Tables:</strong> {len(tables)}</p>
+                        <p><strong>📈 Total Records:</strong> {total_records:,}</p>
+                        <p><strong>🕒 Generated:</strong> {datetime.now().strftime('%B %d, %Y at %I:%M %p')}</p>
+                        <p><strong>👤 By:</strong> {current_user.username.title()}</p>
+                    </div>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Table Name</th>
+                                <th>Description</th>
+                                <th>Record Count</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {''.join([
+                                f'''<tr>
+                                    <td><strong>{info["name"]}</strong></td>
+                                    <td>{info["description"]}</td>
+                                    <td>{info["count"]:,} records</td>
+                                    <td class="status {'active' if isinstance(info["count"], int) and info["count"] > 0 else 'empty' if isinstance(info["count"], int) else 'error'}">{info["status"]}</td>
+                                </tr>''' 
+                                for info in table_info
+                            ])}
+                        </tbody>
+                    </table>
+                    
+                    <a href="{url_for('manage_users')}" class="back-link">← Back to User Management</a>
+                </div>
+            </body>
+            </html>
             """
     except Exception as e:
-        return f"Database status error: {str(e)}"
+        return f"""
+        <div style="padding: 20px; font-family: Arial, sans-serif;">
+            <h2 style="color: #dc2626;">Database Status Error</h2>
+            <p><strong>Error:</strong> {str(e)}</p>
+            <a href="{url_for('manage_users')}" style="color: #2563eb;">← Back to User Management</a>
+        </div>
+        """
 
 @app.route('/reset_database')
 @login_required
