@@ -370,6 +370,13 @@ def load_user(user_id):
         print(f"⚠️ User loader error: {e}")
         return None
 
+# Ensure user loader is registered after database operations
+def ensure_user_loader():
+    """Ensure the user loader is properly registered with login manager"""
+    if not hasattr(login_manager, '_user_callback') or login_manager._user_callback is None:
+        login_manager.user_loader(load_user)
+        print("🔄 User loader re-registered with login manager")
+
 # Routes
 @app.route('/')
 def index():
@@ -2641,6 +2648,9 @@ def import_database():
                 except Exception as cache_error:
                     print(f"⚠️ Cache clearing warning: {cache_error}")
                 
+                # Ensure user loader is properly registered
+                ensure_user_loader()
+                
                 # Clear the current user session to force re-login with new database
                 logout_user()
                 
@@ -3750,12 +3760,16 @@ if __name__ == '__main__':
             # Create admin user
             create_admin_user()
             
+            # Ensure user loader is registered
+            ensure_user_loader()
+            
         except Exception as e:
             print(f"⚠️ Initialization error: {e}")
             print("🔧 Attempting basic database setup...")
             try:
                 db.create_all()
                 create_admin_user()
+                ensure_user_loader()
                 print("✅ Basic setup completed!")
             except Exception as e2:
                 print(f"⚠️ Setup error: {e2}")
