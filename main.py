@@ -2718,6 +2718,50 @@ def backup_database():
         print(f"❌ Database backup error: {e}")
         return redirect(url_for('manage_users'))
 
+@app.route('/reset_database')
+@login_required
+def reset_database():
+    # Only Admin can reset database
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can reset the database.')
+        return redirect(url_for('manage_users'))
+
+    try:
+        import sqlite3
+        
+        # Create backup before reset
+        db_path = os.path.abspath('mwangaza.db')
+        if os.path.exists(db_path):
+            backup_dir = 'backups'
+            os.makedirs(backup_dir, exist_ok=True)
+            reset_backup = os.path.join(backup_dir, f'pre_reset_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db')
+            shutil.copy2(db_path, reset_backup)
+            print(f"📦 Created pre-reset backup: {reset_backup}")
+        
+        # Drop all existing tables and recreate them
+        with app.app_context():
+            db.drop_all()
+            db.create_all()
+            db.session.commit()
+            
+            # Verify tables were created
+            result = db.session.execute(db.text("SELECT name FROM sqlite_master WHERE type='table';"))
+            tables = [row[0] for row in result.fetchall()]
+            
+            print(f"✅ Database reset complete. Created {len(tables)} tables: {', '.join(sorted(tables))}")
+        
+        # Recreate admin user
+        create_admin_user()
+        
+        flash(f'✅ Database has been reset successfully! {len(tables)} tables created. Please log in again.')
+        logout_user()
+        return redirect(url_for('login'))
+        
+    except Exception as e:
+        flash(f'Error resetting database: {str(e)}')
+        print(f"❌ Database reset error: {e}")
+        return redirect(url_for('manage_users'))
+
 # Counselling Routes
 @app.route('/counselling')
 @login_required
@@ -3515,47 +3559,5 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port, debug=debug)
 
 
-@app.route('/reset_database')
-@login_required
-def reset_database():
-    # Only Admin can reset database
-    if current_user.department != 'admin':
-        flash('Access denied. Only Admin can reset the database.')
-        return redirect(url_for('manage_users'))
 
-    try:
-        import sqlite3
-        
-        # Create backup before reset
-        db_path = os.path.abspath('mwangaza.db')
-        if os.path.exists(db_path):
-            backup_dir = 'backups'
-            os.makedirs(backup_dir, exist_ok=True)
-            reset_backup = os.path.join(backup_dir, f'pre_reset_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db')
-            shutil.copy2(db_path, reset_backup)
-            print(f"📦 Created pre-reset backup: {reset_backup}")
-        
-        # Drop all existing tables and recreate them
-        with app.app_context():
-            db.drop_all()
-            db.create_all()
-            db.session.commit()
-            
-            # Verify tables were created
-            result = db.session.execute(db.text("SELECT name FROM sqlite_master WHERE type='table';"))
-            tables = [row[0] for row in result.fetchall()]
-            
-            print(f"✅ Database reset complete. Created {len(tables)} tables: {', '.join(sorted(tables))}")
-        
-        # Recreate admin user
-        create_admin_user()
-        
-        flash(f'Database has been reset successfully! {len(tables)} tables created. Please log in again.')
-        logout_user()
-        return redirect(url_for('login'))
-        
-    except Exception as e:
-        flash(f'Error resetting database: {str(e)}')
-        print(f"❌ Database reset error: {e}")
-        return redirect(url_for('manage_users'))
 
