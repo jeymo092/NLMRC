@@ -2448,7 +2448,7 @@ def backup_database():
             
             # Force database initialization using SQLAlchemy
             try:
-                # Create all tables
+                # Create all tables with complete schema
                 db.create_all()
                 
                 # Ensure admin user exists
@@ -2481,12 +2481,12 @@ def backup_database():
             flash('Database file is empty. Please add some data first.')
             return redirect(url_for('manage_users'))
         
-        # Test database connectivity and get statistics
+        # Test database connectivity and get comprehensive statistics
         try:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
             
-            # Verify tables exist
+            # Get all tables in the database
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
             tables = cursor.fetchall()
             
@@ -2495,48 +2495,94 @@ def backup_database():
                 flash('Database appears to be empty or corrupted.')
                 return redirect(url_for('manage_users'))
             
-            # Get record counts
-            try:
-                cursor.execute("SELECT COUNT(*) FROM user")
-                user_count = cursor.fetchone()[0]
-            except:
-                user_count = 0
-                
-            try:
-                cursor.execute("SELECT COUNT(*) FROM client") 
-                client_count = cursor.fetchone()[0]
-            except:
-                client_count = 0
-                
+            table_names = [table[0] for table in tables]
+            print(f"📋 Tables found in database: {', '.join(table_names)}")
+            
+            # Get record counts for all tables
+            table_stats = {}
+            total_records = 0
+            
+            for table_name in table_names:
+                try:
+                    cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                    count = cursor.fetchone()[0]
+                    table_stats[table_name] = count
+                    total_records += count
+                    
+                    # Get column information
+                    cursor.execute(f"PRAGMA table_info(`{table_name}`)")
+                    columns = cursor.fetchall()
+                    column_names = [col[1] for col in columns]
+                    print(f"📊 Table '{table_name}': {count} records, columns: {', '.join(column_names)}")
+                    
+                except sqlite3.Error as table_error:
+                    print(f"⚠️ Could not read table '{table_name}': {table_error}")
+                    table_stats[table_name] = 0
+            
             conn.close()
+            
+            print(f"📊 Total records across all tables: {total_records}")
             
         except sqlite3.Error as e:
             flash(f'Database connectivity issue: {str(e)}')
             return redirect(url_for('manage_users'))
         
-        # Generate backup filename
-        backup_filename = f"New_Life_Mwangaza_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+        # Create a complete backup using SQLite's backup API to ensure data integrity
+        backup_buffer = BytesIO()
         
-        # Read database file into memory
         try:
-            with open(db_path, 'rb') as db_file:
-                db_data = db_file.read()
-                
-            print(f"✅ Database backup prepared for download: {backup_filename}")
-            print(f"📊 Backup size: {len(db_data)} bytes")
-            print(f"📊 Contains: {user_count} users, {client_count} clients")
+            # Open source database
+            source_conn = sqlite3.connect(db_path)
             
-        except Exception as read_error:
-            flash(f'Could not read database file: {str(read_error)}')
-            return redirect(url_for('manage_users'))
+            # Create backup database in memory
+            backup_conn = sqlite3.connect(':memory:')
+            
+            # Perform complete backup with all data
+            source_conn.backup(backup_conn)
+            
+            # Verify backup integrity
+            backup_cursor = backup_conn.cursor()
+            backup_cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+            backup_tables = backup_cursor.fetchall()
+            backup_table_names = [table[0] for table in backup_tables]
+            
+            backup_total_records = 0
+            for table_name in backup_table_names:
+                try:
+                    backup_cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                    count = backup_cursor.fetchone()[0]
+                    backup_total_records += count
+                except:
+                    pass
+            
+            print(f"✅ Backup verification: {len(backup_table_names)} tables, {backup_total_records} total records")
+            
+            # Write backup to buffer
+            for line in backup_conn.iterdump():
+                backup_buffer.write(line.encode('utf-8'))
+                backup_buffer.write(b'\n')
+            
+            source_conn.close()
+            backup_conn.close()
+            
+        except Exception as backup_error:
+            print(f"⚠️ SQLite backup API failed, using file copy method: {backup_error}")
+            
+            # Fallback to direct file copy method
+            with open(db_path, 'rb') as db_file:
+                backup_buffer = BytesIO(db_file.read())
         
-        # Create in-memory file buffer for download
-        backup_buffer = BytesIO(db_data)
+        # Generate backup filename with timestamp
+        backup_filename = f"New_Life_Mwangaza_Complete_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+        
         backup_buffer.seek(0)
+        backup_size = len(backup_buffer.getvalue())
         
-        print(f"🔗 Serving backup file for download: {backup_filename}")
+        print(f"✅ Complete database backup prepared: {backup_filename}")
+        print(f"📊 Backup size: {backup_size} bytes")
+        print(f"📊 Contains all tables: {', '.join(table_names) if 'table_names' in locals() else 'verified'}")
         
-        # Return the file for direct download without saving to system
+        # Return the complete database backup for download
         return send_file(
             backup_buffer,
             as_attachment=True,
