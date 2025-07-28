@@ -1,0 +1,4 @@
+BEGIN TRANSACTION;
+CREATE TABLE db_info (key TEXT PRIMARY KEY, value TEXT);
+INSERT INTO "db_info" VALUES('initialized','2025-07-28 07:39:12');
+COMMIT;
