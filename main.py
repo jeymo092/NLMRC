@@ -364,7 +364,11 @@ class ExitForm(db.Model):
 
 @login_manager.user_loader
 def load_user(user_id):
-    return User.query.get(int(user_id))
+    try:
+        return User.query.get(int(user_id))
+    except Exception as e:
+        print(f"⚠️ User loader error: {e}")
+        return None
 
 # Routes
 @app.route('/')
@@ -2625,11 +2629,14 @@ def import_database():
                     if hasattr(login_manager, '_user_callback'):
                         login_manager._user_callback = None
                     
+                    # Reinitialize login manager with current app context
+                    login_manager.init_app(app)
+                    
                     # Force garbage collection to clear any cached objects
                     import gc
                     gc.collect()
                     
-                    print("✅ Application caches cleared")
+                    print("✅ Application caches cleared and login manager reinitialized")
                     
                 except Exception as cache_error:
                     print(f"⚠️ Cache clearing warning: {cache_error}")
