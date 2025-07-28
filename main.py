@@ -2475,6 +2475,11 @@ def import_database():
                         
                         if count > 0:
                             print(f"✅ Table '{table_name}': {count} records imported")
+                            # Show sample data for verification
+                            cursor.execute(f"SELECT * FROM `{table_name}` LIMIT 1")
+                            sample = cursor.fetchone()
+                            if sample:
+                                print(f"   📋 Sample record exists in '{table_name}'")
                         else:
                             print(f"ℹ️ Table '{table_name}': empty (no records)")
                             
@@ -2526,6 +2531,26 @@ def import_database():
                     success_message = f'✅ Database structure imported successfully! {len(imported_tables)} tables created.'
                 
                 print(f"✅ Database import verification completed: {total_imported_records} total records imported")
+                
+                # Force SQLAlchemy to refresh and recognize the new database
+                try:
+                    db.session.close()
+                    db.engine.dispose()
+                    
+                    # Verify SQLAlchemy can access the new data
+                    with app.app_context():
+                        user_count = User.query.count()
+                        client_count = Client.query.count()
+                        print(f"🔄 SQLAlchemy verification: {user_count} users, {client_count} clients")
+                        
+                        if client_count > 0:
+                            # Test query for first client
+                            first_client = Client.query.first()
+                            if first_client:
+                                print(f"✅ First client accessible: {first_client.firstName} {first_client.secondName}")
+                            
+                except Exception as sqlalchemy_error:
+                    print(f"⚠️ SQLAlchemy verification warning: {sqlalchemy_error}")
                 
                 flash(success_message)
                 
