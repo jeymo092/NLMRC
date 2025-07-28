@@ -375,15 +375,40 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        department = request.form.get('department', '')
 
-        user = User.query.filter_by(username=username).first()
-        if user and user.check_password(password):
-            login_user(user)
-            return redirect(url_for('dashboard'))
-        else:
-            flash('Invalid username or password')
+        # Validate required fields
+        if not username:
+            flash('Username is required')
+            return render_template('login.html')
+        
+        if not password:
+            flash('Password is required')
+            return render_template('login.html')
+            
+        if not department:
+            flash('Please select a department')
+            return render_template('login.html')
+
+        try:
+            # Find user by username
+            user = User.query.filter_by(username=username).first()
+            
+            if user and user.check_password(password):
+                # Check if user's department matches selected department
+                if user.department == department:
+                    login_user(user)
+                    return redirect(url_for('dashboard'))
+                else:
+                    flash(f'Invalid department. This user belongs to {user.department.replace("_", " ").title()} department.')
+            else:
+                flash('Invalid username or password')
+                
+        except Exception as e:
+            print(f"Login error: {e}")
+            flash('Login system error. Please try again.')
 
     return render_template('login.html')
 
@@ -3133,6 +3158,7 @@ def export_client_academic_pdf(client_id):
 def create_admin_user():
     """Create initial admin user if none exists"""
     try:
+        # Check if any admin user exists
         admin_exists = User.query.filter_by(department='admin').first()
         if not admin_exists:
             admin_user = User(
@@ -3144,10 +3170,35 @@ def create_admin_user():
             db.session.add(admin_user)
             db.session.commit()
             print("✅ Initial admin user created: admin/admin123")
+            print("🔑 Default credentials: Username: admin, Password: admin123, Department: admin")
         else:
-            print("✅ Admin user already exists")
+            print(f"✅ Admin user already exists: {admin_exists.username}")
+            
+        # Also create a test user for each department if they don't exist
+        departments = [
+            ('socialworkers', 'Social Workers Test User'),
+            ('education', 'Education Test User'),
+            ('counselling', 'Counselling Test User'),
+            ('empowerment', 'Empowerment Test User')
+        ]
+        
+        for dept, full_name in departments:
+            existing_user = User.query.filter_by(department=dept).first()
+            if not existing_user:
+                test_user = User(
+                    username=f'{dept}_user',
+                    full_name=full_name,
+                    department=dept
+                )
+                test_user.set_password('password123')
+                db.session.add(test_user)
+                print(f"✅ Created test user: {dept}_user/password123 for {dept}")
+        
+        db.session.commit()
+        
     except Exception as e:
-        print(f"⚠️ Error creating admin user: {e}")
+        print(f"⚠️ Error creating users: {e}")
+        db.session.rollback()
 
 def ensure_database_exists():
     """Ensure database file exists and is properly initialized"""
@@ -3196,19 +3247,41 @@ def ensure_database_exists():
             if os.path.exists(db_path):
                 os.remove(db_path)
             
-            # Create database using SQLAlchemy
-            db.create_all()
+            # Force SQLAlchemy to create new database with all tables
+            print("🔧 Creating database tables...")
+            with app.app_context():
+                db.create_all()
+                db.session.commit()
             
             # Verify creation was successful
             if os.path.exists(db_path) and os.path.getsize(db_path) > 0:
-                file_size = os.path.getsize(db_path)
-                print(f"✅ Database initialized successfully: {db_path} ({file_size} bytes)")
+                # Double-check tables were created
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                tables = cursor.fetchall()
+                conn.close()
                 
-                # Set proper permissions
-                os.chmod(db_path, 0o666)
-                return True
+                table_names = [table[0] for table in tables]
+                required_tables = ['user', 'client']
+                
+                if all(table in table_names for table in required_tables):
+                    file_size = os.path.getsize(db_path)
+                    print(f"✅ Database initialized successfully: {db_path} ({file_size} bytes)")
+                    print(f"✅ Created tables: {', '.join(table_names)}")
+                    
+                    # Set proper permissions
+                    try:
+                        os.chmod(db_path, 0o666)
+                    except:
+                        pass  # Ignore permission errors
+                    
+                    return True
+                else:
+                    print(f"❌ Database tables not created properly. Found: {table_names}")
+                    return False
             else:
-                print(f"❌ Database initialization failed")
+                print(f"❌ Database file creation failed")
                 return False
         
         return True
@@ -3218,21 +3291,33 @@ def ensure_database_exists():
         return False
 
 if __name__ == '__main__':
-    with app.app_context():
-        try:
-            print("🔧 Initializing New Life Mwangaza database...")
-            
+    try:
+        print("🔧 Initializing New Life Mwangaza database...")
+        
+        with app.app_context():
             # Ensure database exists and is accessible
             if ensure_database_exists():
                 # Create admin user
                 create_admin_user()
                 print("✅ Database initialization completed successfully!")
             else:
-                print("⚠️  Database initialization failed, but continuing...")
+                print("❌ Database initialization failed!")
+                # Try one more time with force recreation
+                print("🔧 Attempting force database recreation...")
+                db.create_all()
+                create_admin_user()
+                print("✅ Force recreation completed!")
                 
-        except Exception as e:
-            print(f"❌ Database initialization error: {e}")
-            print("⚠️  Application will continue, but database features may not work.")
+    except Exception as e:
+        print(f"❌ Database initialization error: {e}")
+        print("🔧 Creating minimal database structure...")
+        try:
+            with app.app_context():
+                db.create_all()
+                create_admin_user()
+                print("✅ Minimal database created!")
+        except Exception as e2:
+            print(f"❌ Fatal database error: {e2}")
 
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
