@@ -3160,6 +3160,30 @@ def export_overall_report_pdf():
     response.headers['Content-Disposition'] = f'attachment; filename=NLM_Overall_Academic_Report_{datetime.now().strftime("%Y%m%d")}.pdf'
     return response
 
+@app.route('/delete_student/<int:client_id>', methods=['POST'])
+@login_required
+def delete_student(client_id):
+    # Only Education department and Admin can delete students
+    if current_user.department not in ['education', 'admin']:
+        flash('Access denied. Only Education department and Admin can delete students.')
+        return redirect(url_for('education'))
+
+    client = Client.query.get_or_404(client_id)
+
+    try:
+        client_name = f"{client.firstName} {client.secondName}"
+
+        # Delete all student marks for this client
+        StudentMark.query.filter_by(client_id=client_id).delete()
+
+        flash(f'All academic records for {client_name} have been deleted successfully!')
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting student records: {str(e)}')
+
+    return redirect(url_for('education'))
+
 @app.route('/export_client_academic_pdf/<int:client_id>')
 @login_required
 def export_client_academic_pdf(client_id):
