@@ -373,9 +373,26 @@ def load_user(user_id):
 # Ensure user loader is registered after database operations
 def ensure_user_loader():
     """Ensure the user loader is properly registered with login manager"""
-    if not hasattr(login_manager, '_user_callback') or login_manager._user_callback is None:
+    try:
+        if not hasattr(login_manager, '_user_callback') or login_manager._user_callback is None:
+            login_manager.user_loader(load_user)
+            print("🔄 User loader re-registered with login manager")
+        
+        # Force re-registration to ensure it's working
         login_manager.user_loader(load_user)
-        print("🔄 User loader re-registered with login manager")
+        
+        # Test the user loader with a simple query
+        test_user = User.query.first()
+        if test_user:
+            print(f"✅ User loader verified - found user: {test_user.username}")
+        
+    except Exception as e:
+        print(f"⚠️ User loader registration error: {e}")
+        # Force re-registration
+        login_manager.user_loader(load_user)
+
+# Register user loader immediately after definition
+ensure_user_loader()
 
 # Routes
 @app.route('/')
@@ -386,6 +403,9 @@ def index():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    # Ensure user loader is registered before processing login
+    ensure_user_loader()
+    
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
@@ -475,7 +495,8 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    # Ensure fresh database connection for dashboard
+    # Ensure user loader is registered and database connection is fresh
+    ensure_user_loader()
     try:
         db.session.commit()  # Commit any pending changes
     except:
