@@ -3287,31 +3287,9 @@ def create_admin_user():
             print("🔑 Default credentials: Username: admin, Password: admin123, Department: admin")
         else:
             print(f"✅ Admin user already exists: {admin_exists.username}")
-            
-        # Also create a test user for each department if they don't exist
-        departments = [
-            ('socialworkers', 'Social Workers Test User'),
-            ('education', 'Education Test User'),
-            ('counselling', 'Counselling Test User'),
-            ('empowerment', 'Empowerment Test User')
-        ]
-        
-        for dept, full_name in departments:
-            existing_user = User.query.filter_by(department=dept).first()
-            if not existing_user:
-                test_user = User(
-                    username=f'{dept}_user',
-                    full_name=full_name,
-                    department=dept
-                )
-                test_user.set_password('password123')
-                db.session.add(test_user)
-                print(f"✅ Created test user: {dept}_user/password123 for {dept}")
-        
-        db.session.commit()
         
     except Exception as e:
-        print(f"⚠️ Error creating users: {e}")
+        print(f"⚠️ Error creating admin user: {e}")
         db.session.rollback()
 
 def ensure_database_exists():
