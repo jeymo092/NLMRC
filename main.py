@@ -3207,20 +3207,8 @@ def ensure_database_exists():
     db_path = os.path.abspath('mwangaza.db')
     
     try:
-        # Only initialize if database doesn't exist or is truly empty
-        needs_initialization = False
-        
-        if not os.path.exists(db_path):
-            print(f"🔧 Database file not found, will create: {db_path}")
-            needs_initialization = True
-        elif os.path.getsize(db_path) == 0:
-            print(f"🔧 Database file is empty, will initialize: {db_path}")
-            needs_initialization = True
-        elif os.path.getsize(db_path) < 1024:  # Less than 1KB, likely incomplete
-            print(f"🔧 Database file appears incomplete, will reinitialize: {db_path}")
-            needs_initialization = True
-        else:
-            # Check if database has basic structure
+        # Check if database exists and has proper structure
+        if os.path.exists(db_path) and os.path.getsize(db_path) > 1024:
             try:
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
@@ -3230,32 +3218,33 @@ def ensure_database_exists():
                 client_table_exists = cursor.fetchone() is not None
                 conn.close()
                 
-                if not (user_table_exists and client_table_exists):
-                    print("🔧 Database missing core tables, will reinitialize")
-                    needs_initialization = True
-                else:
+                if user_table_exists and client_table_exists:
                     file_size = os.path.getsize(db_path)
                     print(f"✅ Database file exists and verified: {db_path} ({file_size} bytes)")
                     return True
                     
             except sqlite3.Error:
                 print("🔧 Database file corrupted, will reinitialize")
-                needs_initialization = True
         
-        if needs_initialization:
-            # Remove existing empty/corrupted file
-            if os.path.exists(db_path):
+        # Need to initialize database
+        print(f"🔧 Initializing database: {db_path}")
+        
+        # Remove existing file if it exists
+        if os.path.exists(db_path):
+            try:
                 os.remove(db_path)
-            
-            # Force SQLAlchemy to create new database with all tables
-            print("🔧 Creating database tables...")
-            with app.app_context():
-                db.create_all()
-                db.session.commit()
-            
-            # Verify creation was successful
-            if os.path.exists(db_path) and os.path.getsize(db_path) > 0:
-                # Double-check tables were created
+            except Exception as e:
+                print(f"⚠️ Could not remove existing database file: {e}")
+        
+        # Create database with SQLAlchemy
+        print("🔧 Creating database tables with SQLAlchemy...")
+        db.create_all()
+        db.session.commit()
+        
+        # Verify the database was created successfully
+        if os.path.exists(db_path) and os.path.getsize(db_path) > 0:
+            # Test the database
+            try:
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -3269,55 +3258,45 @@ def ensure_database_exists():
                     file_size = os.path.getsize(db_path)
                     print(f"✅ Database initialized successfully: {db_path} ({file_size} bytes)")
                     print(f"✅ Created tables: {', '.join(table_names)}")
-                    
-                    # Set proper permissions
-                    try:
-                        os.chmod(db_path, 0o666)
-                    except:
-                        pass  # Ignore permission errors
-                    
                     return True
                 else:
-                    print(f"❌ Database tables not created properly. Found: {table_names}")
+                    print(f"❌ Required tables missing. Found: {table_names}")
                     return False
-            else:
-                print(f"❌ Database file creation failed")
+                    
+            except sqlite3.Error as e:
+                print(f"❌ Database verification failed: {e}")
                 return False
-        
-        return True
+        else:
+            print("❌ Database file was not created")
+            return False
             
     except Exception as e:
-        print(f"❌ Database creation error: {e}")
+        print(f"❌ Database initialization error: {e}")
         return False
 
 if __name__ == '__main__':
-    try:
-        print("🔧 Initializing New Life Mwangaza database...")
-        
-        with app.app_context():
+    with app.app_context():
+        try:
+            print("🔧 Initializing New Life Mwangaza database...")
+            
             # Ensure database exists and is accessible
             if ensure_database_exists():
-                # Create admin user
-                create_admin_user()
-                print("✅ Database initialization completed successfully!")
+                print("✅ Database ready!")
             else:
-                print("❌ Database initialization failed!")
-                # Try one more time with force recreation
-                print("🔧 Attempting force database recreation...")
+                print("⚠️ Database initialization failed, but continuing...")
+            
+            # Create admin user
+            create_admin_user()
+            
+        except Exception as e:
+            print(f"⚠️ Initialization error: {e}")
+            print("🔧 Attempting basic database setup...")
+            try:
                 db.create_all()
                 create_admin_user()
-                print("✅ Force recreation completed!")
-                
-    except Exception as e:
-        print(f"❌ Database initialization error: {e}")
-        print("🔧 Creating minimal database structure...")
-        try:
-            with app.app_context():
-                db.create_all()
-                create_admin_user()
-                print("✅ Minimal database created!")
-        except Exception as e2:
-            print(f"❌ Fatal database error: {e2}")
+                print("✅ Basic setup completed!")
+            except Exception as e2:
+                print(f"⚠️ Setup error: {e2}")
 
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'True').lower() == 'true'
