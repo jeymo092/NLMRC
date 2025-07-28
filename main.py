@@ -2660,6 +2660,13 @@ def import_database():
                     # Reinitialize login manager with current app context
                     login_manager.init_app(app)
                     
+                    # Force complete SQLAlchemy reset
+                    db.session.close_all()
+                    db.engine.dispose()
+                    
+                    # Clear all bound metadata
+                    db.metadata.clear()
+                    
                     # Force garbage collection to clear any cached objects
                     import gc
                     gc.collect()
@@ -2669,6 +2676,57 @@ def import_database():
                 except Exception as cache_error:
                     print(f"⚠️ Cache clearing warning: {cache_error}")
                 
+                # Complete application restart simulation
+                try:
+                    # Force complete database reconnection
+                    with app.app_context():
+                        # Recreate metadata from new database
+                        db.metadata.reflect(bind=db.engine)
+                        
+                        # Test raw database access
+                        import sqlite3
+                        conn = sqlite3.connect('mwangaza.db')
+                        cursor = conn.cursor()
+                        cursor.execute("SELECT COUNT(*) FROM client")
+                        actual_client_count = cursor.fetchone()[0]
+                        cursor.execute("SELECT COUNT(*) FROM user")
+                        actual_user_count = cursor.fetchone()[0]
+                        conn.close()
+                        
+                        print(f"🔍 Direct SQLite verification: {actual_user_count} users, {actual_client_count} clients")
+                        
+                        # Force SQLAlchemy to see the new data
+                        db.session.expire_all()
+                        db.session.commit()
+                        
+                        # Verify ORM can now see the data
+                        try:
+                            orm_client_count = Client.query.count()
+                            orm_user_count = User.query.count()
+                            print(f"🔍 Final ORM verification: {orm_user_count} users, {orm_client_count} clients")
+                            
+                            if orm_client_count != actual_client_count:
+                                print("⚠️ ORM still not synchronized, forcing table recreation...")
+                                # Last resort: drop and recreate all tables
+                                db.drop_all()
+                                db.create_all()
+                                
+                                # Re-import the data by copying from backup
+                                import shutil
+                                backup_db = temp_upload_path if temp_upload_path and os.path.exists(temp_upload_path) else current_db_path
+                                if backup_db != current_db_path:
+                                    shutil.copy2(backup_db, current_db_path)
+                                
+                                # Final verification
+                                final_client_count = Client.query.count()
+                                print(f"🔍 After table recreation: {final_client_count} clients")
+                        
+                        except Exception as orm_error:
+                            print(f"⚠️ ORM verification error: {orm_error}")
+                
+                except Exception as restart_error:
+                    print(f"⚠️ Application restart simulation error: {restart_error}")
+                
                 # Ensure user loader is properly registered
                 ensure_user_loader()
                 
@@ -2677,7 +2735,7 @@ def import_database():
                 
                 # Add a small delay to ensure all connections are properly reset
                 import time
-                time.sleep(0.5)
+                time.sleep(1.0)
                 
                 flash('✅ Database imported successfully! All data has been synchronized. Please log in again to continue.')
                 return redirect(url_for('login'))
@@ -2904,6 +2962,41 @@ def verify_import():
             'error': str(e),
             'timestamp': datetime.now().isoformat()
         }), 500
+
+@app.route('/refresh_database')
+@login_required
+def refresh_database():
+    """Force database synchronization after import"""
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can refresh the database.')
+        return redirect(url_for('dashboard'))
+    
+    try:
+        # Force complete database refresh
+        db.session.close_all()
+        db.engine.dispose()
+        db.metadata.clear()
+        
+        with app.app_context():
+            # Let SQLAlchemy reconnect and rebuild metadata
+            db.metadata.reflect(bind=db.engine)
+            
+            # Force session refresh
+            db.session.expire_all()
+            db.session.commit()
+            
+            # Test data access
+            client_count = Client.query.count()
+            user_count = User.query.count()
+            
+            flash(f'✅ Database refreshed successfully! Found {user_count} users and {client_count} clients.')
+            print(f"🔄 Manual database refresh: {user_count} users, {client_count} clients")
+            
+    except Exception as e:
+        flash(f'Database refresh failed: {str(e)}')
+        print(f"⚠️ Manual database refresh error: {e}")
+    
+    return redirect(url_for('dashboard'))
 
 @app.route('/database_status')
 @login_required
