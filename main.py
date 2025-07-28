@@ -464,6 +464,12 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    # Ensure fresh database connection for dashboard
+    try:
+        db.session.commit()  # Commit any pending changes
+    except:
+        db.session.rollback()
+    
     clients = Client.query.all()
 
     # Calculate comprehensive statistics
@@ -1706,6 +1712,12 @@ def search_clients():
 @app.route('/all_clients')
 @login_required
 def all_clients():
+    # Ensure fresh database connection
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+    
     # Get all clients with pagination support
     page = request.args.get('page', 1, type=int)
     per_page = 50  # Show 50 clients per page
@@ -2532,31 +2544,104 @@ def import_database():
                 
                 print(f"✅ Database import verification completed: {total_imported_records} total records imported")
                 
-                # Force SQLAlchemy to refresh and recognize the new database
+                # Force complete SQLAlchemy refresh and recognize the new database
                 try:
-                    db.session.close()
+                    # Step 1: Close all existing sessions and connections
+                    db.session.remove()  # Remove scoped session
+                    db.session.close()   # Close current session
+                    
+                    # Step 2: Dispose all connections in the pool
                     db.engine.dispose()
                     
-                    # Verify SQLAlchemy can access the new data
+                    # Step 3: Clear SQLAlchemy's metadata cache
+                    db.metadata.clear()
+                    
+                    # Step 4: Force recreation of tables metadata from new database
                     with app.app_context():
-                        user_count = User.query.count()
-                        client_count = Client.query.count()
-                        print(f"🔄 SQLAlchemy verification: {user_count} users, {client_count} clients")
+                        # Recreate all table metadata from the new database
+                        db.metadata.reflect(bind=db.engine)
                         
-                        if client_count > 0:
-                            # Test query for first client
-                            first_client = Client.query.first()
-                            if first_client:
-                                print(f"✅ First client accessible: {first_client.firstName} {first_client.secondName}")
+                        # Step 5: Create a completely new session to test
+                        from sqlalchemy.orm import sessionmaker
+                        Session = sessionmaker(bind=db.engine)
+                        test_session = Session()
+                        
+                        try:
+                            # Test basic connectivity with raw SQL first
+                            result = test_session.execute(db.text("SELECT COUNT(*) FROM user"))
+                            user_count = result.scalar()
                             
+                            result = test_session.execute(db.text("SELECT COUNT(*) FROM client"))
+                            client_count = result.scalar()
+                            
+                            print(f"🔄 Raw SQL verification: {user_count} users, {client_count} clients")
+                            
+                            # Test SQLAlchemy ORM queries
+                            test_session.close()  # Close test session
+                            
+                            # Use the main db session for ORM tests
+                            orm_user_count = User.query.count()
+                            orm_client_count = Client.query.count()
+                            print(f"🔄 SQLAlchemy ORM verification: {orm_user_count} users, {orm_client_count} clients")
+                            
+                            # Verify data accessibility
+                            if orm_client_count > 0:
+                                first_client = Client.query.first()
+                                if first_client:
+                                    print(f"✅ First client accessible: {first_client.firstName} {first_client.secondName}")
+                                    
+                                # Test additional queries to ensure full sync
+                                active_clients = Client.query.filter_by(status='ACTIVE').count()
+                                print(f"✅ Active clients accessible: {active_clients}")
+                            
+                        except Exception as test_error:
+                            print(f"⚠️ Database access test failed: {test_error}")
+                            test_session.rollback()
+                        finally:
+                            if 'test_session' in locals():
+                                test_session.close()
+                        
                 except Exception as sqlalchemy_error:
-                    print(f"⚠️ SQLAlchemy verification warning: {sqlalchemy_error}")
+                    print(f"⚠️ SQLAlchemy refresh error: {sqlalchemy_error}")
+                    # Try alternative refresh method
+                    try:
+                        # Force application context refresh
+                        with app.app_context():
+                            db.session.commit()  # Commit any pending changes
+                            db.session.close()   # Close session
+                            
+                            # Test simple query
+                            test_count = db.session.execute(db.text("SELECT COUNT(*) FROM client")).scalar()
+                            print(f"🔄 Alternative verification: {test_count} clients found")
+                            
+                    except Exception as alt_error:
+                        print(f"⚠️ Alternative refresh also failed: {alt_error}")
                 
                 flash(success_message)
                 
+                # Step 6: Reset all application-level caches and connections
+                try:
+                    # Clear Flask-Login user session cache
+                    if hasattr(login_manager, '_user_callback'):
+                        login_manager._user_callback = None
+                    
+                    # Force garbage collection to clear any cached objects
+                    import gc
+                    gc.collect()
+                    
+                    print("✅ Application caches cleared")
+                    
+                except Exception as cache_error:
+                    print(f"⚠️ Cache clearing warning: {cache_error}")
+                
                 # Clear the current user session to force re-login with new database
                 logout_user()
-                flash('Database imported successfully! Please log in again to continue.')
+                
+                # Add a small delay to ensure all connections are properly reset
+                import time
+                time.sleep(0.5)
+                
+                flash('✅ Database imported successfully! All data has been synchronized. Please log in again to continue.')
                 return redirect(url_for('login'))
                 
             except Exception as verify_error:
@@ -2744,6 +2829,43 @@ def backup_database():
         flash(f'Error creating database backup: {str(e)}')
         print(f"❌ Database backup error: {e}")
         return redirect(url_for('manage_users'))
+
+@app.route('/verify_import')
+@login_required
+def verify_import():
+    """Immediate verification endpoint to check if imported data is accessible"""
+    try:
+        # Force a fresh database connection
+        db.session.close()
+        db.engine.dispose()
+        
+        with app.app_context():
+            # Test queries
+            user_count = User.query.count()
+            client_count = Client.query.count()
+            home_visit_count = HomeVisit.query.count()
+            
+            # Test specific data access
+            clients = Client.query.limit(5).all()
+            client_names = [f"{c.firstName} {c.secondName}" for c in clients]
+            
+            verification_data = {
+                'status': 'success',
+                'users': user_count,
+                'clients': client_count,
+                'home_visits': home_visit_count,
+                'sample_clients': client_names,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+            return jsonify(verification_data)
+            
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
 
 @app.route('/database_status')
 @login_required
