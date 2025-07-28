@@ -2304,6 +2304,10 @@ def import_database():
     if request.method == 'POST':
         import shutil, os
         from werkzeug.utils import secure_filename
+        import sqlite3
+        import time
+        
+        temp_upload_path = None
         
         try:
             # Check if file was uploaded
@@ -2326,7 +2330,6 @@ def import_database():
             filename = secure_filename(file.filename)
             
             # Create temporary upload path with unique name to avoid conflicts
-            import time
             temp_upload_path = os.path.abspath(f'temp_import_{int(time.time())}_{filename}')
             
             # Save uploaded file temporarily
@@ -2339,40 +2342,70 @@ def import_database():
                 os.remove(temp_upload_path)
                 return redirect(url_for('import_database'))
             
+            print(f"📁 Processing upload: {filename} ({file_size:,} bytes)")
+            
             # Validate it's a valid SQLite database
-            import sqlite3
             try:
                 test_conn = sqlite3.connect(temp_upload_path)
-                # Try to read basic info from the database
                 cursor = test_conn.cursor()
+                
+                # Check if it's a valid SQLite database
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
                 tables = cursor.fetchall()
                 
-                # Check if it has the expected New Life Mwangaza tables
-                expected_tables = ['user', 'client']  # Minimum required tables
+                if not tables:
+                    flash('The uploaded file does not contain any database tables.')
+                    test_conn.close()
+                    os.remove(temp_upload_path)
+                    return redirect(url_for('import_database'))
+                
                 table_names = [table[0] for table in tables]
+                print(f"📋 Found tables in upload: {', '.join(table_names)}")
                 
-                if not all(table in table_names for table in expected_tables):
-                    missing_tables = [table for table in expected_tables if table not in table_names]
-                    flash(f'This does not appear to be a valid New Life Mwangaza database backup. Missing tables: {", ".join(missing_tables)}')
+                # Check for required New Life Mwangaza tables
+                expected_tables = ['user', 'client']
+                missing_tables = [table for table in expected_tables if table not in table_names]
+                
+                if missing_tables:
+                    flash(f'This does not appear to be a valid New Life Mwangaza database backup. Missing required tables: {", ".join(missing_tables)}')
                     test_conn.close()
                     os.remove(temp_upload_path)
                     return redirect(url_for('import_database'))
                 
-                # Try to count records to ensure database has data structure
-                try:
-                    cursor.execute("SELECT COUNT(*) FROM user")
-                    user_count = cursor.fetchone()[0]
-                    cursor.execute("SELECT COUNT(*) FROM client")
-                    client_count = cursor.fetchone()[0]
-                    print(f"📊 Import file contains: {user_count} users, {client_count} clients")
-                except Exception as count_error:
-                    flash(f'Database structure appears invalid: {str(count_error)}')
-                    test_conn.close()
-                    os.remove(temp_upload_path)
-                    return redirect(url_for('import_database'))
+                # Count records in key tables to verify data
+                record_counts = {}
+                total_records = 0
+                
+                for table_name in table_names:
+                    try:
+                        cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                        count = cursor.fetchone()[0]
+                        record_counts[table_name] = count
+                        total_records += count
+                    except sqlite3.Error as count_error:
+                        print(f"⚠️ Could not count records in table '{table_name}': {count_error}")
+                        record_counts[table_name] = 0
+                
+                print(f"📊 Import file contains {total_records} total records across {len(table_names)} tables")
+                
+                # Verify database structure integrity
+                for table_name in expected_tables:
+                    try:
+                        cursor.execute(f"PRAGMA table_info(`{table_name}`)")
+                        columns = cursor.fetchall()
+                        if not columns:
+                            flash(f'Table {table_name} appears to be corrupted or empty.')
+                            test_conn.close()
+                            os.remove(temp_upload_path)
+                            return redirect(url_for('import_database'))
+                    except sqlite3.Error as pragma_error:
+                        flash(f'Cannot verify table structure for {table_name}: {str(pragma_error)}')
+                        test_conn.close()
+                        os.remove(temp_upload_path)
+                        return redirect(url_for('import_database'))
                 
                 test_conn.close()
+                print("✅ Database validation successful")
                     
             except sqlite3.Error as e:
                 flash(f'Invalid SQLite database file: {str(e)}')
@@ -2382,44 +2415,75 @@ def import_database():
             
             # Create backup of current database before replacement
             current_db_path = os.path.abspath('mwangaza.db')
+            pre_import_backup = None
+            
             if os.path.exists(current_db_path):
-                backup_dir = 'backups'
-                os.makedirs(backup_dir, exist_ok=True)
-                pre_import_backup = os.path.join(backup_dir, f'pre_import_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db')
-                shutil.copy2(current_db_path, pre_import_backup)
-                print(f"📦 Created pre-import backup: {pre_import_backup}")
+                try:
+                    backup_dir = 'backups'
+                    os.makedirs(backup_dir, exist_ok=True)
+                    pre_import_backup = os.path.join(backup_dir, f'pre_import_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db')
+                    shutil.copy2(current_db_path, pre_import_backup)
+                    print(f"📦 Created pre-import backup: {pre_import_backup}")
+                except Exception as backup_error:
+                    print(f"⚠️ Could not create pre-import backup: {backup_error}")
+                    flash('Warning: Could not create backup of current database before import.')
             
             # Replace current database with uploaded one
-            if os.path.exists(current_db_path):
-                os.remove(current_db_path)  # Remove old database first
-            shutil.move(temp_upload_path, current_db_path)
+            try:
+                if os.path.exists(current_db_path):
+                    os.remove(current_db_path)
+                
+                shutil.move(temp_upload_path, current_db_path)
+                temp_upload_path = None  # Mark as moved so cleanup doesn't try to remove it
+                
+                print(f"✅ Database file replaced: {current_db_path}")
+                
+            except Exception as replace_error:
+                # Try to restore backup if replacement failed
+                if pre_import_backup and os.path.exists(pre_import_backup):
+                    try:
+                        shutil.copy2(pre_import_backup, current_db_path)
+                        print("🔄 Restored original database after failed import")
+                    except Exception as restore_error:
+                        print(f"❌ Could not restore original database: {restore_error}")
+                
+                flash(f'Failed to replace database file: {str(replace_error)}')
+                return redirect(url_for('import_database'))
             
             # Verify the import was successful
             try:
                 test_conn = sqlite3.connect(current_db_path)
                 cursor = test_conn.cursor()
+                
                 cursor.execute("SELECT COUNT(*) FROM user")
                 user_count = cursor.fetchone()[0]
                 cursor.execute("SELECT COUNT(*) FROM client")
                 client_count = cursor.fetchone()[0]
+                
                 test_conn.close()
                 
+                print(f"✅ Database import verification successful: {user_count} users, {client_count} clients")
+                
                 flash(f'✅ Database imported successfully! Found {user_count} users and {client_count} clients.')
-                print(f"✅ Database import successful: {user_count} users, {client_count} clients")
                 
                 # Clear the current user session to force re-login with new database
-                flash('Database imported successfully! Please log in again to continue.')
                 logout_user()
+                flash('Database imported successfully! Please log in again to continue.')
                 return redirect(url_for('login'))
                 
-            except Exception as e:
-                flash(f'Database imported but there may be issues: {str(e)}')
+            except Exception as verify_error:
+                flash(f'Database imported but verification failed: {str(verify_error)}')
+                print(f"⚠️ Import verification error: {verify_error}")
                 return redirect(url_for('manage_users'))
             
         except Exception as e:
             # Clean up temporary file if it exists
-            if 'temp_upload_path' in locals() and os.path.exists(temp_upload_path):
-                os.remove(temp_upload_path)
+            if temp_upload_path and os.path.exists(temp_upload_path):
+                try:
+                    os.remove(temp_upload_path)
+                except:
+                    pass
+            
             flash(f'Error importing database: {str(e)}')
             print(f"❌ Database import error: {e}")
             return redirect(url_for('import_database'))
@@ -2437,6 +2501,7 @@ def backup_database():
     from flask import send_file
     from io import BytesIO
     import sqlite3
+    import shutil
     
     try:
         # Get the absolute path to the database file
@@ -2446,21 +2511,13 @@ def backup_database():
         if not os.path.exists(db_path) or os.path.getsize(db_path) == 0:
             print("🔧 Initializing database for backup...")
             
-            # Force database initialization using SQLAlchemy
-            try:
-                with app.app_context():
-                    # Create all tables with complete schema
-                    db.create_all()
-                    
-                    # Force a connection to ensure database file is created
-                    db.session.execute(db.text("SELECT 1"))
-                    db.session.commit()
-                    
-                    # Small delay for file system sync
-                    import time
-                    time.sleep(0.2)
-                    
-                    # Ensure admin user exists
+            if not ensure_database_exists():
+                flash('Database could not be created. Please check system permissions.')
+                return redirect(url_for('manage_users'))
+            
+            # Ensure admin user exists after database creation
+            with app.app_context():
+                try:
                     admin_user = User.query.filter_by(username='admin').first()
                     if not admin_user:
                         admin_user = User(
@@ -2471,16 +2528,11 @@ def backup_database():
                         admin_user.set_password('admin123')
                         db.session.add(admin_user)
                         db.session.commit()
-                        print("✅ Admin user created")
-                    
-                    print(f"✅ Database initialized at: {db_path}")
-                
-            except Exception as init_error:
-                print(f"❌ SQLAlchemy initialization failed: {init_error}")
-                flash('Database could not be created. Please restart the application.')
-                return redirect(url_for('manage_users'))
+                        print("✅ Admin user created for backup")
+                except Exception as user_error:
+                    print(f"⚠️ Could not create admin user: {user_error}")
         
-        # Verify the database file now exists with content
+        # Final verification
         if not os.path.exists(db_path):
             flash('Database file could not be created. Please check system permissions.')
             return redirect(url_for('manage_users'))
@@ -2490,7 +2542,7 @@ def backup_database():
             flash('Database file is empty. Please add some data first.')
             return redirect(url_for('manage_users'))
         
-        # Test database connectivity and get comprehensive statistics
+        # Test database connectivity and get statistics
         try:
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
@@ -2505,93 +2557,100 @@ def backup_database():
                 return redirect(url_for('manage_users'))
             
             table_names = [table[0] for table in tables]
-            print(f"📋 Tables found in database: {', '.join(table_names)}")
+            print(f"📋 Tables found for backup: {', '.join(table_names)}")
             
-            # Get record counts for all tables
-            table_stats = {}
+            # Get record counts
             total_records = 0
-            
             for table_name in table_names:
                 try:
                     cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
                     count = cursor.fetchone()[0]
-                    table_stats[table_name] = count
                     total_records += count
-                    
-                    # Get column information
-                    cursor.execute(f"PRAGMA table_info(`{table_name}`)")
-                    columns = cursor.fetchall()
-                    column_names = [col[1] for col in columns]
-                    print(f"📊 Table '{table_name}': {count} records, columns: {', '.join(column_names)}")
-                    
+                    print(f"📊 Table '{table_name}': {count} records")
                 except sqlite3.Error as table_error:
-                    print(f"⚠️ Could not read table '{table_name}': {table_error}")
-                    table_stats[table_name] = 0
+                    print(f"⚠️ Could not count records in table '{table_name}': {table_error}")
             
             conn.close()
-            
-            print(f"📊 Total records across all tables: {total_records}")
+            print(f"📊 Total records for backup: {total_records}")
             
         except sqlite3.Error as e:
             flash(f'Database connectivity issue: {str(e)}')
             return redirect(url_for('manage_users'))
         
-        # Create a complete backup using SQLite's backup API to ensure data integrity
+        # Create backup using direct file copy for reliability
         backup_buffer = BytesIO()
         
         try:
-            # Open source database
-            source_conn = sqlite3.connect(db_path)
+            # Read the entire database file
+            with open(db_path, 'rb') as db_file:
+                backup_data = db_file.read()
+                backup_buffer.write(backup_data)
             
-            # Create backup database in memory
-            backup_conn = sqlite3.connect(':memory:')
+            # Verify the backup by testing it
+            backup_buffer.seek(0)
+            test_data = backup_buffer.read()
             
-            # Perform complete backup with all data
-            source_conn.backup(backup_conn)
+            # Test the backup data by creating a temporary in-memory database
+            temp_conn = sqlite3.connect(':memory:')
+            temp_conn.executescript(test_data.decode('utf-8', errors='ignore'))
+            temp_conn.close()
             
-            # Verify backup integrity
-            backup_cursor = backup_conn.cursor()
-            backup_cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-            backup_tables = backup_cursor.fetchall()
-            backup_table_names = [table[0] for table in backup_tables]
-            
-            backup_total_records = 0
-            for table_name in backup_table_names:
-                try:
-                    backup_cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
-                    count = backup_cursor.fetchone()[0]
-                    backup_total_records += count
-                except:
-                    pass
-            
-            print(f"✅ Backup verification: {len(backup_table_names)} tables, {backup_total_records} total records")
-            
-            # Write backup to buffer
-            for line in backup_conn.iterdump():
-                backup_buffer.write(line.encode('utf-8'))
-                backup_buffer.write(b'\n')
-            
-            source_conn.close()
-            backup_conn.close()
+            print(f"✅ Backup verification successful")
             
         except Exception as backup_error:
-            print(f"⚠️ SQLite backup API failed, using file copy method: {backup_error}")
+            print(f"⚠️ File copy backup failed, trying SQLite backup API: {backup_error}")
             
-            # Fallback to direct file copy method
-            with open(db_path, 'rb') as db_file:
-                backup_buffer = BytesIO(db_file.read())
+            try:
+                # Fallback to SQLite backup API
+                source_conn = sqlite3.connect(db_path)
+                backup_conn = sqlite3.connect(':memory:')
+                
+                # Perform backup
+                source_conn.backup(backup_conn)
+                
+                # Export to buffer
+                backup_buffer = BytesIO()
+                for line in backup_conn.iterdump():
+                    backup_buffer.write(line.encode('utf-8'))
+                    backup_buffer.write(b'\n')
+                
+                source_conn.close()
+                backup_conn.close()
+                
+                print("✅ SQLite backup API completed successfully")
+                
+            except Exception as api_error:
+                print(f"❌ Both backup methods failed: {api_error}")
+                flash('Backup creation failed. Please try again.')
+                return redirect(url_for('manage_users'))
         
         # Generate backup filename with timestamp
-        backup_filename = f"New_Life_Mwangaza_Complete_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+        backup_filename = f"New_Life_Mwangaza_Database_Backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
         
         backup_buffer.seek(0)
         backup_size = len(backup_buffer.getvalue())
         
-        print(f"✅ Complete database backup prepared: {backup_filename}")
-        print(f"📊 Backup size: {backup_size} bytes")
-        print(f"📊 Contains all tables: {', '.join(table_names) if 'table_names' in locals() else 'verified'}")
+        print(f"✅ Database backup prepared: {backup_filename}")
+        print(f"📊 Backup size: {backup_size:,} bytes ({backup_size/1024:.1f} KB)")
         
-        # Return the complete database backup for download
+        # Create local backup copy for safety
+        try:
+            backup_dir = 'backups'
+            os.makedirs(backup_dir, exist_ok=True)
+            local_backup_path = os.path.join(backup_dir, backup_filename)
+            
+            backup_buffer.seek(0)
+            with open(local_backup_path, 'wb') as backup_file:
+                backup_file.write(backup_buffer.getvalue())
+            
+            print(f"✅ Local backup saved: {local_backup_path}")
+            
+        except Exception as local_backup_error:
+            print(f"⚠️ Could not save local backup copy: {local_backup_error}")
+        
+        backup_buffer.seek(0)
+        
+        # Return the database backup for download
         return send_file(
             backup_buffer,
             as_attachment=True,
@@ -3285,52 +3344,50 @@ def ensure_database_exists():
         # Need to initialize database
         print(f"🔧 Initializing database: {db_path}")
         
-        # Remove existing file if it exists
+        # Ensure directory exists and is writable
+        db_dir = os.path.dirname(db_path)
+        if not os.path.exists(db_dir):
+            os.makedirs(db_dir, exist_ok=True)
+        
+        # Remove existing file if it exists and is corrupted
         if os.path.exists(db_path):
             try:
                 os.remove(db_path)
-                time.sleep(0.1)  # Small delay to ensure file is removed
+                time.sleep(0.1)
             except Exception as e:
                 print(f"⚠️ Could not remove existing database file: {e}")
         
-        # Create database with SQLAlchemy - force database creation
-        print("🔧 Creating database tables with SQLAlchemy...")
-        
-        # Force connection to create the database file
-        with app.app_context():
-            try:
-                # Create all tables
+        # Create database using direct SQLite connection first
+        try:
+            # Create a basic SQLite database structure
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            
+            # Create a simple test table to initialize the database
+            cursor.execute("CREATE TABLE IF NOT EXISTS db_info (key TEXT PRIMARY KEY, value TEXT)")
+            cursor.execute("INSERT OR REPLACE INTO db_info (key, value) VALUES ('initialized', datetime('now'))")
+            conn.commit()
+            conn.close()
+            
+            print(f"✅ SQLite database file created: {db_path}")
+            
+            # Now use SQLAlchemy to create all tables
+            with app.app_context():
                 db.create_all()
                 
-                # Force a connection to ensure database file is created
+                # Test the connection
                 result = db.session.execute(db.text("SELECT 1"))
                 result.fetchone()
                 db.session.commit()
                 
-                # Wait a moment for file system sync
-                time.sleep(0.2)
+                print("✅ SQLAlchemy tables created successfully")
                 
-            except Exception as create_error:
-                print(f"⚠️ SQLAlchemy creation error: {create_error}")
-                # Try direct SQLite creation as fallback
-                try:
-                    conn = sqlite3.connect(db_path)
-                    conn.execute("CREATE TABLE IF NOT EXISTS test_table (id INTEGER PRIMARY KEY)")
-                    conn.commit()
-                    conn.close()
-                    
-                    # Now try SQLAlchemy again
-                    db.create_all()
-                    db.session.commit()
-                    print("✅ Database created using fallback method")
-                    
-                except Exception as fallback_error:
-                    print(f"❌ Fallback creation also failed: {fallback_error}")
-                    return False
+        except Exception as create_error:
+            print(f"❌ Database creation failed: {create_error}")
+            return False
         
         # Verify the database was created successfully
         if os.path.exists(db_path) and os.path.getsize(db_path) > 0:
-            # Test the database
             try:
                 conn = sqlite3.connect(db_path)
                 cursor = conn.cursor()
@@ -3347,15 +3404,14 @@ def ensure_database_exists():
                     print(f"✅ Created tables: {', '.join(table_names)}")
                     return True
                 else:
-                    print(f"⚠️ Some tables missing. Found: {table_names}")
-                    # Still return True if we have basic structure
+                    print(f"⚠️ Some required tables missing. Found: {table_names}")
                     return len(table_names) > 0
                     
             except sqlite3.Error as e:
                 print(f"❌ Database verification failed: {e}")
                 return False
         else:
-            print("❌ Database file was not created")
+            print("❌ Database file was not created properly")
             return False
             
     except Exception as e:
