@@ -4,6 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 import os
+import shutil
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -3387,12 +3388,19 @@ def ensure_database_exists():
                 user_table_exists = cursor.fetchone() is not None
                 cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='client';")
                 client_table_exists = cursor.fetchone() is not None
+                
+                # Check for all required tables
+                required_tables = ['user', 'client', 'home_visit', 'after_care', 'subject', 'student_mark']
+                cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+                existing_tables = [row[0] for row in cursor.fetchall()]
                 conn.close()
                 
-                if user_table_exists and client_table_exists:
+                if user_table_exists and client_table_exists and len(existing_tables) >= 6:
                     file_size = os.path.getsize(db_path)
-                    print(f"✅ Database file exists and verified: {db_path} ({file_size} bytes)")
+                    print(f"✅ Database file exists and verified with {len(existing_tables)} tables: {db_path} ({file_size} bytes)")
                     return True
+                else:
+                    print(f"🔧 Database incomplete. Found {len(existing_tables)} tables: {existing_tables}")
                     
             except sqlite3.Error:
                 print("🔧 Database file corrupted, will reinitialize")
@@ -3413,30 +3421,30 @@ def ensure_database_exists():
             except Exception as e:
                 print(f"⚠️ Could not remove existing database file: {e}")
         
-        # Create database using direct SQLite connection first
+        # Create database using SQLAlchemy properly
         try:
-            # Create a basic SQLite database structure
-            conn = sqlite3.connect(db_path)
-            cursor = conn.cursor()
-            
-            # Create a simple test table to initialize the database
-            cursor.execute("CREATE TABLE IF NOT EXISTS db_info (key TEXT PRIMARY KEY, value TEXT)")
-            cursor.execute("INSERT OR REPLACE INTO db_info (key, value) VALUES ('initialized', datetime('now'))")
-            conn.commit()
-            conn.close()
-            
-            print(f"✅ SQLite database file created: {db_path}")
-            
-            # Now use SQLAlchemy to create all tables
+            # Use SQLAlchemy to create all tables within app context
             with app.app_context():
+                # Force create all tables
                 db.create_all()
                 
-                # Test the connection
-                result = db.session.execute(db.text("SELECT 1"))
-                result.fetchone()
-                db.session.commit()
+                # Verify all tables were created
+                result = db.session.execute(db.text("SELECT name FROM sqlite_master WHERE type='table';"))
+                tables = [row[0] for row in result.fetchall()]
                 
-                print("✅ SQLAlchemy tables created successfully")
+                if len(tables) < 10:  # We should have more than 10 tables
+                    print(f"⚠️ Only {len(tables)} tables created, forcing recreation...")
+                    
+                    # Drop and recreate all tables
+                    db.drop_all()
+                    db.create_all()
+                    
+                    # Verify again
+                    result = db.session.execute(db.text("SELECT name FROM sqlite_master WHERE type='table';"))
+                    tables = [row[0] for row in result.fetchall()]
+                
+                db.session.commit()
+                print(f"✅ SQLAlchemy created {len(tables)} tables: {', '.join(sorted(tables))}")
                 
         except Exception as create_error:
             print(f"❌ Database creation failed: {create_error}")
@@ -3452,16 +3460,18 @@ def ensure_database_exists():
                 conn.close()
                 
                 table_names = [table[0] for table in tables]
-                required_tables = ['user', 'client']
+                required_tables = ['user', 'client', 'home_visit', 'after_care']
                 
                 if all(table in table_names for table in required_tables):
                     file_size = os.path.getsize(db_path)
                     print(f"✅ Database initialized successfully: {db_path} ({file_size} bytes)")
-                    print(f"✅ Created tables: {', '.join(table_names)}")
+                    print(f"✅ All {len(table_names)} tables created: {', '.join(sorted(table_names))}")
                     return True
                 else:
-                    print(f"⚠️ Some required tables missing. Found: {table_names}")
-                    return len(table_names) > 0
+                    missing_tables = [t for t in required_tables if t not in table_names]
+                    print(f"⚠️ Some required tables missing: {missing_tables}")
+                    print(f"Found tables: {table_names}")
+                    return len(table_names) > 5
                     
             except sqlite3.Error as e:
                 print(f"❌ Database verification failed: {e}")
@@ -3503,3 +3513,49 @@ if __name__ == '__main__':
     
     print(f"🚀 Starting Flask server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=debug)
+
+
+@app.route('/reset_database')
+@login_required
+def reset_database():
+    # Only Admin can reset database
+    if current_user.department != 'admin':
+        flash('Access denied. Only Admin can reset the database.')
+        return redirect(url_for('manage_users'))
+
+    try:
+        import sqlite3
+        
+        # Create backup before reset
+        db_path = os.path.abspath('mwangaza.db')
+        if os.path.exists(db_path):
+            backup_dir = 'backups'
+            os.makedirs(backup_dir, exist_ok=True)
+            reset_backup = os.path.join(backup_dir, f'pre_reset_backup_{datetime.now().strftime("%Y%m%d_%H%M%S")}.db')
+            shutil.copy2(db_path, reset_backup)
+            print(f"📦 Created pre-reset backup: {reset_backup}")
+        
+        # Drop all existing tables and recreate them
+        with app.app_context():
+            db.drop_all()
+            db.create_all()
+            db.session.commit()
+            
+            # Verify tables were created
+            result = db.session.execute(db.text("SELECT name FROM sqlite_master WHERE type='table';"))
+            tables = [row[0] for row in result.fetchall()]
+            
+            print(f"✅ Database reset complete. Created {len(tables)} tables: {', '.join(sorted(tables))}")
+        
+        # Recreate admin user
+        create_admin_user()
+        
+        flash(f'Database has been reset successfully! {len(tables)} tables created. Please log in again.')
+        logout_user()
+        return redirect(url_for('login'))
+        
+    except Exception as e:
+        flash(f'Error resetting database: {str(e)}')
+        print(f"❌ Database reset error: {e}")
+        return redirect(url_for('manage_users'))
+
