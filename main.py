@@ -2689,7 +2689,7 @@ def import_database():
                 except Exception as cache_error:
                     print(f"⚠️ Cache clearing warning: {cache_error}")
                 
-                # Complete application restart simulation
+                # Complete database synchronization
                 try:
                     # Force complete database reconnection
                     with app.app_context():
@@ -2705,81 +2705,78 @@ def import_database():
                         
                         print(f"🔍 Direct SQLite verification: {actual_user_count} users, {actual_client_count} clients")
                         
-                        # Close all existing connections and clear metadata
-                        db.session.close()
+                        # Complete SQLAlchemy reset
+                        db.session.close_all()
                         db.engine.dispose()
                         db.metadata.clear()
                         
-                        # Wait a moment for connections to fully close
+                        # Wait for connections to close
                         import time
-                        time.sleep(0.5)
+                        time.sleep(1)
                         
-                        # Create new engine with fresh connection
-                        from sqlalchemy import create_engine
-                        from sqlalchemy.orm import sessionmaker
+                        # Reinitialize SQLAlchemy with fresh configuration
+                        db.init_app(app)
                         
-                        # Create a completely new session to test data access
-                        new_engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-                        Session = sessionmaker(bind=new_engine)
-                        test_session = Session()
+                        # Create all tables to ensure schema is current
+                        db.create_all()
                         
+                        # Force new session and test ORM
+                        with db.engine.connect() as conn:
+                            # Test direct SQL
+                            result = conn.execute(db.text("SELECT COUNT(*) FROM user"))
+                            sql_user_count = result.scalar()
+                            
+                            result = conn.execute(db.text("SELECT COUNT(*) FROM client"))
+                            sql_client_count = result.scalar()
+                            
+                            print(f"🔄 Post-reset SQL verification: {sql_user_count} users, {sql_client_count} clients")
+                        
+                        # Test ORM queries with fresh session
                         try:
-                            # Test with raw SQL first to ensure database is accessible
-                            result = test_session.execute(db.text("SELECT COUNT(*) FROM user"))
-                            test_user_count = result.scalar()
+                            orm_user_count = User.query.count()
+                            orm_client_count = Client.query.count()
+                            print(f"🔄 Post-reset ORM verification: {orm_user_count} users, {orm_client_count} clients")
                             
-                            result = test_session.execute(db.text("SELECT COUNT(*) FROM client"))
-                            test_client_count = result.scalar()
-                            
-                            print(f"🔍 Fresh session SQL verification: {test_user_count} users, {test_client_count} clients")
-                            
-                            if test_user_count > 0:
-                                # Data is accessible, update the main engine
-                                db.engine = new_engine
-                                
-                                # Test ORM access with new engine
-                                orm_user_count = User.query.count()
-                                orm_client_count = Client.query.count()
-                                print(f"🔍 ORM verification with new engine: {orm_user_count} users, {orm_client_count} clients")
-                                
-                                if orm_user_count > 0:
-                                    print("✅ Database synchronization successful!")
-                                else:
-                                    print("⚠️ ORM still not seeing data, but raw SQL works")
+                            if orm_client_count == actual_client_count:
+                                print("✅ Database synchronization successful!")
                             else:
-                                print("⚠️ No data found in fresh connection")
+                                print(f"⚠️ ORM sync incomplete: expected {actual_client_count}, got {orm_client_count}")
                                 
-                        except Exception as test_error:
-                            print(f"⚠️ Fresh session test error: {test_error}")
-                        finally:
-                            test_session.close()
-                            if 'new_engine' in locals():
-                                new_engine.dispose()
+                                # Force session refresh
+                                db.session.expire_all()
+                                db.session.close()
+                                
+                                # Try again with completely fresh session
+                                orm_client_count = Client.query.count()
+                                print(f"🔄 After session refresh: {orm_client_count} clients")
+                                
+                        except Exception as orm_error:
+                            print(f"⚠️ ORM test error: {orm_error}")
                 
-                except Exception as restart_error:
-                    print(f"⚠️ Application restart simulation error: {restart_error}")
+                except Exception as sync_error:
+                    print(f"⚠️ Database synchronization error: {sync_error}")
                 
-                # Ensure user loader is properly registered with fresh database
+                # Ensure user loader is properly registered
                 try:
                     with app.app_context():
-                        # Force reload user loader with new database
+                        # Re-register user loader
                         login_manager._user_callback = None
                         login_manager.user_loader(load_user)
                         
-                        # Test user loader with imported data
+                        # Test user loader
                         test_user = User.query.first()
                         if test_user:
-                            print(f"✅ User loader working with imported data: {test_user.username}")
+                            print(f"✅ User loader working: {test_user.username}")
                         else:
                             print("⚠️ User loader test: No users found")
                         
                 except Exception as loader_error:
                     print(f"⚠️ User loader setup error: {loader_error}")
                 
-                # Clear the current user session to force re-login with new database
+                # Clear session and redirect to login
                 logout_user()
                 
-                flash('✅ Database imported successfully! All data has been synchronized. Please log in again to continue.')
+                flash('✅ Database imported successfully! Data is now synchronized. Please log in to see the imported records.')
                 return redirect(url_for('login'))
                 
             except Exception as verify_error:
@@ -3014,25 +3011,40 @@ def refresh_database():
         return redirect(url_for('dashboard'))
     
     try:
-        # Force complete database refresh
+        # Complete database reconnection
         db.session.close_all()
         db.engine.dispose()
         db.metadata.clear()
         
         with app.app_context():
-            # Let SQLAlchemy reconnect and rebuild metadata
-            db.metadata.reflect(bind=db.engine)
+            # Reinitialize database connection
+            db.init_app(app)
+            db.create_all()
             
-            # Force session refresh
+            # Test direct SQL first
+            with db.engine.connect() as conn:
+                result = conn.execute(db.text("SELECT COUNT(*) FROM user"))
+                sql_user_count = result.scalar()
+                
+                result = conn.execute(db.text("SELECT COUNT(*) FROM client"))
+                sql_client_count = result.scalar()
+                
+                print(f"🔍 SQL verification: {sql_user_count} users, {sql_client_count} clients")
+            
+            # Force session refresh and test ORM
             db.session.expire_all()
-            db.session.commit()
+            db.session.close()
             
-            # Test data access
-            client_count = Client.query.count()
+            # Test ORM queries
             user_count = User.query.count()
+            client_count = Client.query.count()
             
-            flash(f'✅ Database refreshed successfully! Found {user_count} users and {client_count} clients.')
-            print(f"🔄 Manual database refresh: {user_count} users, {client_count} clients")
+            print(f"🔄 ORM verification: {user_count} users, {client_count} clients")
+            
+            if client_count == sql_client_count:
+                flash(f'✅ Database refreshed successfully! Found {user_count} users and {client_count} clients.')
+            else:
+                flash(f'⚠️ Partial refresh: SQL shows {sql_client_count} clients, ORM shows {client_count}. Try logging out and back in.')
             
     except Exception as e:
         flash(f'Database refresh failed: {str(e)}')
