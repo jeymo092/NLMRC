@@ -375,10 +375,6 @@ def ensure_user_loader():
     """Ensure the user loader is properly registered with login manager"""
     try:
         with app.app_context():
-            if not hasattr(login_manager, '_user_callback') or login_manager._user_callback is None:
-                login_manager.user_loader(load_user)
-                print("🔄 User loader re-registered with login manager")
-            
             # Test the user loader with a simple query
             test_user = User.query.first()
             if test_user:
@@ -386,12 +382,6 @@ def ensure_user_loader():
         
     except Exception as e:
         print(f"⚠️ User loader registration error: {e}")
-        # Force re-registration with app context
-        try:
-            with app.app_context():
-                login_manager.user_loader(load_user)
-        except Exception as context_error:
-            print(f"⚠️ Context error during user loader registration: {context_error}")
 
 # Routes
 @app.route('/')
@@ -3549,23 +3539,6 @@ def view_exit_form(form_id):
     exit_form = ExitForm.query.get_or_404(form_id)
     return render_template('view_exit_form.html', exit_form=exit_form)
 
-
-
-    # Statistics for this age group
-    total_count = len(clients_14_18)
-    active_count = len([c for c in clients_14_18 if c.status == 'ACTIVE'])
-    completed_count = len([c for c in clients_14_18 if c.status == 'COMPLETE'])
-
-    stats = {
-        'total': total_count,
-        'active': active_count,
-        'completed': completed_count,
-        'street_admissions': len([c for c in clients_14_18 if c.admissionType == 'STREET']),
-        'referral_admissions': len([c for c in clients_14_18 if c.admissionType == 'REFERRAL'])
-    }
-
-    return render_template('clients_14_18.html', clients=clients_14_18, stats=stats)
-
 @app.route('/overall_report')
 @login_required
 def overall_report():
@@ -3940,30 +3913,33 @@ def export_client_academic_pdf(client_id):
 def create_admin_user():
     """Create initial admin user if none exists"""
     try:
-        # Check if any admin user exists
-        admin_exists = User.query.filter_by(department='admin').first()
-        if not admin_exists:
-            admin_user = User(
-                username='admin',
-                full_name='System Administrator',
-                department='admin'
-            )
-            admin_user.set_password('admin123')
-            db.session.add(admin_user)
-            db.session.commit()
-            print("✅ Initial admin user created: admin/admin123")
-            print("🔑 Default credentials: Username: admin, Password: admin123, Department: admin")
-        else:
-            print(f"✅ Admin user already exists: {admin_exists.username}")
+        with app.app_context():
+            # Check if any admin user exists
+            admin_exists = User.query.filter_by(department='admin').first()
+            if not admin_exists:
+                admin_user = User(
+                    username='admin',
+                    full_name='System Administrator',
+                    department='admin'
+                )
+                admin_user.set_password('admin123')
+                db.session.add(admin_user)
+                db.session.commit()
+                print("✅ Initial admin user created: admin/admin123")
+                print("🔑 Default credentials: Username: admin, Password: admin123, Department: admin")
+            else:
+                print(f"✅ Admin user already exists: {admin_exists.username}")
         
     except Exception as e:
         print(f"⚠️ Error creating admin user: {e}")
-        db.session.rollback()
+        try:
+            db.session.rollback()
+        except:
+            pass
 
 def ensure_database_exists():
     """Ensure database is properly initialized using SQLAlchemy"""
     try:
-        # Let SQLAlchemy handle all database creation automatically
         with app.app_context():
             # Create all tables if they don't exist
             db.create_all()
@@ -3989,8 +3965,7 @@ def ensure_database_exists():
                 
     except Exception as e:
         print(f"⚠️ Database initialization error: {e}")
-        # Even if there's an error, SQLAlchemy will handle it during operation
-        return True
+        return False
 
 if __name__ == '__main__':
     with app.app_context():
