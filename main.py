@@ -2705,53 +2705,102 @@ def import_database():
                         
                         print(f"🔍 Direct SQLite verification: {actual_user_count} users, {actual_client_count} clients")
                         
-                        # Complete SQLAlchemy reset
-                        db.session.close_all()
-                        db.engine.dispose()
+                        # Complete SQLAlchemy reset and reconnection
+                        try:
+                            db.session.remove()
+                            db.session.close()
+                        except:
+                            pass
+                        
+                        try:
+                            db.engine.dispose()
+                        except:
+                            pass
+                        
+                        # Clear all metadata
                         db.metadata.clear()
                         
                         # Wait for connections to close
                         import time
                         time.sleep(1)
                         
-                        # Reinitialize SQLAlchemy with fresh configuration
-                        db.init_app(app)
+                        # Force complete Flask-SQLAlchemy reinitialization
+                        db.__init__(app)
                         
-                        # Create all tables to ensure schema is current
+                        # Recreate all table metadata from database
                         db.create_all()
                         
-                        # Force new session and test ORM
+                        # Force SQLAlchemy to recognize the imported data
                         with db.engine.connect() as conn:
-                            # Test direct SQL
-                            result = conn.execute(db.text("SELECT COUNT(*) FROM user"))
-                            sql_user_count = result.scalar()
+                            # Verify tables exist
+                            result = conn.execute(db.text("SELECT name FROM sqlite_master WHERE type='table'"))
+                            tables = [row[0] for row in result.fetchall()]
+                            print(f"📋 Available tables after sync: {', '.join(sorted(tables))}")
                             
-                            result = conn.execute(db.text("SELECT COUNT(*) FROM client"))
-                            sql_client_count = result.scalar()
-                            
-                            print(f"🔄 Post-reset SQL verification: {sql_user_count} users, {sql_client_count} clients")
+                            # Test each key table
+                            for table_name in ['user', 'client', 'home_visit', 'student_mark']:
+                                if table_name in tables:
+                                    result = conn.execute(db.text(f"SELECT COUNT(*) FROM {table_name}"))
+                                    count = result.scalar()
+                                    print(f"📊 Table '{table_name}': {count} records")
                         
-                        # Test ORM queries with fresh session
+                        # Test ORM queries with completely fresh session
                         try:
+                            # Create new session factory
+                            from sqlalchemy.orm import sessionmaker
+                            Session = sessionmaker(bind=db.engine)
+                            test_session = Session()
+                            
+                            # Test with raw queries first
+                            user_count = test_session.execute(db.text("SELECT COUNT(*) FROM user")).scalar()
+                            client_count = test_session.execute(db.text("SELECT COUNT(*) FROM client")).scalar()
+                            print(f"🔄 Fresh session SQL: {user_count} users, {client_count} clients")
+                            
+                            test_session.close()
+                            
+                            # Now test ORM with the main session
+                            db.session.expire_all()
                             orm_user_count = User.query.count()
                             orm_client_count = Client.query.count()
-                            print(f"🔄 Post-reset ORM verification: {orm_user_count} users, {orm_client_count} clients")
+                            print(f"🔄 Fresh ORM verification: {orm_user_count} users, {orm_client_count} clients")
                             
-                            if orm_client_count == actual_client_count:
-                                print("✅ Database synchronization successful!")
-                            else:
-                                print(f"⚠️ ORM sync incomplete: expected {actual_client_count}, got {orm_client_count}")
+                            # If counts don't match, force cache clearing
+                            if orm_client_count != actual_client_count:
+                                print(f"⚠️ ORM count mismatch. Clearing all caches...")
                                 
-                                # Force session refresh
-                                db.session.expire_all()
+                                # Clear SQLAlchemy identity map
+                                db.session.expunge_all()
                                 db.session.close()
                                 
-                                # Try again with completely fresh session
+                                # Clear all cached queries
+                                import gc
+                                gc.collect()
+                                
+                                # Test again
                                 orm_client_count = Client.query.count()
-                                print(f"🔄 After session refresh: {orm_client_count} clients")
+                                print(f"🔄 After cache clear: {orm_client_count} clients")
+                            
+                            if orm_client_count == actual_client_count and orm_user_count == actual_user_count:
+                                print("✅ Database synchronization successful!")
+                                
+                                # Verify we can actually query client data
+                                first_client = Client.query.first()
+                                if first_client:
+                                    print(f"✅ First client accessible: {first_client.firstName} {first_client.secondName}")
+                                else:
+                                    print("⚠️ Client query returned None despite count > 0")
+                            else:
+                                print(f"⚠️ Synchronization incomplete: expected {actual_client_count} clients, got {orm_client_count}")
                                 
                         except Exception as orm_error:
-                            print(f"⚠️ ORM test error: {orm_error}")
+                            print(f"⚠️ ORM synchronization error: {orm_error}")
+                            
+                            # Try one more time with basic query
+                            try:
+                                basic_count = db.session.execute(db.text("SELECT COUNT(*) FROM client")).scalar()
+                                print(f"🔄 Basic SQL fallback: {basic_count} clients")
+                            except Exception as basic_error:
+                                print(f"⚠️ Even basic SQL failed: {basic_error}")
                 
                 except Exception as sync_error:
                     print(f"⚠️ Database synchronization error: {sync_error}")
@@ -3011,17 +3060,38 @@ def refresh_database():
         return redirect(url_for('dashboard'))
     
     try:
-        # Complete database reconnection
-        db.session.close_all()
-        db.engine.dispose()
+        # Complete database reconnection with stronger reset
+        try:
+            db.session.remove()
+            db.session.close()
+        except:
+            pass
+            
+        try:
+            db.engine.dispose()
+        except:
+            pass
+            
         db.metadata.clear()
         
         with app.app_context():
-            # Reinitialize database connection
-            db.init_app(app)
+            # Force complete reinitialization
+            db.__init__(app)
             db.create_all()
             
-            # Test direct SQL first
+            # Test raw SQLite first
+            import sqlite3
+            conn = sqlite3.connect('mwangaza.db')
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM user")
+            raw_user_count = cursor.fetchone()[0]
+            cursor.execute("SELECT COUNT(*) FROM client")
+            raw_client_count = cursor.fetchone()[0]
+            conn.close()
+            
+            print(f"🔍 Raw SQLite: {raw_user_count} users, {raw_client_count} clients")
+            
+            # Test SQLAlchemy SQL
             with db.engine.connect() as conn:
                 result = conn.execute(db.text("SELECT COUNT(*) FROM user"))
                 sql_user_count = result.scalar()
@@ -3029,22 +3099,36 @@ def refresh_database():
                 result = conn.execute(db.text("SELECT COUNT(*) FROM client"))
                 sql_client_count = result.scalar()
                 
-                print(f"🔍 SQL verification: {sql_user_count} users, {sql_client_count} clients")
+                print(f"🔍 SQLAlchemy SQL: {sql_user_count} users, {sql_client_count} clients")
             
-            # Force session refresh and test ORM
-            db.session.expire_all()
+            # Clear all caches and test ORM
+            db.session.expunge_all()
             db.session.close()
             
-            # Test ORM queries
+            # Force garbage collection
+            import gc
+            gc.collect()
+            
+            # Test ORM queries with fresh session
             user_count = User.query.count()
             client_count = Client.query.count()
             
             print(f"🔄 ORM verification: {user_count} users, {client_count} clients")
             
-            if client_count == sql_client_count:
-                flash(f'✅ Database refreshed successfully! Found {user_count} users and {client_count} clients.')
+            # Test data accessibility
+            clients = Client.query.all()
+            print(f"🔄 Client query returned {len(clients)} records")
+            
+            if len(clients) > 0:
+                sample_client = clients[0]
+                print(f"✅ Sample client: {sample_client.firstName} {sample_client.secondName}")
+            
+            if client_count == raw_client_count and len(clients) == client_count:
+                flash(f'✅ Database fully synchronized! Found {user_count} users and {client_count} clients with full data access.')
+            elif client_count == raw_client_count:
+                flash(f'✅ Database counts match ({client_count} clients) but may need logout/login for full sync.')
             else:
-                flash(f'⚠️ Partial refresh: SQL shows {sql_client_count} clients, ORM shows {client_count}. Try logging out and back in.')
+                flash(f'⚠️ Synchronization issue: Raw DB has {raw_client_count} clients, ORM sees {client_count}. Database may need reimport.')
             
     except Exception as e:
         flash(f'Database refresh failed: {str(e)}')
